@@ -1,0 +1,35 @@
+name: Bug report
+description: Report an Android integration or correction regression
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste private messages, emails, credentials or personal data. Reproduce the issue with synthetic text.
+  - type: input
+    id: android
+    attributes:
+      label: Android / ROM version
+      placeholder: "Android 15 / LineageOS ..."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide synthetic text and the steps needed to reproduce the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spellchecker_label">Grammalecte Android</string>
+    <string name="spellchecker_subtype_french">Français</string>
+</resources>

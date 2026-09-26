@@ -1,0 +1,15 @@
+.gradle/
+.idea/
+*.iml
+local.properties
+build/
+**/build/
+.externalNativeBuild/
+.cxx/
+.DS_Store
+
+# Temporary upstream checkout used by tools/vendor-grammalecte.sh
+.upstream/
+
+# Local backup files
+*.bak

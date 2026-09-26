@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <service
+            android:name=".GrammalecteSpellCheckerService"
+            android:exported="true"
+            android:label="@string/spellchecker_label"
+            android:permission="android.permission.BIND_TEXT_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.textservice.SpellCheckerService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.view.textservice.scs"
+                android:resource="@xml/spellchecker" />
+        </service>
+    </application>
+</manifest>

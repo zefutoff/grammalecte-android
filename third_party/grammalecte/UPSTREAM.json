@@ -1,0 +1,6 @@
+{
+  "repository": "https://github.com/algoo/grammalecte.git",
+  "commit": "47af2080202e647110e5199ebd5d4b51d2bd51db",
+  "version": "2.3.0",
+  "buildCommand": "python3 make.py fr -js"
+}

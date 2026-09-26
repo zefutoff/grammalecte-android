@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Grammalecte Android (non officiel)</string>
+    <string name="title">Grammalecte Android</string>
+    <string name="intro">Correcteur français local basé sur Grammalecte. Aucun texte n’est envoyé sur Internet.</string>
+    <string name="setup_steps">Pour l’activer : Paramètres Android → Système → Langues et saisie → Correcteur orthographique, puis choisissez Grammalecte Android.</string>
+    <string name="open_settings">Ouvrir les paramètres de saisie</string>
+    <string name="engine_status_ready">Moteur Grammalecte embarqué : prêt.</string>
+    <string name="engine_status_missing">Moteur Grammalecte non embarqué. Exécutez tools/vendor-grammalecte.sh avant de construire l’APK.</string>
+</resources>
