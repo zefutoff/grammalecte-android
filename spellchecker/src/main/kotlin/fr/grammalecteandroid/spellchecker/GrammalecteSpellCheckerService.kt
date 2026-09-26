@@ -13,7 +13,6 @@ import fr.grammalecteandroid.engine.GrammalecteQuickJsEngine
 
 class GrammalecteSpellCheckerService : SpellCheckerService() {
     override fun createSession(): Session {
-        Log.i(TAG, "createSession()")
         return GrammalecteSession()
     }
 
@@ -26,7 +25,6 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
 
         override fun onCreate() {
             sessionLocale = locale.orEmpty().replace('_', '-').ifBlank { DEFAULT_LOCALE }
-            Log.i(TAG, "session onCreate locale=$sessionLocale")
         }
 
         override fun onGetSuggestions(
@@ -34,10 +32,6 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
             suggestionsLimit: Int,
         ): SuggestionsInfo {
             val safeLimit = suggestionsLimit.coerceAtLeast(0)
-            Log.i(
-                TAG,
-                "onGetSuggestions length=${textInfo.text.length} limit=$safeLimit locale=$sessionLocale",
-            )
 
             val check = runCatching {
                 engine.checkWord(
@@ -50,10 +44,6 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
                 return SuggestionsInfo(0, emptyArray(), textInfo.cookie, textInfo.sequence)
             }
 
-            Log.i(
-                TAG,
-                "word result valid=${check.valid} suggestions=${check.suggestions.size}",
-            )
 
             if (check.valid) {
                 return SuggestionsInfo(
@@ -78,15 +68,10 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
         ): Array<SentenceSuggestionsInfo> {
             val safeLimit = suggestionsLimit.coerceAtLeast(0)
 
-            Log.i(
-                TAG,
-                "onGetSentenceSuggestionsMultiple count=${textInfos.size} limit=$safeLimit locale=$sessionLocale",
-            )
 
             return Array(textInfos.size) { index ->
                 val text = textInfos[index].text
 
-                Log.i(TAG, "sentence[$index] length=${text.length}")
 
                 val issues = runCatching {
                     engine.check(text = text, localeTag = sessionLocale)
@@ -95,7 +80,6 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
                     emptyList()
                 }
 
-                Log.i(TAG, "sentence[$index] issues=${issues.size}")
 
                 issues.toSentenceSuggestions(
                     textInfo = textInfos[index],
@@ -107,7 +91,6 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
         override fun onCancel() = Unit
 
         override fun onClose() {
-            Log.i(TAG, "session onClose()")
             if (engineDelegate.isInitialized()) {
                 engine.close()
             }
@@ -129,11 +112,6 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
         suggestionsLimit: Int,
     ): SentenceSuggestionsInfo {
         forEach { issue ->
-            Log.i(
-                TAG,
-                "raw issue start=${issue.start} end=${issue.endExclusive} " +
-                    "length=${issue.length} kind=${issue.kind}",
-            )
         }
 
         val retained = IssueRangeMerger.merge(
@@ -144,13 +122,6 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
             val issue = retained[index]
             val suggestions = issue.suggestions.take(suggestionsLimit)
 
-            Log.i(
-                TAG,
-                "return issue start=${issue.start} length=${issue.length} " +
-                    "kind=${issue.kind} ruleId=${issue.ruleId} " +
-                    "message=${issue.message} " +
-                    "suggestions=${suggestions.joinToString("|")}",
-            )
 
             SuggestionsInfo(
                 flagsFor(issue, suggestions.isNotEmpty()),
