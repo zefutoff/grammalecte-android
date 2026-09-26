@@ -29,7 +29,23 @@
 
     globalThis.__grammalecteAndroid = {
         init: function () {
-            gc_engine.load("JavaScript", "aRGB", "grammalecte/graphspell/_dictionaries");
+            conj.init(
+                helpers.loadFile("grammalecte/fr/conj_data.json")
+            );
+
+            phonet.init(
+                helpers.loadFile("grammalecte/fr/phonet_data.json")
+            );
+
+            mfsp.init(
+                helpers.loadFile("grammalecte/fr/mfsp_data.json")
+            );
+
+            gc_engine.load(
+                "JavaScript",
+                "aRGB",
+                "grammalecte/graphspell/_dictionaries"
+            );
         },
 
         check: function (text, localeTag) {

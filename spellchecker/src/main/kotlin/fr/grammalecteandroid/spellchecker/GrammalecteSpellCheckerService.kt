@@ -147,7 +147,9 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
             Log.i(
                 TAG,
                 "return issue start=${issue.start} length=${issue.length} " +
-                    "kind=${issue.kind} suggestions=${suggestions.joinToString("|")}",
+                    "kind=${issue.kind} ruleId=${issue.ruleId} " +
+                    "message=${issue.message} " +
+                    "suggestions=${suggestions.joinToString("|")}",
             )
 
             SuggestionsInfo(
