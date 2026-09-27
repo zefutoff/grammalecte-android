@@ -1,6 +1,7 @@
 package fr.grammalecteandroid.unofficial
 
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.os.LocaleList
@@ -84,7 +85,7 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
             Button(this).apply {
                 text = getString(R.string.open_settings)
                 setOnClickListener {
-                    startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
+                    openSpellCheckerSettings()
                 }
             },
             matchWrapParams(),
@@ -315,6 +316,28 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
         spellCheckerSession?.close()
         spellCheckerSession = null
         super.onDestroy()
+    }
+
+    private fun openSpellCheckerSettings() {
+        val directIntent = Intent(Intent.ACTION_MAIN).apply {
+            component = ComponentName(
+                "com.android.settings",
+                "com.android.settings.Settings\$SpellCheckersSettingsActivity",
+            )
+            addCategory(Intent.CATEGORY_DEFAULT)
+        }
+
+        val intent = if (directIntent.resolveActivity(packageManager) != null) {
+            directIntent
+        } else {
+            Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+        }
+
+        runCatching {
+            startActivity(intent)
+        }.onFailure {
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        }
     }
 
     private fun grammalecteAssetsPresent(): Boolean =
