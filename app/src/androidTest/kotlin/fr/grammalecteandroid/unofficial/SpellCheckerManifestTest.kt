@@ -15,10 +15,11 @@ class SpellCheckerManifestTest {
     @Test
     fun spellCheckerServiceIsDiscoverableAndProtected() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val services = context.packageManager.queryIntentServices(
-            Intent("android.service.textservice.SpellCheckerService").setPackage(context.packageName),
-            PackageManager.GET_META_DATA,
-        )
+        val services =
+            context.packageManager.queryIntentServices(
+                Intent("android.service.textservice.SpellCheckerService").setPackage(context.packageName),
+                PackageManager.GET_META_DATA,
+            )
 
         assertTrue("Expected a SpellCheckerService in the application package", services.isNotEmpty())
         assertEquals("android.permission.BIND_TEXT_SERVICE", services.single().serviceInfo.permission)

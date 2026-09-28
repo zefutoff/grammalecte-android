@@ -4,18 +4,52 @@ import vm from "node:vm";
 
 let loadedContext = null;
 
+const loadedFiles = [];
+const initializedModules = {};
+
+globalThis.helpers = {
+  loadFile(path) {
+    loadedFiles.push(path);
+    return `DATA:${path}`;
+  }
+};
+
+globalThis.conj = {
+  init(data) {
+    initializedModules.conj = data;
+  }
+};
+
+globalThis.phonet = {
+  init(data) {
+    initializedModules.phonet = data;
+  }
+};
+
+globalThis.mfsp = {
+  init(data) {
+    initializedModules.mfsp = data;
+  }
+};
+
 const fakeSpellChecker = {
   isValid(word) {
     return word === "correct";
   },
+
   parseParagraph() {
     return [
       { nStart: 4, nEnd: 11, sValue: "serveur" }
     ];
   },
+
   suggest(word, limit) {
     if (limit === 0) return [];
-    if (word === "serveur") return [["serveurs", "serveur"], ["service"]];
+
+    if (word === "serveur") {
+      return [["serveurs", "serveur"], ["service"]];
+    }
+
     return [["corrigé"]];
   }
 };
@@ -24,6 +58,7 @@ globalThis.gc_engine = {
   load(context, colorType, path) {
     loadedContext = { context, colorType, path };
   },
+
   parse() {
     return [
       {
@@ -35,22 +70,51 @@ globalThis.gc_engine = {
       }
     ];
   },
+
   getSpellChecker() {
     return fakeSpellChecker;
   }
 };
 
 const source = fs.readFileSync(
-  new URL("../engine-grammalecte/src/main/assets/android_bridge.js", import.meta.url),
+  new URL(
+    "../engine-grammalecte/src/main/assets/android_bridge.js",
+    import.meta.url
+  ),
   "utf8"
 );
-vm.runInThisContext(source, { filename: "android_bridge.js" });
+
+vm.runInThisContext(source, {
+  filename: "android_bridge.js"
+});
 
 globalThis.__grammalecteAndroid.init();
+
+assert.deepEqual(loadedFiles, [
+  "grammalecte/fr/conj_data.json",
+  "grammalecte/fr/phonet_data.json",
+  "grammalecte/fr/mfsp_data.json"
+]);
+
+assert.equal(
+  initializedModules.conj,
+  "DATA:grammalecte/fr/conj_data.json"
+);
+
+assert.equal(
+  initializedModules.phonet,
+  "DATA:grammalecte/fr/phonet_data.json"
+);
+
+assert.equal(
+  initializedModules.mfsp,
+  "DATA:grammalecte/fr/mfsp_data.json"
+);
+
 assert.deepEqual(loadedContext, {
   context: "JavaScript",
   colorType: "aRGB",
-  path: ""
+  path: "grammalecte/graphspell/_dictionaries"
 });
 
 const issues = JSON.parse(
@@ -61,6 +125,7 @@ const issues = JSON.parse(
 );
 
 assert.equal(issues.length, 2);
+
 assert.deepEqual(issues[0], {
   start: 17,
   end: 26,
@@ -69,6 +134,7 @@ assert.deepEqual(issues[0], {
   ruleId: "TEST_RULE",
   kind: "GRAMMAR"
 });
+
 assert.deepEqual(issues[1], {
   start: 4,
   end: 11,
@@ -79,16 +145,45 @@ assert.deepEqual(issues[1], {
 });
 
 assert.deepEqual(
-  JSON.parse(globalThis.__grammalecteAndroid.checkWord("correct", "fr-FR", 5)),
-  { valid: true, suggestions: [] }
+  JSON.parse(
+    globalThis.__grammalecteAndroid.checkWord(
+      "correct",
+      "fr-FR",
+      5
+    )
+  ),
+  {
+    valid: true,
+    suggestions: []
+  }
 );
+
 assert.deepEqual(
-  JSON.parse(globalThis.__grammalecteAndroid.checkWord("fote", "fr-FR", 1)),
-  { valid: false, suggestions: ["corrigé"] }
+  JSON.parse(
+    globalThis.__grammalecteAndroid.checkWord(
+      "fote",
+      "fr-FR",
+      1
+    )
+  ),
+  {
+    valid: false,
+    suggestions: ["corrigé"]
+  }
 );
+
 assert.deepEqual(
-  JSON.parse(globalThis.__grammalecteAndroid.checkWord("fote", "fr-FR", 0)),
-  { valid: false, suggestions: [] }
+  JSON.parse(
+    globalThis.__grammalecteAndroid.checkWord(
+      "fote",
+      "fr-FR",
+      0
+    )
+  ),
+  {
+    valid: false,
+    suggestions: []
+  }
 );
 
 console.log("JavaScript bridge contract OK");

@@ -50,10 +50,11 @@ android {
     }
 
     packaging {
-        resources.excludes += setOf(
-            "META-INF/AL2.0",
-            "META-INF/LGPL2.1",
-        )
+        resources.excludes +=
+            setOf(
+                "META-INF/AL2.0",
+                "META-INF/LGPL2.1",
+            )
     }
 }
 
@@ -66,6 +67,8 @@ kotlin {
 
 dependencies {
     implementation(project(":spellchecker"))
+    implementation(project(":core"))
+    implementation(project(":engine-grammalecte"))
 
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.runner)

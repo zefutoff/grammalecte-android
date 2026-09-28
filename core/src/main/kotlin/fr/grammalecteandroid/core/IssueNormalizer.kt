@@ -14,22 +14,20 @@ object IssueNormalizer {
             .filter { issue -> issue.endExclusive <= text.length }
             .map { issue ->
                 issue.copy(
-                    suggestions = issue.suggestions
-                        .asSequence()
-                        .map(String::trim)
-                        .filter(String::isNotEmpty)
-                        .distinct()
-                        .take(suggestionLimit)
-                        .toList(),
+                    suggestions =
+                        issue.suggestions
+                            .asSequence()
+                            .map(String::trim)
+                            .filter(String::isNotEmpty)
+                            .distinct()
+                            .take(suggestionLimit)
+                            .toList(),
                 )
-            }
-            .distinctBy { issue ->
+            }.distinctBy { issue ->
                 Triple(issue.start, issue.endExclusive, issue.ruleId ?: issue.kind.name)
-            }
-            .sortedWith(
+            }.sortedWith(
                 compareBy<GrammarIssue> { issue -> issue.start }
                     .thenBy { issue -> issue.endExclusive },
-            )
-            .toList()
+            ).toList()
     }
 }

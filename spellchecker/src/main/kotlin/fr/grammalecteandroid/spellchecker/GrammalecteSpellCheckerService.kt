@@ -12,14 +12,13 @@ import fr.grammalecteandroid.core.IssueRangeMerger
 import fr.grammalecteandroid.engine.GrammalecteQuickJsEngine
 
 class GrammalecteSpellCheckerService : SpellCheckerService() {
-    override fun createSession(): Session {
-        return GrammalecteSession()
-    }
+    override fun createSession(): Session = GrammalecteSession()
 
     private inner class GrammalecteSession : Session() {
-        private val engineDelegate = lazy(LazyThreadSafetyMode.NONE) {
-            GrammalecteQuickJsEngine(applicationContext)
-        }
+        private val engineDelegate =
+            lazy(LazyThreadSafetyMode.NONE) {
+                GrammalecteQuickJsEngine(applicationContext)
+            }
         private val engine by engineDelegate
         private var sessionLocale = DEFAULT_LOCALE
 
@@ -33,17 +32,17 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
         ): SuggestionsInfo {
             val safeLimit = suggestionsLimit.coerceAtLeast(0)
 
-            val check = runCatching {
-                engine.checkWord(
-                    word = textInfo.text,
-                    localeTag = sessionLocale,
-                    suggestionLimit = safeLimit,
-                )
-            }.getOrElse { error ->
-                logEngineFailure(error)
-                return SuggestionsInfo(0, emptyArray(), textInfo.cookie, textInfo.sequence)
-            }
-
+            val check =
+                runCatching {
+                    engine.checkWord(
+                        word = textInfo.text,
+                        localeTag = sessionLocale,
+                        suggestionLimit = safeLimit,
+                    )
+                }.getOrElse { error ->
+                    logEngineFailure(error)
+                    return SuggestionsInfo(0, emptyArray(), textInfo.cookie, textInfo.sequence)
+                }
 
             if (check.valid) {
                 return SuggestionsInfo(
@@ -68,18 +67,16 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
         ): Array<SentenceSuggestionsInfo> {
             val safeLimit = suggestionsLimit.coerceAtLeast(0)
 
-
             return Array(textInfos.size) { index ->
                 val text = textInfos[index].text
 
-
-                val issues = runCatching {
-                    engine.check(text = text, localeTag = sessionLocale)
-                }.getOrElse { error ->
-                    logEngineFailure(error)
-                    emptyList()
-                }
-
+                val issues =
+                    runCatching {
+                        engine.check(text = text, localeTag = sessionLocale)
+                    }.getOrElse { error ->
+                        logEngineFailure(error)
+                        emptyList()
+                    }
 
                 issues.toSentenceSuggestions(
                     textInfo = textInfos[index],
@@ -114,22 +111,23 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
         forEach { issue ->
         }
 
-        val retained = IssueRangeMerger.merge(
-            issues = filter { issue -> issue.length > 0 },
-            suggestionLimit = suggestionsLimit,
-        )
-        val infos = Array(retained.size) { index ->
-            val issue = retained[index]
-            val suggestions = issue.suggestions.take(suggestionsLimit)
-
-
-            SuggestionsInfo(
-                flagsFor(issue, suggestions.isNotEmpty()),
-                suggestions.toTypedArray(),
-                textInfo.cookie,
-                textInfo.sequence,
+        val retained =
+            IssueRangeMerger.merge(
+                issues = filter { issue -> issue.length > 0 },
+                suggestionLimit = suggestionsLimit,
             )
-        }
+        val infos =
+            Array(retained.size) { index ->
+                val issue = retained[index]
+                val suggestions = issue.suggestions.take(suggestionsLimit)
+
+                SuggestionsInfo(
+                    flagsFor(issue, suggestions.isNotEmpty()),
+                    suggestions.toTypedArray(),
+                    textInfo.cookie,
+                    textInfo.sequence,
+                )
+            }
         val offsets = IntArray(retained.size) { index -> retained[index].start }
         val lengths = IntArray(retained.size) { index -> retained[index].length }
 
@@ -140,17 +138,18 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
         issue: GrammarIssue,
         hasSuggestions: Boolean,
     ): Int {
-        val issueFlag = when (issue.kind) {
-            IssueKind.GRAMMAR, IssueKind.TYPOGRAPHY -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_GRAMMAR_ERROR
-                } else {
-                    SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_TYPO
+        val issueFlag =
+            when (issue.kind) {
+                IssueKind.GRAMMAR, IssueKind.TYPOGRAPHY -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_GRAMMAR_ERROR
+                    } else {
+                        SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_TYPO
+                    }
                 }
-            }
 
-            IssueKind.SPELLING, IssueKind.UNKNOWN -> SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_TYPO
-        }
+                IssueKind.SPELLING, IssueKind.UNKNOWN -> SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_TYPO
+            }
 
         return issueFlag or
             if (hasSuggestions) SuggestionsInfo.RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS else 0

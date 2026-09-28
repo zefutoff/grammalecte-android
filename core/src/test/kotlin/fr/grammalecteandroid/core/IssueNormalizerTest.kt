@@ -8,12 +8,13 @@ class IssueNormalizerTest {
     @Test
     fun `normalization removes invalid ranges and deduplicates suggestions`() {
         val text = "Les serveur sont installer"
-        val issues = listOf(
-            GrammarIssue(4, 11, listOf("serveurs", " serveurs ", ""), ruleId = "R1"),
-            GrammarIssue(4, 11, listOf("serveurs"), ruleId = "R1"),
-            GrammarIssue(17, 26, listOf("installés", "installées"), ruleId = "R2"),
-            GrammarIssue(999, 1_000, listOf("invalid"), ruleId = "R3"),
-        )
+        val issues =
+            listOf(
+                GrammarIssue(4, 11, listOf("serveurs", " serveurs ", ""), ruleId = "R1"),
+                GrammarIssue(4, 11, listOf("serveurs"), ruleId = "R1"),
+                GrammarIssue(17, 26, listOf("installés", "installées"), ruleId = "R2"),
+                GrammarIssue(999, 1_000, listOf("invalid"), ruleId = "R3"),
+            )
 
         val normalized = IssueNormalizer.normalize(text, issues, suggestionLimit = 1)
 

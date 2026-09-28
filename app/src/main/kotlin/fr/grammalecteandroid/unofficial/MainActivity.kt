@@ -22,7 +22,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import java.util.Locale
 
-class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener {
+class MainActivity :
+    Activity(),
+    SpellCheckerSession.SpellCheckerSessionListener {
     private lateinit var resultView: TextView
     private lateinit var systemEditText: EditText
     private var spellCheckerSession: SpellCheckerSession? = null
@@ -35,11 +37,12 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
         val padding = (24 * resources.displayMetrics.density).toInt()
         val spacing = (12 * resources.displayMetrics.density).toInt()
 
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(padding, padding, padding, padding)
-        }
+        val layout =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER_HORIZONTAL
+                setPadding(padding, padding, padding, padding)
+            }
 
         layout.addView(
             TextView(this).apply {
@@ -68,13 +71,14 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
 
         layout.addView(
             TextView(this).apply {
-                text = getString(
-                    if (grammalecteAssetsPresent()) {
-                        R.string.engine_status_ready
-                    } else {
-                        R.string.engine_status_missing
-                    },
-                )
+                text =
+                    getString(
+                        if (grammalecteAssetsPresent()) {
+                            R.string.engine_status_ready
+                        } else {
+                            R.string.engine_status_missing
+                        },
+                    )
                 textSize = 14f
                 setPadding(0, spacing, 0, spacing)
             },
@@ -101,22 +105,23 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
             matchWrapParams(),
         )
 
-        systemEditText = EditText(this).apply {
-            textLocales = LocaleList(Locale.FRANCE)
-            hint = "Zone de test du correcteur Android"
-            textSize = 18f
-            minLines = 4
-            gravity = Gravity.TOP
-            inputType =
-                InputType.TYPE_CLASS_TEXT or
+        systemEditText =
+            EditText(this).apply {
+                textLocales = LocaleList(Locale.FRANCE)
+                hint = "Zone de test du correcteur Android"
+                textSize = 18f
+                minLines = 4
+                gravity = Gravity.TOP
+                inputType =
+                    InputType.TYPE_CLASS_TEXT or
                     InputType.TYPE_TEXT_FLAG_MULTI_LINE or
                     InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
                     InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
 
-            setText(testText)
-            setSelection(text.length)
-            setPadding(0, spacing, 0, spacing)
-        }
+                setText(testText)
+                setSelection(text.length)
+                setPadding(0, spacing, 0, spacing)
+            }
 
         layout.addView(systemEditText, matchWrapParams())
 
@@ -147,11 +152,12 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
             matchWrapParams(),
         )
 
-        resultView = TextView(this).apply {
-            text = "Test : $testText"
-            textSize = 16f
-            setPadding(0, spacing, 0, 0)
-        }
+        resultView =
+            TextView(this).apply {
+                text = "Test : $testText"
+                textSize = 16f
+                setPadding(0, spacing, 0, 0)
+            }
 
         layout.addView(resultView, matchWrapParams())
 
@@ -166,12 +172,13 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
 
         val manager = getSystemService(TextServicesManager::class.java)
 
-        val session = manager.newSpellCheckerSession(
-            null,
-            Locale.FRANCE,
-            this,
-            false,
-        )
+        val session =
+            manager.newSpellCheckerSession(
+                null,
+                Locale.FRANCE,
+                this,
+                false,
+            )
 
         if (session == null) {
             resultView.text =
@@ -187,9 +194,7 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
         )
     }
 
-    override fun onGetSentenceSuggestions(
-        results: Array<SentenceSuggestionsInfo>?,
-    ) {
+    override fun onGetSentenceSuggestions(results: Array<SentenceSuggestionsInfo>?) {
         if (results.isNullOrEmpty()) {
             resultView.text = "Session appelée, mais aucun résultat reçu."
             return
@@ -215,11 +220,12 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
                 issueCount++
 
                 val fragment = testText.substring(offset, offset + length)
-                val suggestions = buildList {
-                    for (suggestionIndex in 0 until info.suggestionsCount) {
-                        add(info.getSuggestionAt(suggestionIndex))
+                val suggestions =
+                    buildList {
+                        for (suggestionIndex in 0 until info.suggestionsCount) {
+                            add(info.getSuggestionAt(suggestionIndex))
+                        }
                     }
-                }
 
                 output.append("\n")
                 output.append(issueCount)
@@ -251,9 +257,7 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
         resultView.text = output.toString()
     }
 
-    override fun onGetSuggestions(
-        results: Array<SuggestionsInfo>?,
-    ) {
+    override fun onGetSuggestions(results: Array<SuggestionsInfo>?) {
         if (results.isNullOrEmpty()) {
             return
         }
@@ -266,11 +270,12 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
     private fun inspectSuggestionSpans() {
         val text = systemEditText.text
 
-        val spans = text.getSpans(
-            0,
-            text.length,
-            SuggestionSpan::class.java,
-        )
+        val spans =
+            text.getSpans(
+                0,
+                text.length,
+                SuggestionSpan::class.java,
+            )
 
         if (spans.isEmpty()) {
             resultView.text = "Aucun SuggestionSpan present dans le champ."
@@ -319,19 +324,22 @@ class MainActivity : Activity(), SpellCheckerSession.SpellCheckerSessionListener
     }
 
     private fun openSpellCheckerSettings() {
-        val directIntent = Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName(
-                "com.android.settings",
-                "com.android.settings.Settings\$SpellCheckersSettingsActivity",
-            )
-            addCategory(Intent.CATEGORY_DEFAULT)
-        }
+        val directIntent =
+            Intent(Intent.ACTION_MAIN).apply {
+                component =
+                    ComponentName(
+                        "com.android.settings",
+                        "com.android.settings.Settings\$SpellCheckersSettingsActivity",
+                    )
+                addCategory(Intent.CATEGORY_DEFAULT)
+            }
 
-        val intent = if (directIntent.resolveActivity(packageManager) != null) {
-            directIntent
-        } else {
-            Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
-        }
+        val intent =
+            if (directIntent.resolveActivity(packageManager) != null) {
+                directIntent
+            } else {
+                Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+            }
 
         runCatching {
             startActivity(intent)

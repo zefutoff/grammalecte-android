@@ -43,10 +43,11 @@ class GrammalecteQuickJsEngine internal constructor(
         if (word.isBlank()) return WordCheck(valid = true)
         val safeLimit = suggestionLimit.coerceAtLeast(0)
 
-        val raw = callBridge(
-            function = "__grammalecteAndroid.checkWord",
-            args = arrayOf<Any>(word, localeTag, safeLimit),
-        )
+        val raw =
+            callBridge(
+                function = "__grammalecteAndroid.checkWord",
+                args = arrayOf<Any>(word, localeTag, safeLimit),
+            )
         val json = JSONObject(raw)
         return WordCheck(
             valid = json.getBoolean("valid"),
@@ -64,19 +65,21 @@ class GrammalecteQuickJsEngine internal constructor(
     private fun callBridge(
         function: String,
         vararg args: Any,
-    ): String = synchronized(lock) {
-        val js = runtime ?: createRuntime().also { runtime = it }
-        val encodedArguments = args.joinToString(",") { arg -> JSONObject.wrap(arg).toJsonLiteral() }
-        runBlocking {
-            js.evaluate<String>("$function($encodedArguments)")
+    ): String =
+        synchronized(lock) {
+            val js = runtime ?: createRuntime().also { runtime = it }
+            val encodedArguments = args.joinToString(",") { arg -> JSONObject.wrap(arg).toJsonLiteral() }
+            runBlocking {
+                js.evaluate<String>("$function($encodedArguments)")
+            }
         }
-    }
 
     private fun createRuntime(): QuickJs {
-        val js = QuickJs.create(Dispatchers.Default).apply {
-            memoryLimit = MAX_MEMORY_BYTES
-            evaluationTimeoutMillis = INITIALIZATION_TIMEOUT_MILLIS
-        }
+        val js =
+            QuickJs.create(Dispatchers.Default).apply {
+                memoryLimit = MAX_MEMORY_BYTES
+                evaluationTimeoutMillis = INITIALIZATION_TIMEOUT_MILLIS
+            }
 
         try {
             js.function<String, String>("__androidReadAsset") { path -> assetLoader.readText(path) }
@@ -113,9 +116,10 @@ class GrammalecteQuickJsEngine internal constructor(
                 js.evaluate<Any?>(assetLoader.readText(GrammalecteScriptBundle.BRIDGE_SCRIPT))
                 js.evaluate<Any?>("__grammalecteAndroid.init()")
 
-                val initializationErrors = js.evaluate<String>(
-                    "globalThis.__grammalecteConsoleErrors.join(' | ')",
-                )
+                val initializationErrors =
+                    js.evaluate<String>(
+                        "globalThis.__grammalecteConsoleErrors.join(' | ')",
+                    )
                 check(initializationErrors.isBlank()) {
                     "Grammalecte initialization reported errors: $initializationErrors"
                 }
@@ -156,14 +160,14 @@ class GrammalecteQuickJsEngine internal constructor(
             }
         }
 
-    private fun String.toIssueKind(): IssueKind =
-        runCatching { IssueKind.valueOf(this) }.getOrDefault(IssueKind.UNKNOWN)
+    private fun String.toIssueKind(): IssueKind = runCatching { IssueKind.valueOf(this) }.getOrDefault(IssueKind.UNKNOWN)
 
-    private fun Any?.toJsonLiteral(): String = when (this) {
-        null, JSONObject.NULL -> "null"
-        is Number, is Boolean -> toString()
-        else -> JSONObject.quote(toString())
-    }
+    private fun Any?.toJsonLiteral(): String =
+        when (this) {
+            null, JSONObject.NULL -> "null"
+            is Number, is Boolean -> toString()
+            else -> JSONObject.quote(toString())
+        }
 
     companion object {
         private const val DEFAULT_SUGGESTION_LIMIT = 8
