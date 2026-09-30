@@ -15,7 +15,7 @@ Small documentation and typo fixes do not require a prior issue.
 - `core` must remain independent from Android and QuickJS.
 - `spellchecker` depends on the `GrammarEngine` abstraction, not JavaScript details.
 - Grammalecte-specific code belongs in `engine-grammalecte`.
-- The `app` module remains a thin setup/settings shell.
+- The `app` module owns Android-facing user workflows such as setup, `PROCESS_TEXT` and the correction IME, while engine-specific logic remains in `engine-grammalecte`.
 - Avoid adding dependencies unless they clearly reduce maintenance risk.
 - Do not add analytics, telemetry or network access without an explicit architecture decision and community review.
 

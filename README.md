@@ -1,113 +1,225 @@
 # Grammalecte Android — unofficial
 
-A local, open-source French spelling and grammar checker for Android, powered by [Grammalecte](https://grammalecte.net/) and exposed through Android's native `SpellCheckerService` framework.
+A local, open-source French spelling and grammar checker for Android, powered by [Grammalecte](https://grammalecte.net/).
 
-> **Project status:** early development. The Android service, modular architecture, QuickJS bridge, upstream vendoring workflow, tests and CI scaffolding are present. The repository must vendor the pinned Grammalecte JavaScript build before an APK can perform corrections.
+All correction runs on-device. The application does not request the Android `INTERNET` permission and does not use a cloud API or LLM.
 
-## Goals
+> **Project status:** early development, but the correction engine is functional on a physical Android device. Native spell-checking, `PROCESS_TEXT` correction and an IME-based fallback have all been validated during development.
 
-- Correct French spelling **and grammar** in Android text fields that support the platform spell-checker framework.
-- Run fully on-device: no cloud API, no LLM and no `INTERNET` permission.
-- Keep the Android integration independent from the embedded Grammalecte runtime.
-- Make upstream engine updates reproducible and reviewable.
-- Treat automated tests, static analysis and contributor documentation as first-class project code.
+## Current integration
+
+Grammalecte Android currently exposes the same local correction engine through three Android integration paths:
+
+1. **SpellCheckerService**
+   - native Android spelling and grammar suggestions;
+   - integrates automatically in applications that support the platform spell-checker framework.
+
+2. **ACTION_PROCESS_TEXT**
+   - adds a **Corriger avec Grammalecte** action to Android's selected-text menu;
+   - opens a correction screen with explanations and individual suggestions;
+   - can return corrected text to compatible applications;
+   - falls back to copying corrected text when Android exposes the selection as read-only.
+
+3. **Grammalecte IME**
+   - a correction-oriented `InputMethodService`;
+   - reads the currently selected text through `InputConnection`;
+   - applies corrections directly to the active editable field;
+   - provides a fallback for applications that bypass `SpellCheckerService` or ignore `PROCESS_TEXT` replacement results.
+
+The current IME is intentionally focused on correcting selected text. It is not intended to replace a full-featured typing keyboard.
+
+## Why several integration paths?
+
+Android applications do not all expose text correction in the same way.
+
+A standard `EditText` can use Android's native spell-checker service, while some custom editors and web fields never call it.
+
+`PROCESS_TEXT` works in many applications, but some editors do not accept returned replacement text.
+
+The IME fallback uses Android's normal `InputConnection` editing interface instead of an Accessibility Service. This keeps the replacement mechanism generic across editable applications while avoiding the broader permissions and privacy surface of accessibility automation.
+
+Manual development tests have successfully applied real Grammalecte corrections in:
+
+- Android native text fields;
+- SMS editing;
+- Samsung Notes;
+- Firefox text fields.
+
+Compatibility testing is still ongoing.
 
 ## Architecture
 
-```text
-app
- └─ spellchecker
-     ├─ core
-     └─ engine-grammalecte
-         └─ QuickJS-KT
-             └─ vendored Grammalecte JavaScript
-```
+The project is split into four Gradle modules:
 
 | Module | Responsibility |
 | --- | --- |
-| `core` | Pure Kotlin domain API (`GrammarEngine`, issues, normalization). No Android dependency. |
-| `engine-grammalecte` | QuickJS runtime, Android asset loading and Grammalecte JS bridge. |
-| `spellchecker` | Android `SpellCheckerService` and mapping to `SuggestionsInfo` / `SentenceSuggestionsInfo`. |
-| `app` | Thin launcher/setup UI. No correction logic. |
+| `core` | Pure Kotlin domain API: `GrammarEngine`, issues, ranges and normalization. |
+| `engine-grammalecte` | QuickJS runtime, Grammalecte JavaScript bridge, dictionaries and mapping to the internal correction model. |
+| `spellchecker` | Android `SpellCheckerService` integration and mapping to Android suggestion objects. |
+| `app` | Application UI, setup tools, `PROCESS_TEXT`, IME integration and final Android packaging. |
 
-The dependency direction is deliberate: Android UI and framework code never know how Grammalecte is executed internally.
+The correction engine remains isolated behind the `GrammarEngine` contract even though Android can reach it through several framework integrations.
 
-## First build
+See [`docs/architecture.md`](docs/architecture.md) and [`docs/adr/`](docs/adr/) for the detailed design decisions.
+
+## Embedded Grammalecte engine
+
+The repository vendors a pinned generated Grammalecte JavaScript runtime and Graphspell dictionaries.
+
+The upstream revision is recorded in `tools/grammalecte.env`.
+
+The current vendoring workflow is reproducible and tied to an immutable upstream commit.
+
+Normal builds do **not** need to regenerate the engine.
+
+Regeneration is only required when deliberately updating or rebuilding the vendored Grammalecte assets:
+
+    ./tools/vendor-grammalecte.sh
+
+## Build
 
 Requirements:
 
 - JDK 17
 - Android SDK 36
-- Python 3.11 recommended for the upstream Grammalecte builder (newer versions need a `distutils` compatibility layer such as setuptools)
 - Git
-- Node.js 20+ (bridge contract test)
-- `curl`, `unzip` and `sha256sum` for the one-time Gradle Wrapper bootstrap
+- Node.js 20+ for the JavaScript bridge contract test
+- Python 3.11 when regenerating the Grammalecte assets
 
-Vendor the exact pinned Grammalecte source and generate its JavaScript runtime:
+The Gradle wrapper is committed to the repository.
 
-```bash
-./tools/vendor-grammalecte.sh
-```
+Run the main checks and build:
 
-Then bootstrap the Gradle wrapper once. The script verifies the official Gradle 9.6.1 binary ZIP checksum before running the wrapper task:
+    ./gradlew --no-daemon \
+      ktlintCheck \
+      :core:test \
+      :engine-grammalecte:test \
+      :spellchecker:test \
+      :app:lintDebug \
+      :app:assembleDebug
 
-```bash
-./tools/bootstrap-gradle-wrapper.sh
-```
+The debug APK is generated under:
 
-Build and test:
+    app/build/outputs/apk/debug/
 
-```bash
-./gradlew ktlintCheck :core:test :engine-grammalecte:test :spellchecker:test :app:lintDebug :app:assembleDebug
-```
+For development on a connected Android device:
 
-The debug APK will be under `app/build/outputs/apk/debug/`.
+    ./tools/run-android.sh
 
-## Activating on Android
+The script builds the debug APK, installs it with ADB and launches the application.
 
-After installing the APK, open Android settings and select **Grammalecte Android** as the spell checker. The exact path varies by ROM, generally under:
+## Activating the native spell checker
 
-`System > Languages & input > Spell checker`
+After installing the APK, open Android settings and select **Grammalecte Android** as the system spell checker.
 
-The app itself exposes a button that opens the broader input-method settings screen.
+The exact path depends on the Android distribution, but is generally similar to:
+
+    Settings
+    → System
+    → Languages and input
+    → Spell checker
+
+The application also provides a shortcut to the relevant Android settings screen.
+
+## Using PROCESS_TEXT
+
+In a compatible application:
+
+1. select some text;
+2. open the Android text-selection menu;
+3. choose **Corriger avec Grammalecte**;
+4. review the detected issues and suggestions;
+5. return the corrected text to the application, or copy it when the source selection is read-only.
+
+## Using the Grammalecte IME
+
+Android exposes the correction fallback as an input method named **Grammalecte**.
+
+Once enabled in Android's keyboard/input-method settings:
+
+1. select text in an editable field;
+2. switch temporarily to the Grammalecte input method;
+3. review and apply the proposed corrections;
+4. switch back to the usual keyboard.
+
+A more polished activation and keyboard-switching workflow is planned before public distribution.
 
 ## Privacy invariant
 
-The project intentionally declares **no `android.permission.INTERNET` permission**. A CI check fails if that permission appears in one of the project manifests.
+The application intentionally declares **no `android.permission.INTERNET` permission**.
 
-This matters because text submitted to a system spell checker can contain private messages, emails, searches or form data. The default architecture therefore keeps all analysis on-device.
+A CI check fails if that permission appears in one of the project manifests.
+
+This is particularly important for a spell checker or input method because selected or typed text can contain private messages, emails, searches and form data.
+
+The current design therefore keeps correction entirely local:
+
+    Android text
+        ↓
+    local Kotlin code
+        ↓
+    embedded QuickJS runtime
+        ↓
+    embedded Grammalecte engine
+        ↓
+    local correction result
+
+No text is sent to an external service.
 
 ## Updating Grammalecte
 
-The upstream revision is pinned in `tools/grammalecte.env`.
+Engine updates should be isolated and reviewable:
 
-An engine update should be a dedicated pull request:
+1. update `GRAMMALECTE_COMMIT` and `GRAMMALECTE_VERSION` in `tools/grammalecte.env`;
+2. run `./tools/vendor-grammalecte.sh`;
+3. run the complete test suite;
+4. inspect the generated asset diff;
+5. verify upstream license metadata;
+6. add or update regression tests when correction behavior changes.
 
-1. Change `GRAMMALECTE_COMMIT` and `GRAMMALECTE_VERSION`.
-2. Run `./tools/vendor-grammalecte.sh`.
-3. Run the complete test suite.
-4. Review the generated asset diff and upstream license metadata.
-5. Add/adjust regression tests for any changed correction behavior.
+Do not track an upstream branch dynamically at build time.
 
-Do not silently track an upstream branch at build time.
+## Automated checks
 
-## Contribution model
+The repository contains GitHub Actions workflows for:
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CHANGELOG.md`](CHANGELOG.md), [`ROADMAP.md`](ROADMAP.md), [`docs/architecture.md`](docs/architecture.md) and the ADRs under [`docs/adr/`](docs/adr/).
+- Kotlin formatting and unit tests;
+- Android lint;
+- debug APK builds;
+- privacy checks;
+- shell script validation;
+- JavaScript bridge contract tests;
+- vendored Grammalecte engine smoke tests;
+- Android instrumentation tests.
 
-Important rules:
+Dependabot monitors project dependencies, while the Gradle wrapper is deliberately updated manually because its version and distribution checksum are kept in sync with the project's bootstrap and CI configuration.
 
-- feature work goes through pull requests;
-- public APIs between modules require tests;
-- architecture changes require an ADR;
-- bug fixes should include a regression test where feasible;
-- generated Grammalecte updates must remain pinned to an immutable commit;
-- new network permissions are considered a breaking privacy change.
+## Project documents
+
+- [`ROADMAP.md`](ROADMAP.md)
+- [`CHANGELOG.md`](CHANGELOG.md)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- [`SECURITY.md`](SECURITY.md)
+- [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+- [`docs/architecture.md`](docs/architecture.md)
+- [`docs/testing.md`](docs/testing.md)
+- [`docs/release.md`](docs/release.md)
+- [`docs/adr/`](docs/adr/)
 
 ## Name and affiliation
 
-This is an **unofficial** Android integration. It is not affiliated with or endorsed by the Grammalecte project or Algoo. The package namespace is intentionally marked `unofficial` for the initial development phase and should be reviewed before the first public release.
+This is an **unofficial** Android integration of Grammalecte.
+
+It is not affiliated with or endorsed by the Grammalecte project or Algoo.
+
+The Android package namespace is intentionally marked `unofficial` during the current development phase and should be reviewed before the first stable public release.
 
 ## License
 
-This project is licensed under **GPL-3.0-only**. Grammalecte is also distributed under GPLv3; its upstream license is preserved when vendored. QuickJS-KT is an Apache-2.0 dependency. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+This project is licensed under **GPL-3.0-only**.
+
+Grammalecte is distributed under GPLv3 and its upstream license information is preserved with the vendored sources and metadata.
+
+QuickJS-KT is distributed under the Apache License 2.0.
+
+See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
