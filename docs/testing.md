@@ -61,9 +61,12 @@ This detects:
 - engine-module build regressions;
 - APK packaging regressions.
 
-A future automated smoke test should instantiate the real embedded engine and assert at least one spelling correction and one grammar correction.
+`RealEngineSmokeTest` instantiates the real embedded QuickJS/Grammalecte engine and currently verifies:
 
-Useful real-engine fixtures should eventually include:
+- a real spelling correction (`magazin` → `magasin`);
+- a real grammar correction (`aller` → `allé` / `allée`).
+
+Additional real-engine fixtures should eventually include:
 
 - a spelling error with suggestions;
 - a grammar agreement error;
