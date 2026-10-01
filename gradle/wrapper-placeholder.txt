@@ -1,4 +1,0 @@
-The Gradle Wrapper binary is intentionally not fabricated in this source snapshot.
-Run ./tools/bootstrap-gradle-wrapper.sh once; it downloads the official Gradle 9.6.1
-binary distribution, verifies its official SHA-256 checksum, and generates the wrapper.
-The generated gradlew, gradlew.bat and gradle/wrapper/* files should then be committed.

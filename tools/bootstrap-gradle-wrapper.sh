@@ -16,7 +16,7 @@ for command in curl unzip sha256sum; do
 done
 
 ARCHIVE="$TMP/gradle-${VERSION}-bin.zip"
-printf 'Downloading Gradle %s for one-time wrapper bootstrap...\n' "$VERSION"
+printf 'Downloading Gradle %s to generate or update the wrapper...\n' "$VERSION"
 curl --fail --location --retry 3 --silent --show-error "$URL" -o "$ARCHIVE"
 printf '%s  %s\n' "$BIN_SHA256" "$ARCHIVE" | sha256sum --check --status
 unzip -q "$ARCHIVE" -d "$TMP"
@@ -27,4 +27,4 @@ cd "$ROOT"
     --distribution-type bin \
     --gradle-distribution-sha256-sum "$BIN_SHA256"
 printf '%s\n' "Gradle wrapper generated and checksum-bootstrapped from the official Gradle distribution."
-printf '%s\n' "Commit gradlew, gradlew.bat and gradle/wrapper/* before the first public release."
+printf '%s\n' "Review and commit the generated Gradle wrapper changes."
