@@ -4,7 +4,11 @@
     <string name="title">Grammalecte Android</string>
     <string name="intro">Correcteur français local basé sur Grammalecte. Aucun texte n’est envoyé sur Internet.</string>
     <string name="setup_steps">Pour l’activer : Paramètres Android → Système → Langues et saisie → Correcteur orthographique, puis choisissez Grammalecte Android.</string>
-    <string name="open_settings">Ouvrir les paramètres de saisie</string>
+    <string name="open_settings">Configurer le correcteur Android</string>
+    <string name="enable_ime">Activer la méthode de saisie Grammalecte</string>
+    <string name="choose_ime">Choisir la méthode de saisie</string>
+    <string name="ime_status_enabled">Méthode de saisie Grammalecte : activée.</string>
+    <string name="ime_status_disabled">Méthode de saisie Grammalecte : désactivée. Android affichera un avertissement standard lors de son activation. Grammalecte Android ne possède pas la permission INTERNET.</string>
     <string name="engine_status_ready">Moteur Grammalecte embarqué : prêt.</string>
     <string name="engine_status_missing">Moteur Grammalecte non embarqué. Exécutez tools/vendor-grammalecte.sh avant de construire l’APK.</string>
 </resources>

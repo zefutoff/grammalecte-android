@@ -27,6 +27,7 @@ class MainActivity :
     SpellCheckerSession.SpellCheckerSessionListener {
     private lateinit var resultView: TextView
     private lateinit var systemEditText: EditText
+    private lateinit var imeStatusView: TextView
     private var spellCheckerSession: SpellCheckerSession? = null
 
     private val testText = "Je sui aller au magazin hier."
@@ -90,6 +91,34 @@ class MainActivity :
                 text = getString(R.string.open_settings)
                 setOnClickListener {
                     openSpellCheckerSettings()
+                }
+            },
+            matchWrapParams(),
+        )
+
+        imeStatusView =
+            TextView(this).apply {
+                textSize = 14f
+                setPadding(0, spacing, 0, spacing)
+            }
+
+        layout.addView(imeStatusView, matchWrapParams())
+
+        layout.addView(
+            Button(this).apply {
+                text = getString(R.string.enable_ime)
+                setOnClickListener {
+                    openInputMethodSettings()
+                }
+            },
+            matchWrapParams(),
+        )
+
+        layout.addView(
+            Button(this).apply {
+                text = getString(R.string.choose_ime)
+                setOnClickListener {
+                    showInputMethodPicker()
                 }
             },
             matchWrapParams(),
@@ -317,10 +346,47 @@ class MainActivity :
         resultView.text = output.toString()
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateImeStatus()
+    }
+
     override fun onDestroy() {
         spellCheckerSession?.close()
         spellCheckerSession = null
         super.onDestroy()
+    }
+
+    private fun updateImeStatus() {
+        val manager = getSystemService(InputMethodManager::class.java)
+
+        val enabled =
+            manager.enabledInputMethodList.any { inputMethod ->
+                inputMethod.packageName == packageName &&
+                    inputMethod.serviceName == GrammalecteImeService::class.java.name
+            }
+
+        imeStatusView.text =
+            getString(
+                if (enabled) {
+                    R.string.ime_status_enabled
+                } else {
+                    R.string.ime_status_disabled
+                },
+            )
+    }
+
+    private fun openInputMethodSettings() {
+        runCatching {
+            startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
+        }.onFailure {
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        }
+    }
+
+    private fun showInputMethodPicker() {
+        getSystemService(InputMethodManager::class.java)
+            .showInputMethodPicker()
     }
 
     private fun openSpellCheckerSettings() {
