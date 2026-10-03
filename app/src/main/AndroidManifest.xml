@@ -46,7 +46,8 @@
             android:name=".GrammalecteImeService"
             android:exported="true"
             android:label="Grammalecte"
-            android:permission="android.permission.BIND_INPUT_METHOD">
+            android:permission="android.permission.BIND_INPUT_METHOD"
+            android:theme="@style/ImeTheme">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
             </intent-filter>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@color/surface_background</item>
@@ -8,7 +8,7 @@
         <item name="android:textColorPrimary">@color/surface_text</item>
     </style>
 
-    <style name="ImeTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="ImeTheme" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowBackground">@color/surface_background</item>
         <item name="android:colorBackground">@color/surface_background</item>

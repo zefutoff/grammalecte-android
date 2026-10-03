@@ -1,14 +1,17 @@
 package fr.grammalecteandroid.unofficial
 
+import android.graphics.drawable.GradientDrawable
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -33,31 +36,71 @@ class GrammalecteImeService : InputMethodService() {
     private var analysisGeneration = 0
 
     override fun onCreateInputView(): View {
-        val padding =
-            (12 * resources.displayMetrics.density)
-                .toInt()
-
-        val spacing =
-            (8 * resources.displayMetrics.density)
-                .toInt()
+        val density = resources.displayMetrics.density
+        val padding = (12 * density).toInt()
+        val smallSpacing = (6 * density).toInt()
+        val spacing = (10 * density).toInt()
 
         val root =
             LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(
                     padding,
-                    padding,
+                    smallSpacing,
                     padding,
                     padding,
                 )
+
+                setBackgroundColor(
+                    getColor(R.color.surface_background),
+                )
             }
 
-        root.addView(
+        val header =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+            }
+
+        header.addView(
             TextView(this).apply {
                 text = "Grammalecte"
-                textSize = 18f
-                gravity = Gravity.CENTER
+                textSize = 20f
+                setTextColor(
+                    getColor(R.color.surface_text),
+                )
+
+                setTypeface(
+                    typeface,
+                    android.graphics.Typeface.BOLD,
+                )
             },
+            LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f,
+            ),
+        )
+
+        header.addView(
+            Button(this).apply {
+                text = "← Retour clavier"
+                isAllCaps = false
+                minHeight = 0
+                minimumHeight = 0
+
+                setOnClickListener {
+                    returnToPreviousInputMethod()
+                }
+            },
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+
+        root.addView(
+            header,
             matchWrapParams(),
         )
 
@@ -65,22 +108,49 @@ class GrammalecteImeService : InputMethodService() {
             TextView(this).apply {
                 text = "Aucune sélection."
                 textSize = 15f
+                maxLines = 3
+                setTextColor(
+                    getColor(R.color.surface_text),
+                )
+
                 setPadding(
-                    0,
+                    padding,
                     spacing,
-                    0,
+                    padding,
                     spacing,
                 )
+
+                background =
+                    roundedBackground(
+                        radiusDp = 12f,
+                    )
             }
 
         root.addView(
             selectedTextView,
-            matchWrapParams(),
+            LinearLayout
+                .LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ).apply {
+                    topMargin = smallSpacing
+                },
         )
 
         statusView =
             TextView(this).apply {
                 text = "Sélectionnez du texte à corriger."
+                textSize = 14f
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+
+                setPadding(
+                    0,
+                    smallSpacing,
+                    0,
+                    smallSpacing,
+                )
             }
 
         root.addView(
@@ -88,19 +158,10 @@ class GrammalecteImeService : InputMethodService() {
             matchWrapParams(),
         )
 
-        root.addView(
-            Button(this).apply {
-                text = "Analyser la sélection"
-
-                setOnClickListener {
-                    loadSelectionAndAnalyze()
-                }
-            },
-            matchWrapParams(),
-        )
-
         val scrollView =
-            ScrollView(this)
+            ScrollView(this).apply {
+                isFillViewport = false
+            }
 
         issuesLayout =
             LinearLayout(this).apply {
@@ -121,10 +182,16 @@ class GrammalecteImeService : InputMethodService() {
             ),
         )
 
+        val automaticActions =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+            }
+
         applyAllButton =
             Button(this).apply {
                 text = "Tout corriger"
-                isEnabled = false
+                isAllCaps = false
+                visibility = View.GONE
 
                 setOnClickListener {
                     applyAllSuggestions(
@@ -133,15 +200,16 @@ class GrammalecteImeService : InputMethodService() {
                 }
             }
 
-        root.addView(
+        automaticActions.addView(
             applyAllButton,
-            matchWrapParams(),
+            weightedButtonParams(),
         )
 
         applyAllAndReturnButton =
             Button(this).apply {
-                text = "Tout corriger et revenir"
-                isEnabled = false
+                text = "Corriger tout et revenir"
+                isAllCaps = false
+                visibility = View.GONE
 
                 setOnClickListener {
                     applyAllSuggestions(
@@ -150,15 +218,26 @@ class GrammalecteImeService : InputMethodService() {
                 }
             }
 
-        root.addView(
+        automaticActions.addView(
             applyAllAndReturnButton,
+            weightedButtonParams(),
+        )
+
+        root.addView(
+            automaticActions,
             matchWrapParams(),
         )
 
+        val manualActions =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+            }
+
         applyButton =
             Button(this).apply {
-                text = "Appliquer la correction"
-                isEnabled = false
+                text = "Appliquer"
+                isAllCaps = false
+                visibility = View.GONE
 
                 setOnClickListener {
                     applyCorrectedText(
@@ -167,15 +246,16 @@ class GrammalecteImeService : InputMethodService() {
                 }
             }
 
-        root.addView(
+        manualActions.addView(
             applyButton,
-            matchWrapParams(),
+            weightedButtonParams(),
         )
 
         applyAndReturnButton =
             Button(this).apply {
-                text = "Appliquer et revenir au clavier"
-                isEnabled = false
+                text = "Appliquer et revenir"
+                isAllCaps = false
+                visibility = View.GONE
 
                 setOnClickListener {
                     applyCorrectedText(
@@ -184,19 +264,13 @@ class GrammalecteImeService : InputMethodService() {
                 }
             }
 
-        root.addView(
+        manualActions.addView(
             applyAndReturnButton,
-            matchWrapParams(),
+            weightedButtonParams(),
         )
 
         root.addView(
-            Button(this).apply {
-                text = "Revenir au clavier précédent"
-
-                setOnClickListener {
-                    returnToPreviousInputMethod()
-                }
-            },
+            manualActions,
             matchWrapParams(),
         )
 
@@ -309,6 +383,7 @@ class GrammalecteImeService : InputMethodService() {
 
         if (issues.isEmpty()) {
             setApplyAllButtonsEnabled(false)
+
             statusView.text =
                 "Aucune erreur détectée."
 
@@ -329,6 +404,18 @@ class GrammalecteImeService : InputMethodService() {
             ) != text,
         )
 
+        val density =
+            resources.displayMetrics.density
+
+        val cardPadding =
+            (10 * density).toInt()
+
+        val cardSpacing =
+            (8 * density).toInt()
+
+        val chipSpacing =
+            (6 * density).toInt()
+
         issues.forEach { issue ->
             if (
                 issue.start < 0 ||
@@ -344,7 +431,24 @@ class GrammalecteImeService : InputMethodService() {
                     issue.endExclusive,
                 )
 
-            issuesLayout.addView(
+            val card =
+                LinearLayout(this).apply {
+                    orientation = LinearLayout.VERTICAL
+
+                    setPadding(
+                        cardPadding,
+                        cardPadding,
+                        cardPadding,
+                        cardPadding,
+                    )
+
+                    background =
+                        roundedBackground(
+                            radiusDp = 14f,
+                        )
+                }
+
+            card.addView(
                 TextView(this).apply {
                     this.text =
                         buildString {
@@ -362,33 +466,69 @@ class GrammalecteImeService : InputMethodService() {
                         }
 
                     textSize = 15f
-
-                    setPadding(
-                        0,
-                        12,
-                        0,
-                        4,
+                    setTextColor(
+                        getColor(R.color.surface_text),
                     )
                 },
                 matchWrapParams(),
             )
 
             if (issue.suggestions.isEmpty()) {
-                issuesLayout.addView(
+                card.addView(
                     TextView(this).apply {
                         this.text =
                             "Aucune proposition."
+
+                        setTextColor(
+                            getColor(R.color.surface_text_secondary),
+                        )
+
+                        setPadding(
+                            0,
+                            cardSpacing,
+                            0,
+                            0,
+                        )
                     },
                     matchWrapParams(),
                 )
             } else {
+                val horizontalScroll =
+                    HorizontalScrollView(this).apply {
+                        isHorizontalScrollBarEnabled = false
+
+                        setPadding(
+                            0,
+                            cardSpacing,
+                            0,
+                            0,
+                        )
+                    }
+
+                val suggestionsRow =
+                    LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                    }
+
                 issue.suggestions
                     .take(5)
                     .forEach { suggestion ->
-                        issuesLayout.addView(
+                        suggestionsRow.addView(
                             Button(this).apply {
-                                this.text =
-                                    suggestion
+                                this.text = suggestion
+                                isAllCaps = false
+
+                                minWidth = 0
+                                minimumWidth = 0
+                                minHeight = 0
+                                minimumHeight = 0
+
+                                setPadding(
+                                    (16 * density).toInt(),
+                                    (5 * density).toInt(),
+                                    (16 * density).toInt(),
+                                    (5 * density).toInt(),
+                                )
 
                                 setOnClickListener {
                                     applySuggestion(
@@ -397,10 +537,37 @@ class GrammalecteImeService : InputMethodService() {
                                     )
                                 }
                             },
-                            matchWrapParams(),
+                            LinearLayout
+                                .LayoutParams(
+                                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                                ).apply {
+                                    marginEnd = chipSpacing
+                                },
                         )
                     }
+
+                horizontalScroll.addView(
+                    suggestionsRow,
+                    matchWrapParams(),
+                )
+
+                card.addView(
+                    horizontalScroll,
+                    matchWrapParams(),
+                )
             }
+
+            issuesLayout.addView(
+                card,
+                LinearLayout
+                    .LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ).apply {
+                        bottomMargin = cardSpacing
+                    },
+            )
         }
 
         setApplyButtonsEnabled(
@@ -544,13 +711,33 @@ class GrammalecteImeService : InputMethodService() {
     }
 
     private fun setApplyAllButtonsEnabled(enabled: Boolean) {
+        val visibility =
+            if (enabled) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
         applyAllButton.isEnabled = enabled
+        applyAllButton.visibility = visibility
+
         applyAllAndReturnButton.isEnabled = enabled
+        applyAllAndReturnButton.visibility = visibility
     }
 
     private fun setApplyButtonsEnabled(enabled: Boolean) {
+        val visibility =
+            if (enabled) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
         applyButton.isEnabled = enabled
+        applyButton.visibility = visibility
+
         applyAndReturnButton.isEnabled = enabled
+        applyAndReturnButton.visibility = visibility
     }
 
     private fun returnToPreviousInputMethod() {
@@ -575,6 +762,45 @@ class GrammalecteImeService : InputMethodService() {
 
         super.onDestroy()
     }
+
+    private fun themeColor(attribute: Int): Int {
+        val value = TypedValue()
+
+        check(
+            theme.resolveAttribute(
+                attribute,
+                value,
+                true,
+            ),
+        )
+
+        return if (value.resourceId != 0) {
+            getColor(value.resourceId)
+        } else {
+            value.data
+        }
+    }
+
+    private fun roundedBackground(radiusDp: Float): GradientDrawable =
+        GradientDrawable().apply {
+            shape =
+                GradientDrawable.RECTANGLE
+
+            cornerRadius =
+                radiusDp *
+                resources.displayMetrics.density
+
+            setColor(
+                getColor(R.color.surface_card),
+            )
+        }
+
+    private fun weightedButtonParams(): LinearLayout.LayoutParams =
+        LinearLayout.LayoutParams(
+            0,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            1f,
+        )
 
     private fun matchWrapParams(): ViewGroup.LayoutParams =
         LinearLayout.LayoutParams(
