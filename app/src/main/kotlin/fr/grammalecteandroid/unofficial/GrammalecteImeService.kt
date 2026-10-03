@@ -20,11 +20,14 @@ class GrammalecteImeService : InputMethodService() {
     private lateinit var selectedTextView: TextView
     private lateinit var statusView: TextView
     private lateinit var issuesLayout: LinearLayout
+    private lateinit var applyAllButton: Button
+    private lateinit var applyAllAndReturnButton: Button
     private lateinit var applyButton: Button
     private lateinit var applyAndReturnButton: Button
 
     private var workingText = ""
     private var originalSelectedText = ""
+    private var latestIssues: List<GrammarIssue> = emptyList()
 
     private var engine: GrammalecteQuickJsEngine? = null
     private var analysisGeneration = 0
@@ -118,6 +121,40 @@ class GrammalecteImeService : InputMethodService() {
             ),
         )
 
+        applyAllButton =
+            Button(this).apply {
+                text = "Tout corriger"
+                isEnabled = false
+
+                setOnClickListener {
+                    applyAllSuggestions(
+                        returnToPrevious = false,
+                    )
+                }
+            }
+
+        root.addView(
+            applyAllButton,
+            matchWrapParams(),
+        )
+
+        applyAllAndReturnButton =
+            Button(this).apply {
+                text = "Tout corriger et revenir"
+                isEnabled = false
+
+                setOnClickListener {
+                    applyAllSuggestions(
+                        returnToPrevious = true,
+                    )
+                }
+            }
+
+        root.addView(
+            applyAllAndReturnButton,
+            matchWrapParams(),
+        )
+
         applyButton =
             Button(this).apply {
                 text = "Appliquer la correction"
@@ -196,7 +233,9 @@ class GrammalecteImeService : InputMethodService() {
                 "Sélectionnez du texte à corriger."
 
             issuesLayout.removeAllViews()
+            latestIssues = emptyList()
             setApplyButtonsEnabled(false)
+            setApplyAllButtonsEnabled(false)
             return
         }
 
@@ -219,6 +258,8 @@ class GrammalecteImeService : InputMethodService() {
             "Analyse en cours..."
 
         issuesLayout.removeAllViews()
+        latestIssues = emptyList()
+        setApplyAllButtonsEnabled(false)
 
         Thread {
             val result =
@@ -264,8 +305,10 @@ class GrammalecteImeService : InputMethodService() {
     ) {
         selectedTextView.text = text
         issuesLayout.removeAllViews()
+        latestIssues = issues
 
         if (issues.isEmpty()) {
+            setApplyAllButtonsEnabled(false)
             statusView.text =
                 "Aucune erreur détectée."
 
@@ -278,6 +321,13 @@ class GrammalecteImeService : InputMethodService() {
 
         statusView.text =
             "${issues.size} problème(s) détecté(s)."
+
+        setApplyAllButtonsEnabled(
+            buildAutomaticCorrection(
+                text = text,
+                issues = issues,
+            ) != text,
+        )
 
         issues.forEach { issue ->
             if (
@@ -384,6 +434,61 @@ class GrammalecteImeService : InputMethodService() {
         analyzeWorkingText()
     }
 
+    private fun applyAllSuggestions(returnToPrevious: Boolean) {
+        val correctedText =
+            buildAutomaticCorrection(
+                text = workingText,
+                issues = latestIssues,
+            )
+
+        if (correctedText == workingText) {
+            return
+        }
+
+        workingText = correctedText
+        selectedTextView.text = workingText
+
+        if (returnToPrevious) {
+            applyCorrectedText(
+                returnToPrevious = true,
+            )
+        } else {
+            analyzeWorkingText()
+        }
+    }
+
+    private fun buildAutomaticCorrection(
+        text: String,
+        issues: List<GrammarIssue>,
+    ): String {
+        var correctedText = text
+        var boundary = text.length
+
+        issues
+            .asSequence()
+            .filter { issue ->
+                issue.start >= 0 &&
+                    issue.endExclusive <= text.length &&
+                    issue.endExclusive > issue.start &&
+                    issue.suggestions.isNotEmpty()
+            }.sortedByDescending { issue ->
+                issue.start
+            }.forEach { issue ->
+                if (issue.endExclusive <= boundary) {
+                    correctedText =
+                        correctedText.replaceRange(
+                            issue.start,
+                            issue.endExclusive,
+                            issue.suggestions.first(),
+                        )
+
+                    boundary = issue.start
+                }
+            }
+
+        return correctedText
+    }
+
     private fun applyCorrectedText(returnToPrevious: Boolean) {
         if (
             workingText.isEmpty() ||
@@ -422,8 +527,10 @@ class GrammalecteImeService : InputMethodService() {
 
             originalSelectedText = ""
             workingText = ""
+            latestIssues = emptyList()
             issuesLayout.removeAllViews()
             setApplyButtonsEnabled(false)
+            setApplyAllButtonsEnabled(false)
 
             if (returnToPrevious) {
                 mainHandler.post {
@@ -434,6 +541,11 @@ class GrammalecteImeService : InputMethodService() {
             statusView.text =
                 "Impossible d'appliquer la correction."
         }
+    }
+
+    private fun setApplyAllButtonsEnabled(enabled: Boolean) {
+        applyAllButton.isEnabled = enabled
+        applyAllAndReturnButton.isEnabled = enabled
     }
 
     private fun setApplyButtonsEnabled(enabled: Boolean) {
