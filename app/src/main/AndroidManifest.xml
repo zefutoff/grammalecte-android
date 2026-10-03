@@ -15,6 +15,13 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ImePickerActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
             android:name=".ProcessTextActivity"
             android:exported="true"
             android:label="Corriger avec Grammalecte">
@@ -24,6 +31,17 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".GrammalecteTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_qs_grammalecte"
+            android:label="@string/qs_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <service
             android:name=".GrammalecteImeService"
             android:exported="true"

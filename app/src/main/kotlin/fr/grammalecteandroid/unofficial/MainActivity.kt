@@ -1,8 +1,11 @@
 package fr.grammalecteandroid.unofficial
 
 import android.app.Activity
+import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.drawable.Icon
+import android.os.Build
 import android.os.Bundle
 import android.os.LocaleList
 import android.provider.Settings
@@ -20,6 +23,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import java.util.Locale
 
 class MainActivity :
@@ -119,6 +123,16 @@ class MainActivity :
                 text = getString(R.string.choose_ime)
                 setOnClickListener {
                     showInputMethodPicker()
+                }
+            },
+            matchWrapParams(),
+        )
+
+        layout.addView(
+            Button(this).apply {
+                text = getString(R.string.add_qs_tile)
+                setOnClickListener {
+                    requestQuickSettingsTile()
                 }
             },
             matchWrapParams(),
@@ -387,6 +401,59 @@ class MainActivity :
     private fun showInputMethodPicker() {
         getSystemService(InputMethodManager::class.java)
             .showInputMethodPicker()
+    }
+
+    private fun requestQuickSettingsTile() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            Toast
+                .makeText(
+                    this,
+                    R.string.qs_tile_manual_add,
+                    Toast.LENGTH_LONG,
+                ).show()
+            return
+        }
+
+        val manager =
+            getSystemService(StatusBarManager::class.java)
+
+        manager.requestAddTileService(
+            ComponentName(
+                this,
+                GrammalecteTileService::class.java,
+            ),
+            getString(R.string.qs_tile_label),
+            Icon.createWithResource(
+                this,
+                R.drawable.ic_qs_grammalecte,
+            ),
+            mainExecutor,
+        ) { result ->
+            val message =
+                when (result) {
+                    StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED ->
+                        R.string.qs_tile_added
+
+                    StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED ->
+                        R.string.qs_tile_already_added
+
+                    StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_NOT_ADDED ->
+                        R.string.qs_tile_not_added
+
+                    else -> null
+                }
+
+            Toast
+                .makeText(
+                    this,
+                    message?.let(::getString)
+                        ?: getString(
+                            R.string.qs_tile_add_error,
+                            result,
+                        ),
+                    Toast.LENGTH_LONG,
+                ).show()
+        }
     }
 
     private fun openSpellCheckerSettings() {

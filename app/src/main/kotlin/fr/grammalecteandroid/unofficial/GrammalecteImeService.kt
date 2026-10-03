@@ -1,11 +1,13 @@
 package fr.grammalecteandroid.unofficial
 
 import android.inputmethodservice.InputMethodService
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -127,6 +129,17 @@ class GrammalecteImeService : InputMethodService() {
 
         root.addView(
             applyButton,
+            matchWrapParams(),
+        )
+
+        root.addView(
+            Button(this).apply {
+                text = "Revenir au clavier précédent"
+
+                setOnClickListener {
+                    returnToPreviousInputMethod()
+                }
+            },
             matchWrapParams(),
         )
 
@@ -392,6 +405,20 @@ class GrammalecteImeService : InputMethodService() {
         } else {
             statusView.text =
                 "Impossible d'appliquer la correction."
+        }
+    }
+
+    private fun returnToPreviousInputMethod() {
+        val switched =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                switchToPreviousInputMethod()
+            } else {
+                false
+            }
+
+        if (!switched) {
+            getSystemService(InputMethodManager::class.java)
+                .showInputMethodPicker()
         }
     }
 
