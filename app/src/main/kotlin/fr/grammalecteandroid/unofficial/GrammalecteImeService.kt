@@ -21,6 +21,7 @@ class GrammalecteImeService : InputMethodService() {
     private lateinit var statusView: TextView
     private lateinit var issuesLayout: LinearLayout
     private lateinit var applyButton: Button
+    private lateinit var applyAndReturnButton: Button
 
     private var workingText = ""
     private var originalSelectedText = ""
@@ -123,12 +124,31 @@ class GrammalecteImeService : InputMethodService() {
                 isEnabled = false
 
                 setOnClickListener {
-                    applyCorrectedText()
+                    applyCorrectedText(
+                        returnToPrevious = false,
+                    )
                 }
             }
 
         root.addView(
             applyButton,
+            matchWrapParams(),
+        )
+
+        applyAndReturnButton =
+            Button(this).apply {
+                text = "Appliquer et revenir au clavier"
+                isEnabled = false
+
+                setOnClickListener {
+                    applyCorrectedText(
+                        returnToPrevious = true,
+                    )
+                }
+            }
+
+        root.addView(
+            applyAndReturnButton,
             matchWrapParams(),
         )
 
@@ -176,7 +196,7 @@ class GrammalecteImeService : InputMethodService() {
                 "Sélectionnez du texte à corriger."
 
             issuesLayout.removeAllViews()
-            applyButton.isEnabled = false
+            setApplyButtonsEnabled(false)
             return
         }
 
@@ -186,7 +206,7 @@ class GrammalecteImeService : InputMethodService() {
         selectedTextView.text =
             workingText
 
-        applyButton.isEnabled = true
+        setApplyButtonsEnabled(true)
 
         analyzeWorkingText()
     }
@@ -232,7 +252,7 @@ class GrammalecteImeService : InputMethodService() {
                         statusView.text =
                             "Erreur : ${throwable.message ?: throwable.javaClass.simpleName}"
 
-                        applyButton.isEnabled = false
+                        setApplyButtonsEnabled(false)
                     }
             }
         }.start()
@@ -249,8 +269,9 @@ class GrammalecteImeService : InputMethodService() {
             statusView.text =
                 "Aucune erreur détectée."
 
-            applyButton.isEnabled =
-                text != originalSelectedText
+            setApplyButtonsEnabled(
+                text != originalSelectedText,
+            )
 
             return
         }
@@ -332,8 +353,9 @@ class GrammalecteImeService : InputMethodService() {
             }
         }
 
-        applyButton.isEnabled =
-            workingText != originalSelectedText
+        setApplyButtonsEnabled(
+            workingText != originalSelectedText,
+        )
     }
 
     private fun applySuggestion(
@@ -362,7 +384,7 @@ class GrammalecteImeService : InputMethodService() {
         analyzeWorkingText()
     }
 
-    private fun applyCorrectedText() {
+    private fun applyCorrectedText(returnToPrevious: Boolean) {
         if (
             workingText.isEmpty() ||
             workingText == originalSelectedText
@@ -384,7 +406,7 @@ class GrammalecteImeService : InputMethodService() {
             statusView.text =
                 "La sélection a changé. Sélectionnez de nouveau le texte."
 
-            applyButton.isEnabled = false
+            setApplyButtonsEnabled(false)
             return
         }
 
@@ -401,11 +423,22 @@ class GrammalecteImeService : InputMethodService() {
             originalSelectedText = ""
             workingText = ""
             issuesLayout.removeAllViews()
-            applyButton.isEnabled = false
+            setApplyButtonsEnabled(false)
+
+            if (returnToPrevious) {
+                mainHandler.post {
+                    returnToPreviousInputMethod()
+                }
+            }
         } else {
             statusView.text =
                 "Impossible d'appliquer la correction."
         }
+    }
+
+    private fun setApplyButtonsEnabled(enabled: Boolean) {
+        applyButton.isEnabled = enabled
+        applyAndReturnButton.isEnabled = enabled
     }
 
     private fun returnToPreviousInputMethod() {
