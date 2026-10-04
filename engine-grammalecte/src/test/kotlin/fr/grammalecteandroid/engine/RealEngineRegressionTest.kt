@@ -92,6 +92,38 @@ class RealEngineRegressionTest {
                 kind = IssueKind.GRAMMAR,
                 expectedSuggestion = "a",
             )
+
+            assertCorrection(
+                engine = engine,
+                text = "Je suis aller au magasin hier.",
+                fragment = "aller",
+                kind = IssueKind.GRAMMAR,
+                expectedSuggestion = "allé",
+            )
+
+            assertCorrection(
+                engine = engine,
+                text = "Les enfants joue dans le jardin.",
+                fragment = "joue",
+                kind = IssueKind.GRAMMAR,
+                expectedSuggestion = "jouent",
+            )
+
+            assertCorrection(
+                engine = engine,
+                text = "Il a oublier son rendez-vous.",
+                fragment = "oublier",
+                kind = IssueKind.GRAMMAR,
+                expectedSuggestion = "oublié",
+            )
+
+            assertCorrection(
+                engine = engine,
+                text = "Nous sommes arrivé en retard.",
+                fragment = "arrivé",
+                kind = IssueKind.GRAMMAR,
+                expectedSuggestion = "arrivés",
+            )
         }
     }
 
@@ -225,9 +257,7 @@ class RealEngineRegressionTest {
                 ) == fragment
             }
 
-    private fun withEngine(
-        block: (GrammalecteQuickJsEngine) -> Unit,
-    ) {
+    private fun withEngine(block: (GrammalecteQuickJsEngine) -> Unit) {
         val engine =
             GrammalecteQuickJsEngine(
                 FileAssetTextLoader(findAssetRoot()),
