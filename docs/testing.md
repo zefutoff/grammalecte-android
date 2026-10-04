@@ -119,9 +119,9 @@ The `spellchecker` instrumentation suite verifies Android result mapping, includ
 The instrumentation workflow runs:
 
 - API 35 for relevant pull requests;
-- API 30 and API 35 on scheduled/manual runs.
+- API 26, API 30 and API 35 on scheduled/manual runs.
 
-Additional Android-version coverage is still planned, particularly near the minimum supported API.
+API 26 is the current minimum supported Android API. Additional device, ROM and application coverage is still planned.
 
 Future instrumentation should additionally cover:
 

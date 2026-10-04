@@ -1,8 +1,26 @@
 name: Feature request
 description: Propose an improvement to the Android integration
 title: "feat: "
-labels: [enhancement]
+labels:
+  - enhancement
 body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Native SpellCheckerService
+        - ACTION_PROCESS_TEXT
+        - Grammalecte IME / InputConnection
+        - Correction engine
+        - Application UI / onboarding
+        - Compatibility
+        - Build / release engineering
+        - Documentation
+        - Other
+    validations:
+      required: true
+
   - type: textarea
     id: problem
     attributes:
@@ -10,15 +28,34 @@ body:
       description: Describe the user need rather than only the implementation idea.
     validations:
       required: true
+
   - type: textarea
     id: proposal
     attributes:
       label: Proposed behavior
     validations:
       required: true
-  - type: checkboxes
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+
+  - type: dropdown
     id: privacy
     attributes:
       label: Privacy impact
+      description: The current architecture intentionally operates without network access.
       options:
-        - label: This proposal does not require network access or accessibility permissions.
+        - No network access or Accessibility Service required
+        - Would require network access
+        - Would require an Accessibility Service
+        - Unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: privacy_details
+    attributes:
+      label: Privacy details
+      description: Explain any privacy, permission or data-flow implications when relevant.

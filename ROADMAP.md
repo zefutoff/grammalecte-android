@@ -26,7 +26,8 @@
 - [x] Validate Android `SuggestionSpan` integration
 - [x] Confirm local operation without `INTERNET` permission
 - [x] Add an automated packaged-engine smoke test performing real spelling and grammar corrections
-- [ ] Validate behavior explicitly on API 26–30
+- [x] Run automated instrumentation on API 26, API 30 and API 35
+- [ ] Broaden physical-device compatibility validation across older Android versions
 - [ ] Measure cold engine initialization and correction latency
 
 Exit criterion: an installable APK performs local French spelling and grammar correction without network access.
