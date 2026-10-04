@@ -8,14 +8,14 @@ A public release should still be produced only from a clean checkout and after a
 
 1. CI is green on the target commit.
 2. The working tree is clean.
-3. `tools/check-no-network-permission.sh` passes.
+3. `make check` passes.
 4. `tools/check-vendor.sh` passes.
-5. JVM tests pass.
-6. Android lint passes.
-7. Android instrumentation tests pass.
-8. The release APK or AAB is built from the exact tagged commit.
-9. The packaged application is inspected for unexpected permissions.
-10. The application still declares no `android.permission.INTERNET`.
+5. Regenerating the pinned Grammalecte assets produces no Git diff.
+6. Android instrumentation tests pass.
+7. The release APK or AAB is built from the exact tagged commit.
+8. The packaged application is inspected for unexpected permissions.
+9. `tools/check-apk-permissions.sh` confirms that the final APK does not request `android.permission.INTERNET`.
+10. The application still satisfies the documented offline-only invariant.
 11. Real spelling and grammar correction are smoke-tested on a physical device.
 12. `SpellCheckerService`, `PROCESS_TEXT` and IME setup are checked on the target release build.
 13. Third-party notices and licenses are reviewed.
@@ -80,7 +80,7 @@ The following project-level items are still expected before declaring a stable p
 - compatibility matrix;
 - broader Android-version testing;
 - IME instrumentation coverage;
-- automated real-engine correction smoke test;
+- broader end-to-end Android integration coverage for the IME and platform spell-checker paths;
 - signed release pipeline;
 - reproducibility review;
 - final privacy and security review.

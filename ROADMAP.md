@@ -25,7 +25,7 @@
 - [x] Validate native correction in a stock Android `EditText`
 - [x] Validate Android `SuggestionSpan` integration
 - [x] Confirm local operation without `INTERNET` permission
-- [ ] Add an automated APK smoke test performing at least one real correction request
+- [x] Add an automated packaged-engine smoke test performing real spelling and grammar corrections
 - [ ] Validate behavior explicitly on API 26–30
 - [ ] Measure cold engine initialization and correction latency
 
@@ -63,8 +63,8 @@ Exit criterion: an installable APK performs local French spelling and grammar co
 - [x] Validate clean replacement in Samsung Notes
 - [x] Validate clean replacement in Firefox
 - [x] Validate clean replacement in SMS
-- [ ] Add a user-friendly IME activation flow
-- [ ] Add an easy way to return to the previous keyboard
+- [x] Add a basic user-friendly IME activation and selection flow
+- [x] Add an easy way to return to the previous keyboard
 - [ ] Review QuickJS execution serialization inside the IME
 - [ ] Add automated IME integration tests where practical
 

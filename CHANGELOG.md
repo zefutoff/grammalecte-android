@@ -33,6 +33,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Dependabot configuration for Gradle and GitHub Actions dependencies.
 - Issue templates, pull-request template and project documentation.
 - Architecture decision records.
+- Quick Settings access for switching to the Grammalecte correction IME.
+- Apply-and-return workflow for restoring the previous keyboard after correction.
+- Bulk correction actions in the Grammalecte IME.
+- Dark theme support and redesigned application/IME interfaces.
+- Real Grammalecte engine regression tests covering representative French corrections.
+- Android instrumentation coverage for the packaged Grammalecte engine and spell-checker result mapping.
 
 ### Changed
 
@@ -43,6 +49,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `InputMethodService` / `InputConnection` is now the preferred generic fallback for editable fields that bypass native spell checking or ignore `PROCESS_TEXT` replacement.
 - Accessibility-based text replacement is not part of the current architecture.
 - Gradle wrapper updates are maintained manually so the wrapper version, bootstrap script and verified distribution checksum stay synchronized.
+- Local and CI checks now share the same `make check` and `make assemble` entry points.
+- Grammalecte vendoring is normalized and checked for reproducible output.
+- CI verifies the permissions of the final debug APK in addition to source manifests.
 
 ### Fixed
 
