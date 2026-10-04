@@ -68,7 +68,7 @@ Exit criterion: an installable APK performs local French spelling and grammar co
 - [x] Validate clean replacement in SMS
 - [x] Add a basic user-friendly IME activation and selection flow
 - [x] Add an easy way to return to the previous keyboard
-- [ ] Review QuickJS execution serialization inside the IME
+- [x] Review QuickJS execution serialization inside the IME
 - [ ] Add automated IME integration tests where practical
   - [x] Cover IME discovery, permission and metadata
   - [ ] Cover IME lifecycle and selected-text replacement through `InputConnection`
