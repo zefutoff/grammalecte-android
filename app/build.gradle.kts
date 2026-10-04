@@ -70,6 +70,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":engine-grammalecte"))
 
+    androidTestImplementation(project(":engine-grammalecte"))
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)

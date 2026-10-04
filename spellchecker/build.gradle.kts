@@ -31,4 +31,9 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":engine-grammalecte"))
     testImplementation(libs.junit4)
+
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
 }
