@@ -89,6 +89,7 @@ Development requirements:
 - Git;
 - GNU Make;
 - ShellCheck;
+- curl;
 - Node.js 20+.
 
 Python 3.11 is only required when regenerating the vendored Grammalecte assets.

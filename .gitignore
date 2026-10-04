@@ -13,3 +13,6 @@ build/
 
 # Local backup files
 *.bak
+
+# Locally downloaded development tools
+.tools/

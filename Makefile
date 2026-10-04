@@ -11,6 +11,7 @@ vendor:
 check:
 	./tools/check-no-network-permission.sh
 	shellcheck tools/*.sh
+	./tools/run-actionlint.sh
 	node tools/test-js-bridge.mjs
 	$(GRADLE) --no-daemon ktlintCheck :core:test :engine-grammalecte:test :spellchecker:test :app:lintDebug
 

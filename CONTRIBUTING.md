@@ -17,6 +17,7 @@ Requirements:
 - Git;
 - GNU Make;
 - ShellCheck;
+- curl;
 - Node.js 20+.
 
 Python 3.11 is additionally required when regenerating the vendored Grammalecte engine.
