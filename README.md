@@ -1,5 +1,9 @@
 # Grammalecte Android — unofficial
 
+[![CI](https://github.com/zefutoff/grammalecte-android/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/zefutoff/grammalecte-android/actions/workflows/ci.yml)
+[![Android instrumentation](https://github.com/zefutoff/grammalecte-android/actions/workflows/instrumentation.yml/badge.svg?branch=main)](https://github.com/zefutoff/grammalecte-android/actions/workflows/instrumentation.yml)
+[![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
+
 A local, open-source French spelling and grammar checker for Android, powered by [Grammalecte](https://grammalecte.net/).
 
 All correction runs on-device. The application does not request the Android `INTERNET` permission and does not use a cloud API or LLM.
@@ -78,35 +82,46 @@ Regeneration is only required when deliberately updating or rebuilding the vendo
 
 ## Build
 
-Requirements:
+Development requirements:
 
-- JDK 17
-- Android SDK 36
-- Git
-- Node.js 20+ for the JavaScript bridge contract test
-- Python 3.11 when regenerating the Grammalecte assets
+- JDK 17;
+- Android SDK 36 with Android Build Tools;
+- Git;
+- GNU Make;
+- ShellCheck;
+- Node.js 20+.
 
-The Gradle wrapper is committed to the repository.
+Python 3.11 is only required when regenerating the vendored Grammalecte assets.
 
-Run the main checks and build:
+The Gradle wrapper is committed to the repository and is the source of truth for the Gradle version.
 
-    ./gradlew --no-daemon \
-      ktlintCheck \
-      :core:test \
-      :engine-grammalecte:test \
-      :spellchecker:test \
-      :app:lintDebug \
-      :app:assembleDebug
+Run the same quality checks used by CI:
+
+```sh
+make check
+```
+
+Build the debug APK and verify its final permissions:
+
+```sh
+make assemble
+```
 
 The debug APK is generated under:
 
-    app/build/outputs/apk/debug/
+```text
+app/build/outputs/apk/debug/
+```
 
 For development on a connected Android device:
 
-    ./tools/run-android.sh
+```sh
+./tools/run-android.sh
+```
 
 The script builds the debug APK, installs it with ADB and launches the application.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the complete contributor workflow.
 
 ## Activating the native spell checker
 
@@ -142,13 +157,13 @@ Once enabled in Android's keyboard/input-method settings:
 3. review and apply the proposed corrections;
 4. switch back to the usual keyboard.
 
-A more polished activation and keyboard-switching workflow is planned before public distribution.
+Basic activation and keyboard-return workflows are implemented. First-run onboarding and compatibility polish are still planned before public distribution.
 
 ## Privacy invariant
 
 The application intentionally declares **no `android.permission.INTERNET` permission**.
 
-A CI check fails if that permission appears in one of the project manifests.
+CI checks both the source manifests and the final packaged APK, and fails if `android.permission.INTERNET` appears after manifest merging.
 
 This is particularly important for a spell checker or input method because selected or typed text can contain private messages, emails, searches and form data.
 
@@ -193,6 +208,23 @@ The repository contains GitHub Actions workflows for:
 - Android instrumentation tests.
 
 Dependabot monitors project dependencies, while the Gradle wrapper is deliberately updated manually because its version and distribution checksum are kept in sync with the project's bootstrap and CI configuration.
+
+## Contributing
+
+Contributions are welcome.
+
+Useful ways to help include:
+
+- Android compatibility testing across devices, ROMs and applications;
+- Kotlin and Android development;
+- spelling and grammar regression fixtures using synthetic French text;
+- automated tests and CI improvements;
+- documentation and contributor tooling;
+- build reproducibility and release engineering.
+
+For non-trivial changes, open or reference an issue before starting significant work.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development setup, project conventions and validation commands.
 
 ## Project documents
 
