@@ -1,4 +1,4 @@
-GRADLE ?= $(if $(wildcard ./gradlew),./gradlew,gradle)
+GRADLE := ./gradlew
 
 .PHONY: bootstrap vendor check test lint assemble instrumented clean
 
@@ -10,6 +10,7 @@ vendor:
 
 check:
 	./tools/check-no-network-permission.sh
+	shellcheck tools/*.sh
 	node tools/test-js-bridge.mjs
 	$(GRADLE) --no-daemon ktlintCheck :core:test :engine-grammalecte:test :spellchecker:test :app:lintDebug
 
