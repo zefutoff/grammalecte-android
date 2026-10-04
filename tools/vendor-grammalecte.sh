@@ -31,6 +31,34 @@ git -C "$SOURCE_DIR" remote add origin "$GRAMMALECTE_REPOSITORY"
 git -C "$SOURCE_DIR" fetch -q --depth 1 origin "$GRAMMALECTE_COMMIT"
 git -C "$SOURCE_DIR" checkout -q --detach FETCH_HEAD
 
+# Grammalecte 2.3.0 concatenates JavaScript language plugins using
+# os.listdir(), whose order depends on the filesystem. Sort these entries
+# in the temporary upstream checkout so generated assets are reproducible.
+MAKE_PY="$SOURCE_DIR/make.py" python3 - <<'PY_SORT_PLUGINS'
+import os
+from pathlib import Path
+
+path = Path(os.environ["MAKE_PY"])
+text = path.read_text(encoding="utf-8")
+
+old = 'for sf in os.listdir(spLang+"/modules-js"):'
+new = 'for sf in sorted(os.listdir(spLang+"/modules-js")):'
+
+count = text.count(old)
+if count != 2:
+    raise SystemExit(
+        f"Unexpected modules-js os.listdir occurrence count: {count} "
+        "(expected 2)"
+    )
+
+path.write_text(
+    text.replace(old, new),
+    encoding="utf-8",
+)
+
+print("Normalized Grammalecte modules-js iteration order")
+PY_SORT_PLUGINS
+
 (
     cd "$SOURCE_DIR"
     python3 make.py fr -js
