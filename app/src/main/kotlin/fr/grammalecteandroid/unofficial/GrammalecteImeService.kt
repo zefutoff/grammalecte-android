@@ -17,9 +17,14 @@ import android.widget.ScrollView
 import android.widget.TextView
 import fr.grammalecteandroid.core.GrammarIssue
 import fr.grammalecteandroid.engine.GrammalecteQuickJsEngine
+import java.util.concurrent.Executors
 
 class GrammalecteImeService : InputMethodService() {
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val analysisExecutor =
+        Executors.newSingleThreadExecutor { runnable ->
+            Thread(runnable, "GrammalecteImeAnalysis")
+        }
     private lateinit var selectedTextView: TextView
     private lateinit var statusView: TextView
     private lateinit var issuesLayout: LinearLayout
@@ -32,7 +37,10 @@ class GrammalecteImeService : InputMethodService() {
     private var originalSelectedText = ""
     private var latestIssues: List<GrammarIssue> = emptyList()
 
+    // The engine is created, used and closed only on analysisExecutor.
     private var engine: GrammalecteQuickJsEngine? = null
+
+    @Volatile
     private var analysisGeneration = 0
 
     override fun onCreateInputView(): View {
@@ -335,7 +343,11 @@ class GrammalecteImeService : InputMethodService() {
         latestIssues = emptyList()
         setApplyAllButtonsEnabled(false)
 
-        Thread {
+        analysisExecutor.execute {
+            if (generation != analysisGeneration) {
+                return@execute
+            }
+
             val result =
                 runCatching {
                     val currentEngine =
@@ -370,7 +382,7 @@ class GrammalecteImeService : InputMethodService() {
                         setApplyButtonsEnabled(false)
                     }
             }
-        }.start()
+        }
     }
 
     private fun renderIssues(
@@ -757,8 +769,11 @@ class GrammalecteImeService : InputMethodService() {
     override fun onDestroy() {
         analysisGeneration++
 
-        engine?.close()
-        engine = null
+        analysisExecutor.execute {
+            engine?.close()
+            engine = null
+        }
+        analysisExecutor.shutdown()
 
         super.onDestroy()
     }
