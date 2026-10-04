@@ -32,20 +32,11 @@ jobs:
         with:
           cache-provider: basic
 
-      - name: Check privacy invariant
-        run: ./tools/check-no-network-permission.sh
+      - name: Run project checks
+        run: make check
 
-      - name: Check shell scripts
-        run: shellcheck tools/*.sh
-
-      - name: Test JavaScript bridge contract
-        run: node tools/test-js-bridge.mjs
-
-      - name: Kotlin formatting and unit tests
-        run: ./gradlew --no-daemon ktlintCheck :core:test :engine-grammalecte:test :spellchecker:test
-
-      - name: Android lint and debug build
-        run: ./gradlew --no-daemon :app:lintDebug :app:assembleDebug
+      - name: Build debug APK
+        run: make assemble
 
       - name: Upload debug APK
         if: always()
