@@ -40,6 +40,59 @@ rm -rf "$ASSET_DIR"
 mkdir -p "$ASSET_DIR"
 cp -a "$SOURCE_DIR/grammalecte-js/." "$ASSET_DIR/"
 
+# Grammalecte's dictionary builder embeds the current build time and serializes
+# a Python set directly into l2grams. Both make otherwise identical builds
+# differ between executions. Normalize those fields so vendored assets are
+# reproducible from the pinned upstream commit.
+GRAMMALECTE_SOURCE_DATE_EPOCH="$(git -C "$SOURCE_DIR" show -s --format=%ct HEAD)"
+
+ASSET_DIR="$ASSET_DIR" \
+GRAMMALECTE_SOURCE_DATE_EPOCH="$GRAMMALECTE_SOURCE_DATE_EPOCH" \
+python3 - <<'PY_NORMALIZE'
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+
+root = Path(os.environ["ASSET_DIR"])
+dictionary_dir = root / "graphspell" / "_dictionaries"
+
+build_date = datetime.fromtimestamp(
+    int(os.environ["GRAMMALECTE_SOURCE_DATE_EPOCH"]),
+    tz=timezone.utc,
+).strftime("%Y-%m-%d %H:%M:%S")
+
+normalized = []
+
+for path in sorted(dictionary_dir.glob("*.json")):
+    data = json.loads(path.read_text(encoding="utf-8"))
+
+    changed = False
+
+    if "sDate" in data:
+        data["sDate"] = build_date
+        changed = True
+
+    if isinstance(data.get("l2grams"), list):
+        data["l2grams"] = sorted(data["l2grams"])
+        changed = True
+
+    if changed:
+        path.write_text(
+            json.dumps(data, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        normalized.append(path.name)
+
+if not normalized:
+    raise SystemExit("No Grammalecte dictionaries were normalized")
+
+print(
+    "Normalized reproducible dictionary metadata: "
+    + ", ".join(normalized)
+)
+PY_NORMALIZE
+
 # QuickJS does not implement the deprecated non-standard RegExp.leftContext
 # property used by Grammalecte's generated JavaScript. Replace it with the
 # standard equivalent based on the current match index.

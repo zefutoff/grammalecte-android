@@ -8,7 +8,9 @@ on:
     paths:
       - 'tools/grammalecte.env'
       - 'tools/vendor-grammalecte.sh'
+      - 'tools/check-vendor.sh'
       - 'engine-grammalecte/**'
+      - 'third_party/grammalecte/**'
       - '.github/workflows/engine-smoke.yml'
 
 permissions:
@@ -39,11 +41,20 @@ jobs:
         with:
           cache-provider: basic
 
+      - name: Verify committed upstream metadata
+        run: ./tools/check-vendor.sh
+
       - name: Generate pinned Grammalecte assets
         run: ./tools/vendor-grammalecte.sh
 
-      - name: Verify upstream stamp
+      - name: Verify regenerated upstream metadata
         run: ./tools/check-vendor.sh
+
+      - name: Verify vendored assets are reproducible
+        run: |
+          git diff --exit-code -- \
+            engine-grammalecte/src/main/assets/grammalecte \
+            third_party/grammalecte
 
       - name: Build with embedded engine
         run: ./gradlew --no-daemon :engine-grammalecte:test :app:assembleDebug
