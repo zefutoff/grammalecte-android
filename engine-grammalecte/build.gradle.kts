@@ -56,6 +56,16 @@ configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configu
     }
 }
 
+tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+    systemProperty(
+        "grammalecte.perf",
+        providers
+            .gradleProperty("grammalectePerf")
+            .orElse("0")
+            .get(),
+    )
+}
+
 dependencies {
     implementation(project(":core"))
     implementation(libs.quickjs)

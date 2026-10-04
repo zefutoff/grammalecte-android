@@ -28,7 +28,7 @@
 - [x] Add an automated packaged-engine smoke test performing real spelling and grammar corrections
 - [x] Run automated instrumentation on API 26, API 30 and API 35
 - [ ] Broaden physical-device compatibility validation across older Android versions
-- [ ] Measure cold engine initialization and correction latency
+- [x] Measure cold engine initialization and correction latency
 
 Exit criterion: an installable APK performs local French spelling and grammar correction without network access.
 

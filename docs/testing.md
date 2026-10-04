@@ -190,13 +190,30 @@ Use short synthetic French sentences designed to isolate one behavior.
 
 ## Performance tests
 
-Performance coverage is still planned.
+An opt-in JVM characterization test measures the real embedded QuickJS/Grammalecte engine without adding unstable timing requirements to normal CI.
 
-Useful measurements include:
+Run it with:
 
-- cold QuickJS/Grammalecte initialization;
-- median sentence analysis latency;
-- 95th percentile paragraph analysis latency;
+    ./gradlew \
+      :engine-grammalecte:testDebugUnitTest \
+      --tests '*EnginePerformanceCharacterizationTest*' \
+      -PgrammalectePerf=1 \
+      --rerun-tasks \
+      --no-daemon
+
+The initial development baseline measured:
+
+- cold first correction: approximately 808 ms;
+- sentence median: approximately 13.5 ms;
+- sentence p95: approximately 15.6 ms;
+- paragraph median: approximately 30.9 ms;
+- paragraph p95: approximately 35.7 ms.
+
+These measurements characterize the JVM development environment and are not Android-device performance guarantees.
+
+Future performance work should additionally cover:
+
+- cold initialization on representative physical Android devices;
 - memory use after repeated corrections;
 - rapid repeated IME analyses.
 
