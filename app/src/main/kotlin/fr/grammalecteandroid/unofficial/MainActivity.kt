@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
@@ -12,7 +14,9 @@ import android.provider.Settings
 import android.text.InputType
 import android.text.style.SuggestionSpan
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import android.view.textservice.SentenceSuggestionsInfo
 import android.view.textservice.SpellCheckerSession
@@ -22,6 +26,7 @@ import android.view.textservice.TextServicesManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import java.util.Locale
@@ -32,6 +37,8 @@ class MainActivity :
     private lateinit var resultView: TextView
     private lateinit var systemEditText: EditText
     private lateinit var imeStatusView: TextView
+    private lateinit var spellCheckerStatusView: TextView
+    private lateinit var diagnosticsContainer: LinearLayout
     private var spellCheckerSession: SpellCheckerSession? = null
 
     private val testText = "Je sui aller au magazin hier."
@@ -39,42 +46,193 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val padding = (24 * resources.displayMetrics.density).toInt()
-        val spacing = (12 * resources.displayMetrics.density).toInt()
+        val density = resources.displayMetrics.density
+        val padding = (20 * density).toInt()
+        val spacing = (12 * density).toInt()
+        val smallSpacing = (6 * density).toInt()
 
-        val layout =
+        val content =
             LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
-                gravity = Gravity.CENTER_HORIZONTAL
-                setPadding(padding, padding, padding, padding)
+
+                setPadding(
+                    padding,
+                    padding,
+                    padding,
+                    padding,
+                )
+
+                setBackgroundColor(
+                    getColor(R.color.surface_background),
+                )
             }
 
-        layout.addView(
+        content.addView(
             TextView(this).apply {
                 text = getString(R.string.title)
-                textSize = 26f
+                textSize = 28f
+
+                setTypeface(
+                    typeface,
+                    Typeface.BOLD,
+                )
+
+                setTextColor(
+                    getColor(R.color.surface_text),
+                )
             },
             matchWrapParams(),
         )
 
-        layout.addView(
+        content.addView(
             TextView(this).apply {
-                text = getString(R.string.intro)
-                textSize = 17f
-                setPadding(0, spacing, 0, spacing)
+                text =
+                    "Correction française locale avec Grammalecte. " +
+                    "Aucun texte n'est envoyé sur Internet."
+
+                textSize = 15f
+
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+
+                setPadding(
+                    0,
+                    smallSpacing,
+                    0,
+                    spacing,
+                )
             },
             matchWrapParams(),
         )
 
-        layout.addView(
+        content.addView(
+            sectionTitle(
+                "Configuration",
+            ),
+            matchWrapParams(),
+        )
+
+        spellCheckerStatusView =
             TextView(this).apply {
-                text = getString(R.string.setup_steps)
-                textSize = 16f
-            },
+                textSize = 14f
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+            }
+
+        content.addView(
+            createCard(
+                title = "Correcteur Android",
+                description =
+                    "Intègre Grammalecte au correcteur orthographique " +
+                        "natif des applications compatibles.",
+                statusView = spellCheckerStatusView,
+                actions =
+                    listOf(
+                        "Configurer" to {
+                            openSpellCheckerSettings()
+                        },
+                    ),
+            ),
+            cardParams(spacing),
+        )
+
+        imeStatusView =
+            TextView(this).apply {
+                textSize = 14f
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+            }
+
+        content.addView(
+            createCard(
+                title = "Correction rapide",
+                description =
+                    "Permet de corriger une sélection dans les applications " +
+                        "qui n'utilisent pas le correcteur Android.",
+                statusView = imeStatusView,
+                actions =
+                    listOf(
+                        "Gérer la méthode de saisie" to {
+                            openInputMethodSettings()
+                        },
+                        "Choisir Grammalecte" to {
+                            showInputMethodPicker()
+                        },
+                    ),
+            ),
+            cardParams(spacing),
+        )
+
+        content.addView(
+            createCard(
+                title = "Accès rapide",
+                description =
+                    "Ajoutez Grammalecte aux réglages rapides pour ouvrir " +
+                        "le sélecteur de clavier depuis n'importe quelle application.",
+                statusView = null,
+                actions =
+                    listOf(
+                        "Ajouter la tuile" to {
+                            requestQuickSettingsTile()
+                        },
+                    ),
+            ),
+            cardParams(spacing),
+        )
+
+        content.addView(
+            sectionTitle(
+                "Diagnostics",
+            ),
+            LinearLayout
+                .LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ).apply {
+                    topMargin = spacing
+                },
+        )
+
+        diagnosticsContainer =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                visibility = View.GONE
+            }
+
+        val diagnosticsButton =
+            Button(this).apply {
+                text = "Afficher les diagnostics"
+                isAllCaps = false
+
+                setOnClickListener {
+                    val show =
+                        diagnosticsContainer.visibility != View.VISIBLE
+
+                    diagnosticsContainer.visibility =
+                        if (show) {
+                            View.VISIBLE
+                        } else {
+                            View.GONE
+                        }
+
+                    text =
+                        if (show) {
+                            "Masquer les diagnostics"
+                        } else {
+                            "Afficher les diagnostics"
+                        }
+                }
+            }
+
+        content.addView(
+            diagnosticsButton,
             matchWrapParams(),
         )
 
-        layout.addView(
+        diagnosticsContainer.addView(
             TextView(this).apply {
                 text =
                     getString(
@@ -84,63 +242,27 @@ class MainActivity :
                             R.string.engine_status_missing
                         },
                     )
+
                 textSize = 14f
-                setPadding(0, spacing, 0, spacing)
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+
+                setPadding(
+                    0,
+                    smallSpacing,
+                    0,
+                    smallSpacing,
+                )
             },
             matchWrapParams(),
         )
 
-        layout.addView(
-            Button(this).apply {
-                text = getString(R.string.open_settings)
-                setOnClickListener {
-                    openSpellCheckerSettings()
-                }
-            },
-            matchWrapParams(),
-        )
-
-        imeStatusView =
-            TextView(this).apply {
-                textSize = 14f
-                setPadding(0, spacing, 0, spacing)
-            }
-
-        layout.addView(imeStatusView, matchWrapParams())
-
-        layout.addView(
-            Button(this).apply {
-                text = getString(R.string.enable_ime)
-                setOnClickListener {
-                    openInputMethodSettings()
-                }
-            },
-            matchWrapParams(),
-        )
-
-        layout.addView(
-            Button(this).apply {
-                text = getString(R.string.choose_ime)
-                setOnClickListener {
-                    showInputMethodPicker()
-                }
-            },
-            matchWrapParams(),
-        )
-
-        layout.addView(
-            Button(this).apply {
-                text = getString(R.string.add_qs_tile)
-                setOnClickListener {
-                    requestQuickSettingsTile()
-                }
-            },
-            matchWrapParams(),
-        )
-
-        layout.addView(
+        diagnosticsContainer.addView(
             Button(this).apply {
                 text = "Tester Grammalecte"
+                isAllCaps = false
+
                 setOnClickListener {
                     runSpellCheckerTest()
                 }
@@ -155,6 +277,7 @@ class MainActivity :
                 textSize = 18f
                 minLines = 4
                 gravity = Gravity.TOP
+
                 inputType =
                     InputType.TYPE_CLASS_TEXT or
                     InputType.TYPE_TEXT_FLAG_MULTI_LINE or
@@ -163,31 +286,47 @@ class MainActivity :
 
                 setText(testText)
                 setSelection(text.length)
-                setPadding(0, spacing, 0, spacing)
+
+                setPadding(
+                    0,
+                    spacing,
+                    0,
+                    spacing,
+                )
             }
 
-        layout.addView(systemEditText, matchWrapParams())
+        diagnosticsContainer.addView(
+            systemEditText,
+            matchWrapParams(),
+        )
 
-        layout.addView(
+        diagnosticsContainer.addView(
             Button(this).apply {
                 text = "Tester dans un champ Android"
+                isAllCaps = false
+
                 setOnClickListener {
                     systemEditText.requestFocus()
-                    systemEditText.setSelection(systemEditText.text.length)
+                    systemEditText.setSelection(
+                        systemEditText.text.length,
+                    )
 
-                    getSystemService(InputMethodManager::class.java)
-                        .showSoftInput(
-                            systemEditText,
-                            InputMethodManager.SHOW_IMPLICIT,
-                        )
+                    getSystemService(
+                        InputMethodManager::class.java,
+                    ).showSoftInput(
+                        systemEditText,
+                        InputMethodManager.SHOW_IMPLICIT,
+                    )
                 }
             },
             matchWrapParams(),
         )
 
-        layout.addView(
+        diagnosticsContainer.addView(
             Button(this).apply {
                 text = "Inspecter les corrections Android"
+                isAllCaps = false
+
                 setOnClickListener {
                     inspectSuggestionSpans()
                 }
@@ -198,13 +337,73 @@ class MainActivity :
         resultView =
             TextView(this).apply {
                 text = "Test : $testText"
-                textSize = 16f
-                setPadding(0, spacing, 0, 0)
+                textSize = 15f
+
+                setTextColor(
+                    getColor(R.color.surface_text),
+                )
+
+                setPadding(
+                    0,
+                    spacing,
+                    0,
+                    0,
+                )
             }
 
-        layout.addView(resultView, matchWrapParams())
+        diagnosticsContainer.addView(
+            resultView,
+            matchWrapParams(),
+        )
 
-        setContentView(layout)
+        content.addView(
+            diagnosticsContainer,
+            matchWrapParams(),
+        )
+
+        val scrollView =
+            ScrollView(this).apply {
+                isFillViewport = true
+
+                addView(
+                    content,
+                    matchWrapParams(),
+                )
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    setOnApplyWindowInsetsListener { view, insets ->
+                        val topInset: Int
+                        val bottomInset: Int
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            val systemBars =
+                                insets.getInsets(
+                                    WindowInsets.Type.systemBars(),
+                                )
+
+                            topInset = systemBars.top
+                            bottomInset = systemBars.bottom
+                        } else {
+                            @Suppress("DEPRECATION")
+                            topInset = insets.systemWindowInsetTop
+
+                            @Suppress("DEPRECATION")
+                            bottomInset = insets.systemWindowInsetBottom
+                        }
+
+                        view.setPadding(
+                            0,
+                            topInset,
+                            0,
+                            bottomInset,
+                        )
+
+                        insets
+                    }
+                }
+            }
+
+        setContentView(scrollView)
     }
 
     private fun runSpellCheckerTest() {
@@ -362,6 +561,7 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
+        updateSpellCheckerStatus()
         updateImeStatus()
     }
 
@@ -369,6 +569,31 @@ class MainActivity :
         spellCheckerSession?.close()
         spellCheckerSession = null
         super.onDestroy()
+    }
+
+    private fun updateSpellCheckerStatus() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            spellCheckerStatusView.text =
+                "Statut non disponible sur cette version d’Android. " +
+                "Vérifiez le correcteur dans les paramètres système."
+            return
+        }
+
+        val manager =
+            getSystemService(TextServicesManager::class.java)
+
+        val current =
+            manager.currentSpellCheckerInfo
+
+        val selected =
+            current?.packageName == packageName
+
+        spellCheckerStatusView.text =
+            if (selected) {
+                "Activé comme correcteur Android."
+            } else {
+                "Non sélectionné comme correcteur Android."
+            }
     }
 
     private fun updateImeStatus() {
@@ -486,6 +711,134 @@ class MainActivity :
             assets.open("grammalecte/fr/gc_engine.js").close()
             true
         }.getOrDefault(false)
+
+    private fun sectionTitle(text: String): TextView =
+        TextView(this).apply {
+            this.text = text
+            textSize = 18f
+
+            setTypeface(
+                typeface,
+                Typeface.BOLD,
+            )
+
+            setTextColor(
+                getColor(R.color.surface_text),
+            )
+
+            setPadding(
+                0,
+                8,
+                0,
+                8,
+            )
+        }
+
+    private fun createCard(
+        title: String,
+        description: String,
+        statusView: TextView?,
+        actions: List<Pair<String, () -> Unit>>,
+    ): LinearLayout {
+        val density =
+            resources.displayMetrics.density
+
+        val padding =
+            (14 * density).toInt()
+
+        val spacing =
+            (8 * density).toInt()
+
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+
+            setPadding(
+                padding,
+                padding,
+                padding,
+                padding,
+            )
+
+            background =
+                GradientDrawable().apply {
+                    shape =
+                        GradientDrawable.RECTANGLE
+
+                    cornerRadius =
+                        14f * density
+
+                    setColor(
+                        getColor(R.color.surface_card),
+                    )
+                }
+
+            addView(
+                TextView(this@MainActivity).apply {
+                    text = title
+                    textSize = 17f
+
+                    setTypeface(
+                        typeface,
+                        Typeface.BOLD,
+                    )
+
+                    setTextColor(
+                        getColor(R.color.surface_text),
+                    )
+                },
+                matchWrapParams(),
+            )
+
+            addView(
+                TextView(this@MainActivity).apply {
+                    text = description
+                    textSize = 14f
+
+                    setTextColor(
+                        getColor(R.color.surface_text_secondary),
+                    )
+
+                    setPadding(
+                        0,
+                        spacing,
+                        0,
+                        spacing,
+                    )
+                },
+                matchWrapParams(),
+            )
+
+            statusView?.let {
+                addView(
+                    it,
+                    matchWrapParams(),
+                )
+            }
+
+            actions.forEach { (label, action) ->
+                addView(
+                    Button(this@MainActivity).apply {
+                        text = label
+                        isAllCaps = false
+
+                        setOnClickListener {
+                            action()
+                        }
+                    },
+                    matchWrapParams(),
+                )
+            }
+        }
+    }
+
+    private fun cardParams(bottomMargin: Int): LinearLayout.LayoutParams =
+        LinearLayout
+            .LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                this.bottomMargin = bottomMargin
+            }
 
     private fun matchWrapParams(): ViewGroup.LayoutParams =
         LinearLayout.LayoutParams(
