@@ -21,23 +21,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.11'
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle 9.6.1
-        uses: gradle/actions/setup-gradle@v6
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@07d1f8453baaff67fb503883367f8b13e6158a54 # v6
         with:
-          gradle-version: '9.6.1'
           cache-provider: basic
 
       - name: Generate pinned Grammalecte assets
@@ -47,4 +46,4 @@ jobs:
         run: ./tools/check-vendor.sh
 
       - name: Build with embedded engine
-        run: gradle --no-daemon :engine-grammalecte:test :app:assembleDebug
+        run: ./gradlew --no-daemon :engine-grammalecte:test :app:assembleDebug
