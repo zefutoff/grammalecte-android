@@ -22,6 +22,7 @@ lint:
 
 assemble:
 	$(GRADLE) --no-daemon :app:assembleDebug
+	./tools/check-apk-permissions.sh app/build/outputs/apk/debug/app-debug.apk
 
 instrumented:
 	$(GRADLE) --no-daemon :app:connectedDebugAndroidTest
