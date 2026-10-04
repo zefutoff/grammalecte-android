@@ -16,3 +16,6 @@ build/
 
 # Locally downloaded development tools
 .tools/
+
+# Local Kotlin project cache
+.kotlin/
