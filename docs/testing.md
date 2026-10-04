@@ -103,7 +103,11 @@ Current application-level instrumentation verifies that:
 - the real packaged engine performs grammar correction;
 - returned UTF-16 ranges remain correct with emoji before an issue;
 - the spell-checker service is discoverable;
-- the spell-checker service is protected by `android.permission.BIND_TEXT_SERVICE`.
+- the spell-checker service is protected by `android.permission.BIND_TEXT_SERVICE`;
+- the IME is discoverable and protected by `android.permission.BIND_INPUT_METHOD`;
+- the IME exposes the expected `android.view.im` metadata;
+- the `ACTION_PROCESS_TEXT` activity is discoverable for `text/plain`;
+- a real Android `TextServicesManager` session reaches the packaged `SpellCheckerService` and returns a Grammalecte correction end to end.
 
 The `spellchecker` instrumentation suite verifies Android result mapping, including:
 
@@ -125,11 +129,8 @@ API 26 is the current minimum supported Android API. Additional device, ROM and 
 
 Future instrumentation should additionally cover:
 
-- IME discovery and `android.permission.BIND_INPUT_METHOD`;
-- IME metadata and lifecycle behavior;
-- `ACTION_PROCESS_TEXT` exposure;
-- end-to-end `SpellCheckerService` requests where practical;
-- IME selected-text replacement where practical.
+- IME lifecycle behavior;
+- IME selected-text replacement through a real `InputConnection` where practical.
 
 ## 6. Build and privacy checks
 
