@@ -80,8 +80,7 @@ class GrammalecteSpellCheckerService : SpellCheckerService() {
             }
         }
 
-        override fun getSupportedAttributes(): Int =
-            SpellCheckerResultMapper.supportedAttributes()
+        override fun getSupportedAttributes(): Int = SpellCheckerResultMapper.supportedAttributes()
     }
 
     private fun logEngineFailure(error: Throwable) {

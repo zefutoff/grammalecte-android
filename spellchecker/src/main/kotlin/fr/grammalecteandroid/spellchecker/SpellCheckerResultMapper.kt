@@ -121,9 +121,7 @@ internal object SpellCheckerResultMapper {
             }
     }
 
-    private fun typoFlags(
-        hasSuggestions: Boolean,
-    ): Int =
+    private fun typoFlags(hasSuggestions: Boolean): Int =
         SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_TYPO or
             if (hasSuggestions) {
                 SuggestionsInfo.RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS

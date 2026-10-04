@@ -94,9 +94,7 @@ class GrammalecteEngineInstrumentedTest {
         }
     }
 
-    private fun withEngine(
-        block: (GrammalecteQuickJsEngine) -> Unit,
-    ) {
+    private fun withEngine(block: (GrammalecteQuickJsEngine) -> Unit) {
         val context =
             ApplicationProvider.getApplicationContext<Context>()
 
