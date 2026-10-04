@@ -104,6 +104,30 @@ When updating it:
 
 The vendored output must remain reproducible.
 
+## Dependency updates
+
+Gradle dependency verification is enabled and the trusted SHA-256 checksums
+are stored in `gradle/verification-metadata.xml`.
+
+When a Gradle dependency is added or updated:
+
+1. use JDK 17;
+2. update the dependency declaration or review the Dependabot change;
+3. run `make refresh-verification-metadata`;
+4. inspect the `gradle/verification-metadata.xml` diff and verify that every
+   newly trusted artifact belongs to the intended dependency graph;
+5. run `make check` and `make assemble`;
+6. commit the dependency change and verification metadata together.
+
+Do not blindly accept newly generated checksums. Dependency verification is a
+supply-chain control, so additions to the trust metadata must be reviewed.
+
+A Dependabot Gradle pull request may initially fail CI until its new artifacts
+have been deliberately added to `gradle/verification-metadata.xml`.
+
+The Gradle wrapper remains a separate manual update because its distribution
+SHA-256 and bootstrap script must stay synchronized.
+
 ## Formatting
 
 Kotlin formatting is enforced by ktlint.

@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check test lint assemble instrumented clean
+.PHONY: bootstrap vendor check test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -27,6 +27,17 @@ assemble:
 
 instrumented:
 	$(GRADLE) --no-daemon :app:connectedDebugAndroidTest
+
+refresh-verification-metadata:
+	$(GRADLE) --no-daemon --refresh-dependencies --write-verification-metadata sha256 \
+		ktlintCheck \
+		:core:test \
+		:engine-grammalecte:test \
+		:spellchecker:test \
+		:app:lintDebug \
+		:app:assembleDebug \
+		:spellchecker:assembleDebugAndroidTest \
+		:app:assembleDebugAndroidTest
 
 clean:
 	$(GRADLE) --no-daemon clean
