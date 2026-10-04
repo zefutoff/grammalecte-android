@@ -31,29 +31,24 @@ class GrammalecteEngineInstrumentedTest {
     }
 
     @Test
-    fun realPackagedEngineChecksSpelling() {
+    fun realPackagedEngineChecksSpellingAndGrammar() {
+        val text = "🙂 Je suis aller au magasin."
+
         withEngine { engine ->
-            val result =
+            val wordResult =
                 engine.checkWord(
                     word = "magazin",
                     localeTag = "fr-FR",
                     suggestionLimit = 8,
                 )
 
-            assertFalse(result.valid)
+            assertFalse(wordResult.valid)
 
             assertTrue(
-                "Expected «magasin» in ${result.suggestions}",
-                "magasin" in result.suggestions,
+                "Expected «magasin» in ${wordResult.suggestions}",
+                "magasin" in wordResult.suggestions,
             )
-        }
-    }
 
-    @Test
-    fun realPackagedEngineChecksGrammarAndKeepsUtf16Offsets() {
-        val text = "🙂 Je suis aller au magasin."
-
-        withEngine { engine ->
             val issues =
                 engine.check(
                     text = text,
