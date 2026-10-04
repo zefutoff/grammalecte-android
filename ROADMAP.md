@@ -39,6 +39,7 @@ Exit criterion: an installable APK performs local French spelling and grammar co
 - [x] Validate native Android text fields
 - [x] Validate SMS editing
 - [x] Identify applications that bypass the Android spell-checker framework
+- [x] Add an end-to-end Android framework test for `SpellCheckerService`
 - [ ] Build and publish a reproducible compatibility matrix
 - [ ] Test additional messaging and mail applications
 - [ ] Test additional Chromium/WebView editors
@@ -53,6 +54,7 @@ Exit criterion: an installable APK performs local French spelling and grammar co
 - [x] Copy corrected text when the caller exposes a read-only selection
 - [x] Validate the workflow in Firefox
 - [x] Identify applications that ignore returned `PROCESS_TEXT` replacement
+- [x] Add automated `ACTION_PROCESS_TEXT` exposure coverage
 
 ### IME / InputConnection fallback
 
@@ -68,6 +70,8 @@ Exit criterion: an installable APK performs local French spelling and grammar co
 - [x] Add an easy way to return to the previous keyboard
 - [ ] Review QuickJS execution serialization inside the IME
 - [ ] Add automated IME integration tests where practical
+  - [x] Cover IME discovery, permission and metadata
+  - [ ] Cover IME lifecycle and selected-text replacement through `InputConnection`
 
 Accessibility-based replacement remains intentionally out of scope. The IME/InputConnection path is the preferred generic fallback for editable fields.
 

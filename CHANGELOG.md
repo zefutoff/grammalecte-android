@@ -39,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Dark theme support and redesigned application/IME interfaces.
 - Real Grammalecte engine regression tests covering representative French corrections.
 - Android instrumentation coverage for the packaged Grammalecte engine and spell-checker result mapping.
+- Android framework integration tests covering IME discovery, `PROCESS_TEXT` exposure and end-to-end `SpellCheckerService` requests.
 - Opt-in real-engine performance characterization for cold start, sentence analysis and paragraph analysis.
 
 ### Changed
