@@ -69,9 +69,9 @@ Exit criterion: an installable APK performs local French spelling and grammar co
 - [x] Add a basic user-friendly IME activation and selection flow
 - [x] Add an easy way to return to the previous keyboard
 - [x] Review QuickJS execution serialization inside the IME
-- [ ] Add automated IME integration tests where practical
+- [x] Add automated IME integration tests where practical
   - [x] Cover IME discovery, permission and metadata
-  - [ ] Cover IME lifecycle and selected-text replacement through `InputConnection`
+  - [x] Cover IME lifecycle and selected-text replacement through `InputConnection`
 
 Accessibility-based replacement remains intentionally out of scope. The IME/InputConnection path is the preferred generic fallback for editable fields.
 
