@@ -108,6 +108,7 @@ Current application-level instrumentation verifies that:
 - the IME exposes the expected `android.view.im` metadata;
 - the IME can be enabled and selected through Android's input-method framework;
 - a real editable `EditText` exposes selected text to the IME through a real `InputConnection`;
+- a selection made after the IME is already open triggers a fresh Grammalecte analysis;
 - the Grammalecte IME can analyze that selection and commit corrected text back into the real editor;
 - the `ACTION_PROCESS_TEXT` activity is discoverable for `text/plain`;
 - a real Android `TextServicesManager` session reaches the packaged `SpellCheckerService` and returns a Grammalecte correction end to end.

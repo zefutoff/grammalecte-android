@@ -56,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Grammalecte vendoring is normalized and checked for reproducible output.
 - CI verifies the permissions of the final debug APK in addition to source manifests.
 - IME analysis now uses a single serialized background worker so QuickJS engine creation, evaluation and shutdown cannot race during rapid repeated corrections or service destruction.
+- The IME now reacts to selection changes while it is already open, allowing text selected after switching keyboards to be analyzed automatically.
 
 ### Fixed
 

@@ -17,7 +17,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ImeInputConnectionEndToEndTest {
     @Test
-    fun imeReplacesSelectedTextThroughRealInputConnection() {
+    fun imeRefreshesLateSelectionAndReplacesItThroughRealInputConnection() {
         val instrumentation =
             InstrumentationRegistry.getInstrumentation()
 
@@ -70,7 +70,6 @@ class ImeInputConnectionEndToEndTest {
                         activity.editor.requestFocus()
 
                         activity.editor.setSelection(
-                            0,
                             INITIAL_TEXT.length,
                         )
 
@@ -122,13 +121,28 @@ class ImeInputConnectionEndToEndTest {
 
                     SystemClock.sleep(IME_SWITCH_DELAY_MILLIS)
 
+                    requireNotNull(
+                        waitForNode(
+                            NO_SELECTION_LABEL,
+                        ),
+                    ) {
+                        "Expected Grammalecte IME to start without a selection"
+                    }
+
+                    scenario.onActivity { activity ->
+                        activity.editor.setSelection(
+                            0,
+                            INITIAL_TEXT.length,
+                        )
+                    }
+
                     val button =
                         requireNotNull(
                             waitForNode(
                                 CORRECT_AND_RETURN_LABEL,
                             ),
                         ) {
-                            "Expected Grammalecte IME correction action"
+                            "Expected Grammalecte IME to refresh the late selection"
                         }
 
                     assertTrue(
@@ -323,6 +337,9 @@ class ImeInputConnectionEndToEndTest {
 
         const val EXPECTED_TEXT =
             "Je suis allé au magasin hier."
+
+        const val NO_SELECTION_LABEL =
+            "Aucune sélection."
 
         const val CORRECT_AND_RETURN_LABEL =
             "Corriger tout et revenir"
