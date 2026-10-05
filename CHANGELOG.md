@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Real Grammalecte engine regression tests covering representative French corrections.
 - Android instrumentation coverage for the packaged Grammalecte engine and spell-checker result mapping.
 - Android framework integration tests covering IME discovery, `PROCESS_TEXT` exposure and end-to-end `SpellCheckerService` requests.
+- End-to-end IME instrumentation covering Android IME selection, a real editable `InputConnection` and selected-text replacement.
 - Opt-in real-engine performance characterization for cold start, sentence analysis and paragraph analysis.
 
 ### Changed

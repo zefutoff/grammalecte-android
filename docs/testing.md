@@ -106,6 +106,9 @@ Current application-level instrumentation verifies that:
 - the spell-checker service is protected by `android.permission.BIND_TEXT_SERVICE`;
 - the IME is discoverable and protected by `android.permission.BIND_INPUT_METHOD`;
 - the IME exposes the expected `android.view.im` metadata;
+- the IME can be enabled and selected through Android's input-method framework;
+- a real editable `EditText` exposes selected text to the IME through a real `InputConnection`;
+- the Grammalecte IME can analyze that selection and commit corrected text back into the real editor;
 - the `ACTION_PROCESS_TEXT` activity is discoverable for `text/plain`;
 - a real Android `TextServicesManager` session reaches the packaged `SpellCheckerService` and returns a Grammalecte correction end to end.
 
@@ -126,11 +129,6 @@ The instrumentation workflow runs:
 - API 26, API 30 and API 35 on scheduled/manual runs.
 
 API 26 is the current minimum supported Android API. Additional device, ROM and application coverage is still planned.
-
-Future instrumentation should additionally cover:
-
-- IME lifecycle behavior;
-- IME selected-text replacement through a real `InputConnection` where practical.
 
 ## 6. Build and privacy checks
 
@@ -160,6 +158,8 @@ Development testing on a physical Android device has validated real local Gramma
 - native Android text fields with `SpellCheckerService`;
 - `ACTION_PROCESS_TEXT`;
 - the Grammalecte IME through `InputConnection`.
+
+The end-to-end IME instrumentation test has also been validated on a physical Samsung Galaxy S21 running Android 15. It uses a debug-only editable test activity, switches to the Grammalecte IME through Android's input-method framework, selects synthetic text, performs a real correction and verifies the resulting editor contents.
 
 The IME replacement path has been manually validated in:
 
