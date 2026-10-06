@@ -66,6 +66,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - French spell-checker subtype configuration on Android devices whose primary system locale is not French.
 - CI JavaScript bridge test stubs to match the real Grammalecte initialization contract.
 - Android API 26 compatibility in the IME by avoiding the API 28-only `mainExecutor`.
+- IME selected-text reads no longer block the UI thread on slow `InputConnection` implementations such as Android WebView.
+- IME replacement now tracks and restores the analyzed selection range before committing corrected text, while rejecting stale selections.
 
 ### Validated manually
 

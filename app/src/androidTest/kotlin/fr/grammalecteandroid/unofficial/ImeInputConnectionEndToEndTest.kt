@@ -123,13 +123,23 @@ class ImeInputConnectionEndToEndTest {
 
                     requireNotNull(
                         waitForNode(
-                            NO_SELECTION_LABEL,
+                            IME_TITLE_LABEL,
                         ),
                     ) {
-                        "Expected Grammalecte IME to start without a selection"
+                        "Expected Grammalecte IME to be visible before late selection"
                     }
 
                     scenario.onActivity { activity ->
+                        assertEquals(
+                            INITIAL_TEXT.length,
+                            activity.editor.selectionStart,
+                        )
+
+                        assertEquals(
+                            INITIAL_TEXT.length,
+                            activity.editor.selectionEnd,
+                        )
+
                         activity.editor.setSelection(
                             0,
                             INITIAL_TEXT.length,
@@ -338,8 +348,8 @@ class ImeInputConnectionEndToEndTest {
         const val EXPECTED_TEXT =
             "Je suis allé au magasin hier."
 
-        const val NO_SELECTION_LABEL =
-            "Aucune sélection."
+        const val IME_TITLE_LABEL =
+            "Grammalecte"
 
         const val CORRECT_AND_RETURN_LABEL =
             "Corriger tout et revenir"

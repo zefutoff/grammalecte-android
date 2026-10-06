@@ -25,8 +25,13 @@ class GrammalecteImeService : InputMethodService() {
     private val selectionRefreshRunnable =
         Runnable {
             if (::selectedTextView.isInitialized) {
-                loadSelectionAndAnalyze()
+                requestSelectionAndAnalyze()
             }
+        }
+
+    private val selectionExecutor =
+        Executors.newSingleThreadExecutor { runnable ->
+            Thread(runnable, "GrammalecteImeSelection")
         }
 
     private val analysisExecutor =
@@ -45,8 +50,16 @@ class GrammalecteImeService : InputMethodService() {
     private var originalSelectedText = ""
     private var latestIssues: List<GrammarIssue> = emptyList()
 
+    private var latestSelectionStart = -1
+    private var latestSelectionEnd = -1
+    private var analyzedSelectionStart = -1
+    private var analyzedSelectionEnd = -1
+
     // The engine is created, used and closed only on analysisExecutor.
     private var engine: GrammalecteQuickJsEngine? = null
+
+    @Volatile
+    private var selectionRequestGeneration = 0
 
     @Volatile
     private var analysisGeneration = 0
@@ -306,7 +319,30 @@ class GrammalecteImeService : InputMethodService() {
             selectionRefreshRunnable,
         )
 
-        loadSelectionAndAnalyze()
+        selectionRequestGeneration++
+
+        updateLatestSelection(
+            info?.initialSelStart ?: -1,
+            info?.initialSelEnd ?: -1,
+        )
+
+        val initialSelectedText =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                info
+                    ?.getInitialSelectedText(0)
+                    ?.toString()
+            } else {
+                null
+            }
+
+        if (initialSelectedText != null) {
+            applySelectedTextAndAnalyze(
+                initialSelectedText,
+            )
+        } else {
+            clearSelectionState()
+            requestSelectionAndAnalyze()
+        }
     }
 
     override fun onUpdateSelection(
@@ -333,9 +369,28 @@ class GrammalecteImeService : InputMethodService() {
             return
         }
 
+        selectionRequestGeneration++
+
+        updateLatestSelection(
+            newSelStart,
+            newSelEnd,
+        )
+
         mainHandler.removeCallbacks(
             selectionRefreshRunnable,
         )
+
+        if (
+            newSelStart < 0 ||
+            newSelEnd < 0 ||
+            newSelStart == newSelEnd
+        ) {
+            if (::selectedTextView.isInitialized) {
+                clearSelectionState()
+            }
+
+            return
+        }
 
         mainHandler.postDelayed(
             selectionRefreshRunnable,
@@ -343,31 +398,49 @@ class GrammalecteImeService : InputMethodService() {
         )
     }
 
-    private fun loadSelectionAndAnalyze() {
-        val selectedText =
+    private fun requestSelectionAndAnalyze() {
+        val inputConnection =
             currentInputConnection
-                ?.getSelectedText(0)
-                ?.toString()
-                .orEmpty()
+                ?: run {
+                    clearSelectionState()
+                    return
+                }
 
+        val requestGeneration =
+            ++selectionRequestGeneration
+
+        selectionExecutor.execute {
+            val selectedText =
+                runCatching {
+                    inputConnection
+                        .getSelectedText(0)
+                        ?.toString()
+                        .orEmpty()
+                }.getOrDefault("")
+
+            mainHandler.post {
+                if (
+                    requestGeneration != selectionRequestGeneration ||
+                    !::selectedTextView.isInitialized
+                ) {
+                    return@post
+                }
+
+                applySelectedTextAndAnalyze(
+                    selectedText,
+                )
+            }
+        }
+    }
+
+    private fun applySelectedTextAndAnalyze(selectedText: String) {
         if (selectedText.isEmpty()) {
-            analysisGeneration++
-
-            originalSelectedText = ""
-            workingText = ""
-
-            selectedTextView.text =
-                "Aucune sélection."
-
-            statusView.text =
-                "Sélectionnez du texte à corriger."
-
-            issuesLayout.removeAllViews()
-            latestIssues = emptyList()
-            setApplyButtonsEnabled(false)
-            setApplyAllButtonsEnabled(false)
+            clearSelectionState()
             return
         }
+
+        analyzedSelectionStart = latestSelectionStart
+        analyzedSelectionEnd = latestSelectionEnd
 
         originalSelectedText = selectedText
         workingText = selectedText
@@ -378,6 +451,40 @@ class GrammalecteImeService : InputMethodService() {
         setApplyButtonsEnabled(true)
 
         analyzeWorkingText()
+    }
+
+    private fun clearSelectionState() {
+        analysisGeneration++
+
+        originalSelectedText = ""
+        workingText = ""
+        analyzedSelectionStart = -1
+        analyzedSelectionEnd = -1
+
+        selectedTextView.text =
+            "Aucune sélection."
+
+        statusView.text =
+            "Sélectionnez du texte à corriger."
+
+        issuesLayout.removeAllViews()
+        latestIssues = emptyList()
+        setApplyButtonsEnabled(false)
+        setApplyAllButtonsEnabled(false)
+    }
+
+    private fun updateLatestSelection(
+        start: Int,
+        end: Int,
+    ) {
+        if (start < 0 || end < 0) {
+            latestSelectionStart = -1
+            latestSelectionEnd = -1
+            return
+        }
+
+        latestSelectionStart = minOf(start, end)
+        latestSelectionEnd = maxOf(start, end)
     }
 
     private fun analyzeWorkingText() {
@@ -728,15 +835,37 @@ class GrammalecteImeService : InputMethodService() {
             currentInputConnection
                 ?: return
 
-        val currentSelection =
-            inputConnection
-                .getSelectedText(0)
-                ?.toString()
-                .orEmpty()
+        if (
+            analyzedSelectionStart < 0 ||
+            analyzedSelectionEnd <= analyzedSelectionStart
+        ) {
+            statusView.text =
+                "La sélection n'est plus disponible."
 
-        if (currentSelection != originalSelectedText) {
+            setApplyButtonsEnabled(false)
+            return
+        }
+
+        if (
+            latestSelectionStart != analyzedSelectionStart ||
+            latestSelectionEnd != analyzedSelectionEnd
+        ) {
             statusView.text =
                 "La sélection a changé. Sélectionnez de nouveau le texte."
+
+            setApplyButtonsEnabled(false)
+            return
+        }
+
+        val selectionRestored =
+            inputConnection.setSelection(
+                analyzedSelectionStart,
+                analyzedSelectionEnd,
+            )
+
+        if (!selectionRestored) {
+            statusView.text =
+                "Impossible de restaurer la sélection."
 
             setApplyButtonsEnabled(false)
             return
@@ -819,7 +948,10 @@ class GrammalecteImeService : InputMethodService() {
             selectionRefreshRunnable,
         )
 
+        selectionRequestGeneration++
         analysisGeneration++
+
+        selectionExecutor.shutdown()
 
         analysisExecutor.execute {
             engine?.close()

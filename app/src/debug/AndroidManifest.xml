@@ -4,5 +4,9 @@
         <activity
             android:name=".ImeIntegrationTestActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".WebViewCompatibilityTestActivity"
+            android:exported="true" />
     </application>
 </manifest>
