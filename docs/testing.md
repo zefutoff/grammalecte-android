@@ -162,11 +162,17 @@ Development testing on a physical Android device has validated real local Gramma
 
 The end-to-end IME instrumentation test has also been validated on a physical Samsung Galaxy S21 running Android 15. It uses a debug-only editable test activity, switches to the Grammalecte IME through Android's input-method framework, selects synthetic text, performs a real correction and verifies the resulting editor contents.
 
+
+A debug-only `WebViewCompatibilityTestActivity` provides a local `android.webkit.WebView` fixture containing a synthetic editable `<textarea>`. It is used to reproduce editor-specific `InputConnection`, selection and `PROCESS_TEXT` behavior without relying on an external website or network access.
+
+Physical WebView validation also checks that potentially slow selected-text reads do not block the IME UI and that the analyzed selection range can be restored before committing corrected text.
+
 The IME replacement path has been manually validated in:
 
 - Samsung Notes;
 - Firefox;
-- SMS editing.
+- SMS editing;
+- Android System WebView.
 
 These checks are development validation, not a complete compatibility matrix.
 
