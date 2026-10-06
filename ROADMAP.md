@@ -40,9 +40,9 @@ Exit criterion: an installable APK performs local French spelling and grammar co
 - [x] Validate SMS editing
 - [x] Identify applications that bypass the Android spell-checker framework
 - [x] Add an end-to-end Android framework test for `SpellCheckerService`
-- [ ] Build and publish a reproducible compatibility matrix
-- [ ] Test additional messaging and mail applications
-- [ ] Test additional Chromium/WebView editors
+- [x] Build and publish a reproducible compatibility matrix
+- [x] Test additional messaging and mail applications
+- [x] Test additional Chromium/WebView editors
 
 ### PROCESS_TEXT fallback
 
@@ -93,7 +93,7 @@ Exit criterion: correction remains usable in common editable applications even w
 - [ ] Explain the three correction modes in-app
 - [ ] Improve accessibility of the application UI
 - [ ] Review all user-facing French strings
-- [ ] Add compatibility documentation
+- [x] Add compatibility documentation
 - [ ] Add performance regression tests
 - [ ] Add memory/runtime stress tests
 
