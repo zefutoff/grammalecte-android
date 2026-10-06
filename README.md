@@ -49,7 +49,7 @@ Manual development tests have successfully applied real Grammalecte corrections 
 - Samsung Notes;
 - Firefox text fields.
 
-Compatibility testing is still ongoing.
+Compatibility testing is documented in the reproducible [compatibility matrix](docs/compatibility.md), including application versions, Android environment details and the integration path tested.
 
 ## Architecture
 
@@ -236,6 +236,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development setup, project conventi
 - [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 - [`docs/architecture.md`](docs/architecture.md)
 - [`docs/testing.md`](docs/testing.md)
+- [`docs/compatibility.md`](docs/compatibility.md)
 - [`docs/release.md`](docs/release.md)
 - [`docs/adr/`](docs/adr/)
 
