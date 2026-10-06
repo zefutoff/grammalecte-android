@@ -21,6 +21,14 @@ import java.util.concurrent.Executors
 
 class GrammalecteImeService : InputMethodService() {
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    private val selectionRefreshRunnable =
+        Runnable {
+            if (::selectedTextView.isInitialized) {
+                loadSelectionAndAnalyze()
+            }
+        }
+
     private val analysisExecutor =
         Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "GrammalecteImeAnalysis")
@@ -294,7 +302,45 @@ class GrammalecteImeService : InputMethodService() {
             restarting,
         )
 
+        mainHandler.removeCallbacks(
+            selectionRefreshRunnable,
+        )
+
         loadSelectionAndAnalyze()
+    }
+
+    override fun onUpdateSelection(
+        oldSelStart: Int,
+        oldSelEnd: Int,
+        newSelStart: Int,
+        newSelEnd: Int,
+        candidatesStart: Int,
+        candidatesEnd: Int,
+    ) {
+        super.onUpdateSelection(
+            oldSelStart,
+            oldSelEnd,
+            newSelStart,
+            newSelEnd,
+            candidatesStart,
+            candidatesEnd,
+        )
+
+        if (
+            oldSelStart == newSelStart &&
+            oldSelEnd == newSelEnd
+        ) {
+            return
+        }
+
+        mainHandler.removeCallbacks(
+            selectionRefreshRunnable,
+        )
+
+        mainHandler.postDelayed(
+            selectionRefreshRunnable,
+            SELECTION_REFRESH_DELAY_MILLIS,
+        )
     }
 
     private fun loadSelectionAndAnalyze() {
@@ -305,6 +351,8 @@ class GrammalecteImeService : InputMethodService() {
                 .orEmpty()
 
         if (selectedText.isEmpty()) {
+            analysisGeneration++
+
             originalSelectedText = ""
             workingText = ""
 
@@ -767,6 +815,10 @@ class GrammalecteImeService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        mainHandler.removeCallbacks(
+            selectionRefreshRunnable,
+        )
+
         analysisGeneration++
 
         analysisExecutor.execute {
@@ -809,6 +861,10 @@ class GrammalecteImeService : InputMethodService() {
                 getColor(R.color.surface_card),
             )
         }
+
+    private companion object {
+        const val SELECTION_REFRESH_DELAY_MILLIS = 150L
+    }
 
     private fun weightedButtonParams(): LinearLayout.LayoutParams =
         LinearLayout.LayoutParams(
