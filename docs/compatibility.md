@@ -59,10 +59,24 @@ not to exhaustively validate Grammalecte's linguistic behavior.
 | Security patch | 2026-01-01 |
 | Android System WebView | 154.0.8037.57 (803705703) |
 
+### Android 8.0 emulator
+
+| Field | Value |
+| --- | --- |
+| Environment | Android Virtual Device (`grammalecte-api26`) |
+| Manufacturer | Google |
+| Model | Android SDK built for x86 |
+| Android | 8.0.0 |
+| API | 26 |
+| Build ID | OSR1.180418.026 |
+| Security patch | 2018-04-05 |
+| WebView provider | Chrome 69.0.3497.100 (349710017) |
+
 ## Compatibility matrix
 
 | Device / Android | Application | Version (code) | Grammalecte build | SpellCheckerService | PROCESS_TEXT | IME / InputConnection | Notes |
 | --- | --- | --- | --- | :---: | :---: | :---: | --- |
+| Android SDK built for x86 / Android 8.0 (API 26, AVD) | Android System WebView (Chrome provider) | 69.0.3497.100 (349710017) | `a04dc56` | ❌ | ⚠️ | ✅ | The API 26 AVD exposed no native spell-checker feedback in the local WebView fixture; PROCESS_TEXT was offered and Grammalecte produced a correction, but WebView did not apply the returned replacement; IME correction works, including when the text is selected after the Grammalecte IME is already open. Returning from the Grammalecte IME opens Android's input-method picker on API 26. |
 | SM-G998B / Android 15 | Samsung Notes | 4.4.45.37 (444537000) | `6c0dde2` | ❌ | ⚠️ | ⚠️ | Grammalecte was explicitly selected as the system spell checker, but Samsung Notes exposed no native suggestion UI; PROCESS_TEXT falls back to the clipboard instead of replacing the selection; IME replacement succeeds, but Samsung Notes keeps a stale red underline even after focus changes and further text edits. |
 | SM-G998B / Android 15 | Firefox | 157.0 (2016186455) | `6c0dde2` | ❌ | ⚠️ | ✅ | Grammalecte was explicitly selected as the system spell checker, but Firefox did not invoke native spell-checker UI for the tested field; PROCESS_TEXT copies corrected text to the clipboard without replacing the source selection automatically; IME replacement works correctly. |
 | SM-G998B / Android 15 | Samsung Messages | 16.0.10.49 (1601000049) | `6c0dde2` | ❌ | ⚠️ | ✅ | Grammalecte SpellCheckerService was explicitly selected but no native suggestion UI was exposed; PROCESS_TEXT appends corrected text after the original selection instead of replacing it; IME replacement works correctly. |
@@ -125,3 +139,7 @@ A result describes only the tested combination of:
 
 Compatibility claims should identify the integration path that was actually
 observed rather than infer support from another path.
+
+Emulator results provide Android-version coverage but do not replace
+physical-device validation. Roadmap items that explicitly require physical
+devices remain open until they have been tested on real hardware.
