@@ -8,13 +8,17 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
+import fr.grammalecteandroid.engine.GrammalecteDictionary
 import fr.grammalecteandroid.engine.GrammalecteQuickJsEngine
 import fr.grammalecteandroid.engine.GrammalecteRuleOption
 import java.util.concurrent.Executors
@@ -32,10 +36,13 @@ class RuleSettingsActivity : Activity() {
         }
 
     private lateinit var statusView: TextView
+    private lateinit var dictionaryGroup: RadioGroup
     private lateinit var optionsContainer: LinearLayout
     private lateinit var resetButton: Button
 
     private var engine: GrammalecteQuickJsEngine? = null
+    private var selectedDictionary =
+        GrammalecteDictionary.ALL_VARIANTS
 
     @Volatile
     private var destroyed = false
@@ -79,7 +86,7 @@ class RuleSettingsActivity : Activity() {
 
         header.addView(
             TextView(this).apply {
-                text = "Règles de correction"
+                text = "Réglages de correction"
                 textSize = 24f
 
                 setTypeface(
@@ -121,9 +128,9 @@ class RuleSettingsActivity : Activity() {
         content.addView(
             TextView(this).apply {
                 text =
-                    "Choisissez les contrôles Grammalecte à appliquer. " +
-                    "Les réglages sont utilisés par le correcteur Android, " +
-                    "la correction de sélection et le clavier Grammalecte."
+                    "Choisissez le dictionnaire et les contrôles Grammalecte " +
+                    "à appliquer. Les réglages sont partagés par le correcteur " +
+                    "Android, la correction de sélection et le clavier Grammalecte."
 
                 textSize = 14f
 
@@ -138,6 +145,64 @@ class RuleSettingsActivity : Activity() {
                     spacing,
                 )
             },
+            matchWrapParams(),
+        )
+
+        content.addView(
+            sectionTitle(
+                "Dictionnaire",
+            ),
+            matchWrapParams(),
+        )
+
+        content.addView(
+            TextView(this).apply {
+                text =
+                    "Choisissez les graphies françaises reconnues " +
+                    "par le correcteur orthographique."
+
+                textSize = 14f
+
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+
+                setPadding(
+                    0,
+                    0,
+                    0,
+                    smallSpacing,
+                )
+            },
+            matchWrapParams(),
+        )
+
+        dictionaryGroup =
+            RadioGroup(this).apply {
+                orientation = RadioGroup.VERTICAL
+
+                setPadding(
+                    spacing,
+                    smallSpacing,
+                    spacing,
+                    smallSpacing,
+                )
+
+                background =
+                    roundedBackground(
+                        radiusDp = 14f,
+                    )
+            }
+
+        content.addView(
+            dictionaryGroup,
+            matchWrapParams(),
+        )
+
+        content.addView(
+            sectionTitle(
+                "Règles de correction",
+            ),
             matchWrapParams(),
         )
 
@@ -245,16 +310,20 @@ class RuleSettingsActivity : Activity() {
 
     private fun loadOptions() {
         statusView.text =
-            "Chargement des règles..."
+            "Chargement des réglages..."
 
         resetButton.isEnabled = false
+        dictionaryGroup.removeAllViews()
         optionsContainer.removeAllViews()
 
         executor.execute {
             val result =
                 runCatching {
-                    currentEngine()
-                        .ruleOptions()
+                    val currentEngine =
+                        currentEngine()
+
+                    currentEngine.selectedDictionary() to
+                        currentEngine.ruleOptions()
                 }
 
             mainHandler.post {
@@ -263,12 +332,130 @@ class RuleSettingsActivity : Activity() {
                 }
 
                 result
-                    .onSuccess { options ->
+                    .onSuccess { (dictionary, options) ->
+                        renderDictionary(dictionary)
                         renderOptions(options)
                     }.onFailure { error ->
                         showError(error)
                     }
             }
+        }
+    }
+
+    private fun renderDictionary(dictionary: GrammalecteDictionary) {
+        selectedDictionary =
+            dictionary
+
+        dictionaryGroup.removeAllViews()
+
+        addDictionaryOption(
+            dictionary = GrammalecteDictionary.ALL_VARIANTS,
+            label = "Toutes variantes",
+            description =
+                "Accepte les graphies classiques et celles issues " +
+                    "des rectifications de 1990.",
+        )
+
+        addDictionaryOption(
+            dictionary = GrammalecteDictionary.CLASSIC,
+            label = "Orthographe classique",
+            description =
+                "Utilise les graphies traditionnelles.",
+        )
+
+        addDictionaryOption(
+            dictionary = GrammalecteDictionary.REFORM_1990,
+            label = "Réforme de 1990",
+            description =
+                "Utilise les graphies issues des rectifications " +
+                    "orthographiques de 1990.",
+        )
+    }
+
+    private fun addDictionaryOption(
+        dictionary: GrammalecteDictionary,
+        label: String,
+        description: String,
+    ) {
+        val spacing =
+            (6 * resources.displayMetrics.density).toInt()
+
+        dictionaryGroup.addView(
+            RadioButton(this).apply {
+                id = View.generateViewId()
+
+                text =
+                    buildString {
+                        append(label)
+                        append("\n")
+                        append(description)
+                    }
+
+                textSize = 15f
+                isChecked =
+                    dictionary == selectedDictionary
+
+                setTextColor(
+                    getColor(R.color.surface_text),
+                )
+
+                setPadding(
+                    0,
+                    spacing,
+                    0,
+                    spacing,
+                )
+
+                setOnClickListener {
+                    if (dictionary != selectedDictionary) {
+                        saveDictionary(dictionary)
+                    }
+                }
+            },
+            matchWrapParams(),
+        )
+    }
+
+    private fun saveDictionary(dictionary: GrammalecteDictionary) {
+        setDictionaryControlsEnabled(false)
+
+        statusView.text =
+            "Changement de dictionnaire..."
+
+        executor.execute {
+            val result =
+                runCatching {
+                    currentEngine()
+                        .setDictionary(dictionary)
+                }
+
+            mainHandler.post {
+                if (destroyed) {
+                    return@post
+                }
+
+                result
+                    .onSuccess {
+                        selectedDictionary =
+                            dictionary
+
+                        setDictionaryControlsEnabled(true)
+
+                        statusView.text =
+                            "Dictionnaire enregistré."
+                    }.onFailure { error ->
+                        showError(error)
+                        loadOptions()
+                    }
+            }
+        }
+    }
+
+    private fun setDictionaryControlsEnabled(enabled: Boolean) {
+        for (index in 0 until dictionaryGroup.childCount) {
+            dictionaryGroup
+                .getChildAt(index)
+                .isEnabled = enabled
         }
     }
 

@@ -168,14 +168,14 @@ class MainActivity :
 
         content.addView(
             createCard(
-                title = "Règles de correction",
+                title = "Réglages de correction",
                 description =
-                    "Activez ou désactivez les catégories et contrôles " +
+                    "Choisissez le dictionnaire et les contrôles " +
                         "Grammalecte utilisés dans les analyses.",
                 statusView = null,
                 actions =
                     listOf(
-                        "Configurer les règles" to {
+                        "Configurer" to {
                             startActivity(
                                 Intent(
                                     this@MainActivity,

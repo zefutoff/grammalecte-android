@@ -203,6 +203,97 @@ class RealEngineSmokeTest {
     }
 
     @Test
+    fun bundledDictionaryVariantsCanBeSelected() {
+        val engine =
+            GrammalecteQuickJsEngine(
+                FileAssetTextLoader(findAssetRoot()),
+            )
+
+        try {
+            GrammalecteDictionary.entries
+                .forEach { dictionary ->
+                    engine.setDictionary(dictionary)
+
+                    assertEquals(
+                        dictionary,
+                        engine.selectedDictionary(),
+                    )
+
+                    assertFalse(
+                        "Expected magazin to remain invalid with $dictionary",
+                        engine
+                            .checkWord(
+                                word = "magazin",
+                                localeTag = "fr-FR",
+                                suggestionLimit = 8,
+                            ).valid,
+                    )
+                }
+        } finally {
+            engine.close()
+        }
+    }
+
+    @Test
+    fun dictionaryVariantsApplyExpectedOrthographies() {
+        val engine =
+            GrammalecteQuickJsEngine(
+                FileAssetTextLoader(findAssetRoot()),
+            )
+
+        fun isValid(word: String): Boolean =
+            engine
+                .checkWord(
+                    word = word,
+                    localeTag = "fr-FR",
+                    suggestionLimit = 5,
+                ).valid
+
+        try {
+            engine.setDictionary(
+                GrammalecteDictionary.ALL_VARIANTS,
+            )
+
+            assertTrue(isValid("coût"))
+            assertTrue(isValid("cout"))
+            assertTrue(isValid("week-end"))
+            assertTrue(isValid("weekend"))
+
+            engine.setDictionary(
+                GrammalecteDictionary.CLASSIC,
+            )
+
+            assertTrue(isValid("coût"))
+            assertFalse(isValid("cout"))
+            assertTrue(isValid("week-end"))
+            assertFalse(isValid("weekend"))
+
+            engine.setDictionary(
+                GrammalecteDictionary.REFORM_1990,
+            )
+
+            assertFalse(isValid("coût"))
+            assertTrue(isValid("cout"))
+            assertFalse(isValid("week-end"))
+            assertTrue(isValid("weekend"))
+
+            engine.resetDictionary()
+
+            assertEquals(
+                GrammalecteDictionary.ALL_VARIANTS,
+                engine.selectedDictionary(),
+            )
+
+            assertTrue(isValid("coût"))
+            assertTrue(isValid("cout"))
+            assertTrue(isValid("week-end"))
+            assertTrue(isValid("weekend"))
+        } finally {
+            engine.close()
+        }
+    }
+
+    @Test
     fun concurrentCallsShareRuntimeSafely() {
         val engine =
             GrammalecteQuickJsEngine(

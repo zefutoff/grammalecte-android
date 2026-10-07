@@ -45,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Reproducible Android application compatibility matrix with a helper for collecting device, Android and application-version metadata.
 - Grammalecte rule-option engine API exposing upstream rule groups, French labels, current/default states, option updates and reset support.
 - Persistent in-app Grammalecte rule settings shared by the native spell checker, PROCESS_TEXT workflow and correction IME.
+- Persistent dictionary selection between all variants, classic orthography and the 1990 reform, shared by all correction modes.
 
 ### Changed
 

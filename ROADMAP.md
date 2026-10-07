@@ -80,7 +80,7 @@ Exit criterion: correction remains usable in common editable applications even w
 ## Phase 3 — User controls
 
 - [x] Grammalecte rule-category settings
-- [ ] Dictionary choice: all variants / classic / 1990 reform
+- [x] Dictionary choice: all variants / classic / 1990 reform
 - [ ] Personal dictionary
 - [ ] Reset-to-default controls
 - [ ] Import/export of non-sensitive preferences

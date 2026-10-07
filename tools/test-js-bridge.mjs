@@ -40,7 +40,23 @@ globalThis.mfsp = {
   }
 };
 
+let loadedMainDictionary = null;
+let dictionaryStorageClearCount = 0;
+
 const fakeSpellChecker = {
+  setMainDictionary(dictionary, path) {
+    loadedMainDictionary = {
+      dictionary,
+      path
+    };
+
+    return true;
+  },
+
+  clearStorage() {
+    dictionaryStorageClearCount += 1;
+  },
+
   isValid(word) {
     return word === "correct";
   },
@@ -280,6 +296,38 @@ assert.equal(
     globalThis.__grammalecteAndroid.ruleOptions()
   ).find((option) => option.id === "infi").enabled,
   true
+);
+
+assert.equal(
+  globalThis.__grammalecteAndroid.setDictionary(
+    "fr-classic.json"
+  ),
+  "true"
+);
+
+assert.deepEqual(
+  loadedMainDictionary,
+  {
+    dictionary: "fr-classic.json",
+    path: "grammalecte/graphspell/_dictionaries"
+  }
+);
+
+assert.equal(
+  dictionaryStorageClearCount,
+  1
+);
+
+assert.equal(
+  globalThis.__grammalecteAndroid.setDictionary(
+    "not-a-dictionary.json"
+  ),
+  "false"
+);
+
+assert.equal(
+  dictionaryStorageClearCount,
+  1
 );
 
 console.log("JavaScript bridge contract OK");

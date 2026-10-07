@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.grammalecteandroid.core.IssueKind
+import fr.grammalecteandroid.engine.GrammalecteDictionary
+import fr.grammalecteandroid.engine.GrammalecteDictionaryPreferences
 import fr.grammalecteandroid.engine.GrammalecteQuickJsEngine
 import fr.grammalecteandroid.engine.GrammalecteRulePreferences
 import org.junit.Assert.assertEquals
@@ -140,6 +142,83 @@ class GrammalecteEngineInstrumentedTest {
             assertTrue(
                 "Expected reset to restore apostrophe correction",
                 hasApostropheIssue(),
+            )
+        } finally {
+            preferences.reset()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun existingEngineRefreshesStoredDictionarySelection() {
+        val context =
+            ApplicationProvider.getApplicationContext<Context>()
+
+        val preferences =
+            GrammalecteDictionaryPreferences(context)
+
+        preferences.reset()
+
+        val engine =
+            GrammalecteQuickJsEngine(context)
+
+        fun isValid(word: String): Boolean =
+            engine
+                .checkWord(
+                    word = word,
+                    localeTag = "fr-FR",
+                    suggestionLimit = 5,
+                ).valid
+
+        try {
+            assertTrue(
+                "Expected classic spelling to be valid by default",
+                isValid("coût"),
+            )
+
+            assertTrue(
+                "Expected reformed spelling to be valid by default",
+                isValid("cout"),
+            )
+
+            preferences.select(
+                GrammalecteDictionary.CLASSIC,
+            )
+
+            assertTrue(
+                "Expected classic spelling after selecting classic dictionary",
+                isValid("coût"),
+            )
+
+            assertFalse(
+                "Expected reformed spelling to be rejected by classic dictionary",
+                isValid("cout"),
+            )
+
+            preferences.select(
+                GrammalecteDictionary.REFORM_1990,
+            )
+
+            assertFalse(
+                "Expected classic spelling to be rejected by reformed dictionary",
+                isValid("coût"),
+            )
+
+            assertTrue(
+                "Expected reformed spelling after selecting reform dictionary",
+                isValid("cout"),
+            )
+
+            preferences.reset()
+
+            assertTrue(
+                "Expected classic spelling after restoring all variants",
+                isValid("coût"),
+            )
+
+            assertTrue(
+                "Expected reformed spelling after restoring all variants",
+                isValid("cout"),
             )
         } finally {
             preferences.reset()
