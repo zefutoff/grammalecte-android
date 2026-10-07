@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.grammalecteandroid.core.IssueKind
 import fr.grammalecteandroid.engine.GrammalecteQuickJsEngine
+import fr.grammalecteandroid.engine.GrammalecteRulePreferences
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -86,6 +87,63 @@ class GrammalecteEngineInstrumentedTest {
                 "Expected «allé» in ${issue.suggestions}",
                 "allé" in issue.suggestions,
             )
+        }
+    }
+
+    @Test
+    fun existingEngineRefreshesStoredRuleOptions() {
+        val context =
+            ApplicationProvider.getApplicationContext<Context>()
+
+        val preferences =
+            GrammalecteRulePreferences(context)
+
+        preferences.reset()
+
+        val engine =
+            GrammalecteQuickJsEngine(context)
+
+        val text =
+            "Elle c'est rendu compte de son erreur."
+
+        fun hasApostropheIssue(): Boolean =
+            engine
+                .check(
+                    text = text,
+                    localeTag = "fr-FR",
+                ).any { issue ->
+                    text.substring(
+                        issue.start,
+                        issue.endExclusive,
+                    ) == "c'" &&
+                        "c’" in issue.suggestions
+                }
+
+        try {
+            assertTrue(
+                "Expected apostrophe correction by default",
+                hasApostropheIssue(),
+            )
+
+            preferences.setRuleOption(
+                id = "apos",
+                enabled = false,
+            )
+
+            assertFalse(
+                "Expected existing engine to pick up disabled apos option",
+                hasApostropheIssue(),
+            )
+
+            preferences.reset()
+
+            assertTrue(
+                "Expected reset to restore apostrophe correction",
+                hasApostropheIssue(),
+            )
+        } finally {
+            preferences.reset()
+            engine.close()
         }
     }
 

@@ -168,6 +168,28 @@ class MainActivity :
 
         content.addView(
             createCard(
+                title = "Règles de correction",
+                description =
+                    "Activez ou désactivez les catégories et contrôles " +
+                        "Grammalecte utilisés dans les analyses.",
+                statusView = null,
+                actions =
+                    listOf(
+                        "Configurer les règles" to {
+                            startActivity(
+                                Intent(
+                                    this@MainActivity,
+                                    RuleSettingsActivity::class.java,
+                                ),
+                            )
+                        },
+                    ),
+            ),
+            cardParams(spacing),
+        )
+
+        content.addView(
+            createCard(
                 title = "Accès rapide",
                 description =
                     "Ajoutez Grammalecte aux réglages rapides pour ouvrir " +
