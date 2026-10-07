@@ -428,6 +428,126 @@ class GrammalecteEngineInstrumentedTest {
         }
     }
 
+    @Test
+    fun importedPreferencesPersistAcrossEngineRestart() {
+        val context =
+            ApplicationProvider.getApplicationContext<Context>()
+
+        val rulePreferences =
+            GrammalecteRulePreferences(context)
+
+        val dictionaryPreferences =
+            GrammalecteDictionaryPreferences(context)
+
+        val personalPreferences =
+            GrammalectePersonalDictionaryPreferences(context)
+
+        val personalWord =
+            "grammalecteandroidique"
+
+        rulePreferences.reset()
+        dictionaryPreferences.reset()
+        personalPreferences.reset()
+
+        var firstEngine: GrammalecteQuickJsEngine? =
+            GrammalecteQuickJsEngine(context)
+
+        var secondEngine: GrammalecteQuickJsEngine? = null
+
+        try {
+            val currentEngine =
+                requireNotNull(firstEngine)
+
+            currentEngine.setDictionary(
+                GrammalecteDictionary.CLASSIC,
+            )
+
+            currentEngine.setRuleOption(
+                id = "apos",
+                enabled = false,
+            )
+
+            currentEngine.addPersonalDictionaryWord(
+                personalWord,
+            )
+
+            val exported =
+                currentEngine.exportPreferences()
+
+            currentEngine.setDictionary(
+                GrammalecteDictionary.REFORM_1990,
+            )
+
+            currentEngine.resetRuleOptions()
+
+            currentEngine.importPreferences(
+                exported,
+            )
+
+            currentEngine.close()
+            firstEngine = null
+
+            secondEngine =
+                GrammalecteQuickJsEngine(context)
+
+            val reopenedEngine =
+                requireNotNull(secondEngine)
+
+            assertEquals(
+                GrammalecteDictionary.CLASSIC,
+                reopenedEngine.selectedDictionary(),
+            )
+
+            assertFalse(
+                "Expected imported apos override after restart",
+                reopenedEngine
+                    .ruleOptions()
+                    .first { option ->
+                        option.id == "apos"
+                    }.enabled,
+            )
+
+            assertEquals(
+                listOf(personalWord),
+                reopenedEngine.personalDictionaryWords(),
+            )
+
+            assertTrue(
+                "Personal dictionary must remain untouched by import",
+                reopenedEngine
+                    .checkWord(
+                        word = personalWord,
+                        localeTag = "fr-FR",
+                        suggestionLimit = 5,
+                    ).valid,
+            )
+
+            assertEquals(
+                GrammalecteDictionary.CLASSIC,
+                dictionaryPreferences.selected(),
+            )
+
+            assertEquals(
+                mapOf(
+                    "apos" to false,
+                ),
+                rulePreferences.overrides(),
+            )
+
+            assertEquals(
+                listOf(personalWord),
+                personalPreferences.words(),
+            )
+        } finally {
+            firstEngine?.close()
+            secondEngine?.close()
+
+            rulePreferences.reset()
+            dictionaryPreferences.reset()
+            personalPreferences.reset()
+        }
+    }
+
     private fun withEngine(block: (GrammalecteQuickJsEngine) -> Unit) {
         val context =
             ApplicationProvider.getApplicationContext<Context>()

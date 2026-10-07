@@ -33,6 +33,28 @@ class GrammalecteRulePreferences(
             .apply()
     }
 
+    fun replace(overrides: Map<String, Boolean>) {
+        overrides.keys.forEach { id ->
+            require(id.isNotBlank()) {
+                "Grammalecte rule option id must not be blank"
+            }
+        }
+
+        val editor =
+            preferences
+                .edit()
+                .clear()
+
+        overrides.forEach { (id, enabled) ->
+            editor.putBoolean(
+                id,
+                enabled,
+            )
+        }
+
+        editor.apply()
+    }
+
     fun reset() {
         preferences
             .edit()

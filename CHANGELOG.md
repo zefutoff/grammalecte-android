@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Persistent dictionary selection between all variants, classic orthography and the 1990 reform, shared by all correction modes.
 - Persistent personal dictionary with in-app word management, shared by all correction modes.
 - Global reset-to-default control restoring the bundled dictionary, Grammalecte rule defaults and clearing the personal dictionary.
+- Versioned JSON import/export for non-sensitive correction preferences, using Android's system document picker without storage permissions; the personal dictionary is intentionally excluded.
 
 ### Changed
 

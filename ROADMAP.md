@@ -83,7 +83,7 @@ Exit criterion: correction remains usable in common editable applications even w
 - [x] Dictionary choice: all variants / classic / 1990 reform
 - [x] Personal dictionary
 - [x] Reset-to-default controls
-- [ ] Import/export of non-sensitive preferences
+- [x] Import/export of non-sensitive preferences
 - [ ] Clear status screen for native spell-checker and IME activation
 
 ## Phase 4 — Product polish
