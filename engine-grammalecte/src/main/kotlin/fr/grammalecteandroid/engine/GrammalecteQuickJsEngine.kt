@@ -279,6 +279,35 @@ class GrammalecteQuickJsEngine internal constructor(
         }
     }
 
+    fun resetToDefaults() {
+        synchronized(lock) {
+            applyDictionary(
+                GrammalecteDictionary.ALL_VARIANTS,
+            )
+
+            applyPersonalDictionaryWords(
+                emptyList(),
+            )
+
+            callBridge(
+                "__grammalecteAndroid.resetRuleOptions",
+            )
+
+            dictionaryPreferences?.reset()
+            personalDictionaryPreferences?.reset()
+            rulePreferences?.reset()
+
+            appliedDictionary =
+                GrammalecteDictionary.ALL_VARIANTS
+
+            appliedPersonalDictionaryWords =
+                emptyList()
+
+            appliedRuleOverrides =
+                rulePreferences?.overrides()
+        }
+    }
+
     private fun synchronizeStoredDictionary() {
         val preferences =
             dictionaryPreferences ?: return

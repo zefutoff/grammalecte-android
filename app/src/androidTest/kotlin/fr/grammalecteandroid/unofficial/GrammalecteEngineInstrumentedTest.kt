@@ -278,6 +278,156 @@ class GrammalecteEngineInstrumentedTest {
         }
     }
 
+    @Test
+    fun resetToDefaultsPersistsAcrossEngineRestart() {
+        val context =
+            ApplicationProvider.getApplicationContext<Context>()
+
+        val rulePreferences =
+            GrammalecteRulePreferences(context)
+
+        val dictionaryPreferences =
+            GrammalecteDictionaryPreferences(context)
+
+        val personalPreferences =
+            GrammalectePersonalDictionaryPreferences(context)
+
+        val personalWord =
+            "grammalecteandroidique"
+
+        rulePreferences.reset()
+        dictionaryPreferences.reset()
+        personalPreferences.reset()
+
+        var firstEngine: GrammalecteQuickJsEngine? =
+            GrammalecteQuickJsEngine(context)
+
+        var secondEngine: GrammalecteQuickJsEngine? = null
+
+        fun isValid(
+            engine: GrammalecteQuickJsEngine,
+            word: String,
+        ): Boolean =
+            engine
+                .checkWord(
+                    word = word,
+                    localeTag = "fr-FR",
+                    suggestionLimit = 5,
+                ).valid
+
+        try {
+            val currentEngine =
+                requireNotNull(firstEngine)
+
+            currentEngine.setDictionary(
+                GrammalecteDictionary.CLASSIC,
+            )
+
+            currentEngine.addPersonalDictionaryWord(
+                personalWord,
+            )
+
+            currentEngine.setRuleOption(
+                id = "apos",
+                enabled = false,
+            )
+
+            assertEquals(
+                GrammalecteDictionary.CLASSIC,
+                currentEngine.selectedDictionary(),
+            )
+
+            assertTrue(
+                personalWord in
+                    currentEngine.personalDictionaryWords(),
+            )
+
+            assertFalse(
+                currentEngine
+                    .ruleOptions()
+                    .first { option ->
+                        option.id == "apos"
+                    }.enabled,
+            )
+
+            currentEngine.resetToDefaults()
+
+            currentEngine.close()
+            firstEngine = null
+
+            secondEngine =
+                GrammalecteQuickJsEngine(context)
+
+            val reopenedEngine =
+                requireNotNull(secondEngine)
+
+            assertEquals(
+                GrammalecteDictionary.ALL_VARIANTS,
+                reopenedEngine.selectedDictionary(),
+            )
+
+            assertTrue(
+                reopenedEngine
+                    .personalDictionaryWords()
+                    .isEmpty(),
+            )
+
+            assertFalse(
+                "Expected personal word to remain removed after restart",
+                isValid(
+                    reopenedEngine,
+                    personalWord,
+                ),
+            )
+
+            assertTrue(
+                "Expected classic spelling after restart",
+                isValid(
+                    reopenedEngine,
+                    "coût",
+                ),
+            )
+
+            assertTrue(
+                "Expected reformed spelling after restart",
+                isValid(
+                    reopenedEngine,
+                    "cout",
+                ),
+            )
+
+            assertTrue(
+                "Expected rule options to remain at defaults after restart",
+                reopenedEngine
+                    .ruleOptions()
+                    .all { option ->
+                        option.enabled ==
+                            option.defaultEnabled
+                    },
+            )
+
+            assertEquals(
+                GrammalecteDictionary.ALL_VARIANTS,
+                dictionaryPreferences.selected(),
+            )
+
+            assertTrue(
+                personalPreferences.words().isEmpty(),
+            )
+
+            assertTrue(
+                rulePreferences.overrides().isEmpty(),
+            )
+        } finally {
+            firstEngine?.close()
+            secondEngine?.close()
+
+            rulePreferences.reset()
+            dictionaryPreferences.reset()
+            personalPreferences.reset()
+        }
+    }
+
     private fun withEngine(block: (GrammalecteQuickJsEngine) -> Unit) {
         val context =
             ApplicationProvider.getApplicationContext<Context>()
