@@ -50,6 +50,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Global reset-to-default control restoring the bundled dictionary, Grammalecte rule defaults and clearing the personal dictionary.
 - Versioned JSON import/export for non-sensitive correction preferences, using Android's system document picker without storage permissions; the personal dictionary is intentionally excluded.
 - Dedicated correction status screen showing the native Android spell-checker and Grammalecte IME activation/selection state, with direct access to the relevant system settings.
+- First-run setup guide explaining the three correction modes, showing live activation state and providing direct access to the relevant Android settings; the guide is shown once automatically and remains available from the main screen.
 
 ### Changed
 
