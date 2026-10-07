@@ -82,7 +82,7 @@ Exit criterion: correction remains usable in common editable applications even w
 - [x] Grammalecte rule-category settings
 - [x] Dictionary choice: all variants / classic / 1990 reform
 - [x] Personal dictionary
-- [ ] Reset-to-default controls
+- [x] Reset-to-default controls
 - [ ] Import/export of non-sensitive preferences
 - [ ] Clear status screen for native spell-checker and IME activation
 

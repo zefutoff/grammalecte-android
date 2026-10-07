@@ -396,6 +396,102 @@ class RealEngineSmokeTest {
     }
 
     @Test
+    fun resetToDefaultsRestoresEveryUserControl() {
+        val engine =
+            GrammalecteQuickJsEngine(
+                FileAssetTextLoader(findAssetRoot()),
+            )
+
+        val personalWord =
+            "zefutologique"
+
+        fun isValid(word: String): Boolean =
+            engine
+                .checkWord(
+                    word = word,
+                    localeTag = "fr-FR",
+                    suggestionLimit = 5,
+                ).valid
+
+        try {
+            engine.setDictionary(
+                GrammalecteDictionary.CLASSIC,
+            )
+
+            engine.addPersonalDictionaryWord(
+                personalWord,
+            )
+
+            engine.setRuleOption(
+                id = "apos",
+                enabled = false,
+            )
+
+            assertEquals(
+                GrammalecteDictionary.CLASSIC,
+                engine.selectedDictionary(),
+            )
+
+            assertTrue(
+                personalWord in
+                    engine.personalDictionaryWords(),
+            )
+
+            assertTrue(
+                isValid(personalWord),
+            )
+
+            assertFalse(
+                isValid("cout"),
+            )
+
+            assertFalse(
+                engine
+                    .ruleOptions()
+                    .first { option ->
+                        option.id == "apos"
+                    }.enabled,
+            )
+
+            engine.resetToDefaults()
+
+            assertEquals(
+                GrammalecteDictionary.ALL_VARIANTS,
+                engine.selectedDictionary(),
+            )
+
+            assertTrue(
+                engine.personalDictionaryWords().isEmpty(),
+            )
+
+            assertFalse(
+                isValid(personalWord),
+            )
+
+            assertTrue(
+                isValid("coût"),
+            )
+
+            assertTrue(
+                isValid("cout"),
+            )
+
+            val options =
+                engine.ruleOptions()
+
+            assertTrue(
+                "Expected every rule option to match its default",
+                options.all { option ->
+                    option.enabled ==
+                        option.defaultEnabled
+                },
+            )
+        } finally {
+            engine.close()
+        }
+    }
+
+    @Test
     fun concurrentCallsShareRuntimeSafely() {
         val engine =
             GrammalecteQuickJsEngine(

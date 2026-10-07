@@ -47,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Persistent in-app Grammalecte rule settings shared by the native spell checker, PROCESS_TEXT workflow and correction IME.
 - Persistent dictionary selection between all variants, classic orthography and the 1990 reform, shared by all correction modes.
 - Persistent personal dictionary with in-app word management, shared by all correction modes.
+- Global reset-to-default control restoring the bundled dictionary, Grammalecte rule defaults and clearing the personal dictionary.
 
 ### Changed
 

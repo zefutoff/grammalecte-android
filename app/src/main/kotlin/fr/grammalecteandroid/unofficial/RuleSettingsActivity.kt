@@ -1,6 +1,7 @@
 package fr.grammalecteandroid.unofficial
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -40,6 +41,7 @@ class RuleSettingsActivity : Activity() {
     private lateinit var dictionaryGroup: RadioGroup
     private lateinit var optionsContainer: LinearLayout
     private lateinit var resetButton: Button
+    private lateinit var resetAllButton: Button
 
     private var engine: GrammalecteQuickJsEngine? = null
     private var selectedDictionary =
@@ -146,6 +148,51 @@ class RuleSettingsActivity : Activity() {
                     spacing,
                 )
             },
+            matchWrapParams(),
+        )
+
+        content.addView(
+            sectionTitle(
+                "Réinitialisation",
+            ),
+            matchWrapParams(),
+        )
+
+        content.addView(
+            TextView(this).apply {
+                text =
+                    "Restaure le dictionnaire principal, les règles " +
+                    "Grammalecte et vide le dictionnaire personnel."
+
+                textSize = 14f
+
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+
+                setPadding(
+                    0,
+                    0,
+                    0,
+                    smallSpacing,
+                )
+            },
+            matchWrapParams(),
+        )
+
+        resetAllButton =
+            Button(this).apply {
+                text = "Réinitialiser tous les réglages"
+                isAllCaps = false
+                isEnabled = false
+
+                setOnClickListener {
+                    confirmResetAllSettings()
+                }
+            }
+
+        content.addView(
+            resetAllButton,
             matchWrapParams(),
         )
 
@@ -353,6 +400,7 @@ class RuleSettingsActivity : Activity() {
             "Chargement des réglages..."
 
         resetButton.isEnabled = false
+        resetAllButton.isEnabled = false
         dictionaryGroup.removeAllViews()
         optionsContainer.removeAllViews()
 
@@ -375,6 +423,7 @@ class RuleSettingsActivity : Activity() {
                     .onSuccess { (dictionary, options) ->
                         renderDictionary(dictionary)
                         renderOptions(options)
+                        resetAllButton.isEnabled = true
                     }.onFailure { error ->
                         showError(error)
                     }
@@ -708,6 +757,67 @@ class RuleSettingsActivity : Activity() {
         }
     }
 
+    private fun confirmResetAllSettings() {
+        AlertDialog
+            .Builder(this)
+            .setTitle(
+                "Réinitialiser tous les réglages ?",
+            ).setMessage(
+                "Le dictionnaire principal reviendra à « Toutes variantes », " +
+                    "les règles Grammalecte retrouveront leurs valeurs par défaut " +
+                    "et tous les mots du dictionnaire personnel seront supprimés.\n\n" +
+                    "Cette action est irréversible.",
+            ).setNegativeButton(
+                "Annuler",
+                null,
+            ).setPositiveButton(
+                "Réinitialiser",
+            ) { _, _ ->
+                resetAllSettings()
+            }.show()
+    }
+
+    private fun resetAllSettings() {
+        resetAllButton.isEnabled = false
+        resetButton.isEnabled = false
+        setDictionaryControlsEnabled(false)
+
+        statusView.text =
+            "Réinitialisation de tous les réglages..."
+
+        executor.execute {
+            val result =
+                runCatching {
+                    val currentEngine =
+                        currentEngine()
+
+                    currentEngine.resetToDefaults()
+
+                    currentEngine.selectedDictionary() to
+                        currentEngine.ruleOptions()
+                }
+
+            mainHandler.post {
+                if (destroyed) {
+                    return@post
+                }
+
+                result
+                    .onSuccess { (dictionary, options) ->
+                        renderDictionary(dictionary)
+                        renderOptions(options)
+
+                        resetAllButton.isEnabled = true
+
+                        statusView.text =
+                            "Tous les réglages ont été réinitialisés."
+                    }.onFailure { error ->
+                        showError(error)
+                    }
+            }
+        }
+    }
+
     private fun currentEngine(): GrammalecteQuickJsEngine =
         engine
             ?: GrammalecteQuickJsEngine(
@@ -725,6 +835,8 @@ class RuleSettingsActivity : Activity() {
             )
 
         resetButton.isEnabled = true
+        resetAllButton.isEnabled = true
+        setDictionaryControlsEnabled(true)
     }
 
     private fun sectionTitle(text: String): TextView =
