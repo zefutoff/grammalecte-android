@@ -84,7 +84,7 @@ Exit criterion: correction remains usable in common editable applications even w
 - [x] Personal dictionary
 - [x] Reset-to-default controls
 - [x] Import/export of non-sensitive preferences
-- [ ] Clear status screen for native spell-checker and IME activation
+- [x] Clear status screen for native spell-checker and IME activation
 
 ## Phase 4 — Product polish
 
