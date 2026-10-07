@@ -43,6 +43,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - End-to-end IME instrumentation covering Android IME selection, a real editable `InputConnection` and selected-text replacement.
 - Opt-in real-engine performance characterization for cold start, sentence analysis and paragraph analysis.
 - Reproducible Android application compatibility matrix with a helper for collecting device, Android and application-version metadata.
+- Grammalecte rule-option engine API exposing upstream rule groups, French labels, current/default states, option updates and reset support.
 
 ### Changed
 
