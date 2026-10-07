@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import fr.grammalecteandroid.core.IssueKind
 import fr.grammalecteandroid.engine.GrammalecteDictionary
 import fr.grammalecteandroid.engine.GrammalecteDictionaryPreferences
+import fr.grammalecteandroid.engine.GrammalectePersonalDictionaryPreferences
 import fr.grammalecteandroid.engine.GrammalecteQuickJsEngine
 import fr.grammalecteandroid.engine.GrammalecteRulePreferences
 import org.junit.Assert.assertEquals
@@ -219,6 +220,57 @@ class GrammalecteEngineInstrumentedTest {
             assertTrue(
                 "Expected reformed spelling after restoring all variants",
                 isValid("cout"),
+            )
+        } finally {
+            preferences.reset()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun existingEngineRefreshesStoredPersonalDictionary() {
+        val context =
+            ApplicationProvider.getApplicationContext<Context>()
+
+        val preferences =
+            GrammalectePersonalDictionaryPreferences(context)
+
+        val personalWord =
+            "grammalecteandroidique"
+
+        preferences.reset()
+
+        val engine =
+            GrammalecteQuickJsEngine(context)
+
+        fun isValid(): Boolean =
+            engine
+                .checkWord(
+                    word = personalWord,
+                    localeTag = "fr-FR",
+                    suggestionLimit = 5,
+                ).valid
+
+        try {
+            assertFalse(
+                "Expected personal word to be unknown initially",
+                isValid(),
+            )
+
+            preferences.replace(
+                listOf(personalWord),
+            )
+
+            assertTrue(
+                "Expected existing engine to load stored personal word",
+                isValid(),
+            )
+
+            preferences.reset()
+
+            assertFalse(
+                "Expected existing engine to remove cleared personal word",
+                isValid(),
             )
         } finally {
             preferences.reset()

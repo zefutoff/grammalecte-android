@@ -294,6 +294,108 @@ class RealEngineSmokeTest {
     }
 
     @Test
+    fun personalDictionaryCanAddAndRemoveUnknownWord() {
+        val engine =
+            GrammalecteQuickJsEngine(
+                FileAssetTextLoader(findAssetRoot()),
+            )
+
+        val personalWord =
+            "grammalecteandroidique"
+
+        fun isValid(): Boolean =
+            engine
+                .checkWord(
+                    word = personalWord,
+                    localeTag = "fr-FR",
+                    suggestionLimit = 5,
+                ).valid
+
+        try {
+            assertFalse(
+                "Expected test word to be unknown initially",
+                isValid(),
+            )
+
+            engine.setPersonalDictionaryWords(
+                listOf(personalWord),
+            )
+
+            assertTrue(
+                "Expected personal dictionary word to become valid",
+                isValid(),
+            )
+
+            engine.setPersonalDictionaryWords(
+                emptyList(),
+            )
+
+            assertFalse(
+                "Expected removed personal word to become invalid again",
+                isValid(),
+            )
+        } finally {
+            engine.close()
+        }
+    }
+
+    @Test
+    fun personalDictionaryMutationApiKeepsEngineInSync() {
+        val engine =
+            GrammalecteQuickJsEngine(
+                FileAssetTextLoader(findAssetRoot()),
+            )
+
+        val word =
+            "zefutologique"
+
+        fun isValid(): Boolean =
+            engine
+                .checkWord(
+                    word = word,
+                    localeTag = "fr-FR",
+                    suggestionLimit = 5,
+                ).valid
+
+        try {
+            assertFalse(isValid())
+
+            assertTrue(
+                engine.addPersonalDictionaryWord(word),
+            )
+
+            assertTrue(isValid())
+
+            assertEquals(
+                listOf(word),
+                engine.personalDictionaryWords(),
+            )
+
+            assertFalse(
+                "Adding an existing word must be a no-op",
+                engine.addPersonalDictionaryWord(word),
+            )
+
+            assertTrue(
+                engine.removePersonalDictionaryWord(word),
+            )
+
+            assertFalse(isValid())
+
+            assertTrue(
+                engine.personalDictionaryWords().isEmpty(),
+            )
+
+            assertFalse(
+                "Removing an unknown word must be a no-op",
+                engine.removePersonalDictionaryWord(word),
+            )
+        } finally {
+            engine.close()
+        }
+    }
+
+    @Test
     fun concurrentCallsShareRuntimeSafely() {
         val engine =
             GrammalecteQuickJsEngine(

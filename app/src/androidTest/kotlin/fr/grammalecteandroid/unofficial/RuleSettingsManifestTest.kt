@@ -31,4 +31,25 @@ class RuleSettingsManifestTest {
             activity.exported,
         )
     }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun personalDictionaryActivityIsInternal() {
+        val context =
+            ApplicationProvider.getApplicationContext<Context>()
+
+        val activity =
+            context.packageManager.getActivityInfo(
+                ComponentName(
+                    context,
+                    PersonalDictionaryActivity::class.java,
+                ),
+                PackageManager.GET_META_DATA,
+            )
+
+        assertFalse(
+            "Personal dictionary activity must not be exported",
+            activity.exported,
+        )
+    }
 }

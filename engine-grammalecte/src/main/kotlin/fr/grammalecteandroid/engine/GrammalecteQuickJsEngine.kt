@@ -17,18 +17,21 @@ class GrammalecteQuickJsEngine internal constructor(
     private val assetLoader: AssetTextLoader,
     private val rulePreferences: GrammalecteRulePreferences? = null,
     private val dictionaryPreferences: GrammalecteDictionaryPreferences? = null,
+    private val personalDictionaryPreferences: GrammalectePersonalDictionaryPreferences? = null,
 ) : GrammarEngine {
     constructor(context: Context) :
         this(
             AndroidAssetTextLoader(context),
             GrammalecteRulePreferences(context),
             GrammalecteDictionaryPreferences(context),
+            GrammalectePersonalDictionaryPreferences(context),
         )
 
     private val lock = Any()
     private var runtime: QuickJs? = null
     private var appliedRuleOverrides: Map<String, Boolean>? = null
     private var appliedDictionary: GrammalecteDictionary? = null
+    private var appliedPersonalDictionaryWords: List<String>? = null
 
     override fun check(
         text: String,
@@ -37,6 +40,7 @@ class GrammalecteQuickJsEngine internal constructor(
         if (text.isBlank()) return emptyList()
 
         synchronizeStoredDictionary()
+        synchronizeStoredPersonalDictionary()
         synchronizeStoredRuleOptions()
 
         val raw = callBridge("__grammalecteAndroid.check", text, localeTag)
@@ -55,6 +59,7 @@ class GrammalecteQuickJsEngine internal constructor(
         if (word.isBlank()) return WordCheck(valid = true)
 
         synchronizeStoredDictionary()
+        synchronizeStoredPersonalDictionary()
 
         val safeLimit = suggestionLimit.coerceAtLeast(0)
 
@@ -102,6 +107,99 @@ class GrammalecteQuickJsEngine internal constructor(
 
             appliedDictionary =
                 GrammalecteDictionary.ALL_VARIANTS
+        }
+    }
+
+    fun personalDictionaryWords(): List<String> {
+        synchronizeStoredPersonalDictionary()
+
+        return synchronized(lock) {
+            appliedPersonalDictionaryWords.orEmpty()
+        }
+    }
+
+    fun setPersonalDictionaryWords(words: Collection<String>) {
+        val normalized =
+            normalizePersonalDictionaryWords(words)
+
+        synchronized(lock) {
+            applyPersonalDictionaryWords(
+                normalized,
+            )
+
+            personalDictionaryPreferences
+                ?.replace(normalized)
+
+            appliedPersonalDictionaryWords =
+                normalized
+        }
+    }
+
+    fun addPersonalDictionaryWord(word: String): Boolean {
+        val normalizedWord =
+            normalizePersonalDictionaryWords(
+                listOf(word),
+            ).single()
+
+        synchronized(lock) {
+            synchronizeStoredPersonalDictionary()
+
+            val current =
+                appliedPersonalDictionaryWords.orEmpty()
+
+            if (normalizedWord in current) {
+                return false
+            }
+
+            val updated =
+                normalizePersonalDictionaryWords(
+                    current + normalizedWord,
+                )
+
+            applyPersonalDictionaryWords(updated)
+
+            personalDictionaryPreferences
+                ?.replace(updated)
+
+            appliedPersonalDictionaryWords =
+                updated
+
+            return true
+        }
+    }
+
+    fun removePersonalDictionaryWord(word: String): Boolean {
+        val normalizedWord =
+            word.trim()
+
+        if (normalizedWord.isEmpty()) {
+            return false
+        }
+
+        synchronized(lock) {
+            synchronizeStoredPersonalDictionary()
+
+            val current =
+                appliedPersonalDictionaryWords.orEmpty()
+
+            if (normalizedWord !in current) {
+                return false
+            }
+
+            val updated =
+                current.filterNot { storedWord ->
+                    storedWord == normalizedWord
+                }
+
+            applyPersonalDictionaryWords(updated)
+
+            personalDictionaryPreferences
+                ?.replace(updated)
+
+            appliedPersonalDictionaryWords =
+                updated
+
+            return true
         }
     }
 
@@ -222,6 +320,85 @@ class GrammalecteQuickJsEngine internal constructor(
         }
     }
 
+    private fun synchronizeStoredPersonalDictionary() {
+        val preferences =
+            personalDictionaryPreferences ?: return
+
+        val words =
+            preferences.words()
+
+        synchronized(lock) {
+            if (appliedPersonalDictionaryWords == words) {
+                return
+            }
+
+            if (
+                runtime == null &&
+                words.isEmpty()
+            ) {
+                appliedPersonalDictionaryWords =
+                    emptyList()
+
+                return
+            }
+
+            applyPersonalDictionaryWords(words)
+
+            appliedPersonalDictionaryWords =
+                words
+        }
+    }
+
+    private fun applyPersonalDictionaryWords(words: List<String>) {
+        val updated =
+            callBridge(
+                "__grammalecteAndroid.setPersonalWords",
+                JSONArray(words).toString(),
+            ).toBooleanStrictOrNull() ?: false
+
+        check(updated) {
+            "Unable to update Grammalecte personal dictionary"
+        }
+    }
+
+    private fun normalizePersonalDictionaryWords(words: Collection<String>): List<String> {
+        val normalized =
+            words
+                .map(String::trim)
+                .distinct()
+                .sorted()
+
+        require(
+            normalized.size <=
+                MAX_PERSONAL_DICTIONARY_WORDS,
+        ) {
+            "Personal dictionary exceeds " +
+                "$MAX_PERSONAL_DICTIONARY_WORDS words"
+        }
+
+        normalized.forEach { word ->
+            require(word.isNotEmpty()) {
+                "Personal dictionary words must not be blank"
+            }
+
+            require(
+                word.length <=
+                    MAX_PERSONAL_WORD_LENGTH,
+            ) {
+                "Personal dictionary word is too long: $word"
+            }
+
+            require(
+                word.none(Char::isWhitespace),
+            ) {
+                "Personal dictionary entries must contain " +
+                    "a single word: $word"
+            }
+        }
+
+        return normalized
+    }
+
     private fun synchronizeStoredRuleOptions() {
         val preferences =
             rulePreferences ?: return
@@ -261,6 +438,7 @@ class GrammalecteQuickJsEngine internal constructor(
             runtime = null
             appliedRuleOverrides = null
             appliedDictionary = null
+            appliedPersonalDictionaryWords = null
         }
     }
 
@@ -329,6 +507,9 @@ class GrammalecteQuickJsEngine internal constructor(
                 appliedDictionary =
                     GrammalecteDictionary.ALL_VARIANTS
 
+                appliedPersonalDictionaryWords =
+                    emptyList()
+
                 js.evaluationTimeoutMillis = ANALYSIS_TIMEOUT_MILLIS
             }
         } catch (error: Throwable) {
@@ -376,6 +557,8 @@ class GrammalecteQuickJsEngine internal constructor(
 
     companion object {
         private const val DEFAULT_SUGGESTION_LIMIT = 8
+        private const val MAX_PERSONAL_DICTIONARY_WORDS = 2048
+        private const val MAX_PERSONAL_WORD_LENGTH = 64
         private const val MAX_MEMORY_BYTES = 256L * 1024L * 1024L
         private const val INITIALIZATION_TIMEOUT_MILLIS = 5_000L
         private const val ANALYSIS_TIMEOUT_MILLIS = 2_000L
