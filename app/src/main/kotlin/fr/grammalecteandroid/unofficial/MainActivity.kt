@@ -113,6 +113,28 @@ class MainActivity :
             matchWrapParams(),
         )
 
+        content.addView(
+            createCard(
+                title = "État et activation",
+                description =
+                    "Vérifiez en un seul endroit l’état du correcteur Android " +
+                        "et du clavier Grammalecte.",
+                statusView = null,
+                actions =
+                    listOf(
+                        "Voir l’état de la correction" to {
+                            startActivity(
+                                Intent(
+                                    this@MainActivity,
+                                    CorrectionStatusActivity::class.java,
+                                ),
+                            )
+                        },
+                    ),
+            ),
+            cardParams(spacing),
+        )
+
         spellCheckerStatusView =
             TextView(this).apply {
                 textSize = 14f
@@ -594,47 +616,44 @@ class MainActivity :
     }
 
     private fun updateSpellCheckerStatus() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            spellCheckerStatusView.text =
-                "Statut non disponible sur cette version d’Android. " +
-                "Vérifiez le correcteur dans les paramètres système."
-            return
-        }
-
-        val manager =
-            getSystemService(TextServicesManager::class.java)
-
-        val current =
-            manager.currentSpellCheckerInfo
-
-        val selected =
-            current?.packageName == packageName
+        val status =
+            CorrectionStatusReader(this)
+                .read()
+                .spellChecker
 
         spellCheckerStatusView.text =
-            if (selected) {
-                "Activé comme correcteur Android."
-            } else {
-                "Non sélectionné comme correcteur Android."
+            when (status) {
+                SpellCheckerStatus.SELECTED ->
+                    "Activé et sélectionné comme correcteur Android."
+
+                SpellCheckerStatus.NOT_SELECTED ->
+                    "Disponible, mais non sélectionné comme correcteur Android."
+
+                SpellCheckerStatus.DISABLED ->
+                    "La correction orthographique Android est désactivée."
+
+                SpellCheckerStatus.UNAVAILABLE ->
+                    "Aucun correcteur Android actif n’a pu être détecté."
             }
     }
 
     private fun updateImeStatus() {
-        val manager = getSystemService(InputMethodManager::class.java)
-
-        val enabled =
-            manager.enabledInputMethodList.any { inputMethod ->
-                inputMethod.packageName == packageName &&
-                    inputMethod.serviceName == GrammalecteImeService::class.java.name
-            }
+        val status =
+            CorrectionStatusReader(this)
+                .read()
+                .ime
 
         imeStatusView.text =
-            getString(
-                if (enabled) {
-                    R.string.ime_status_enabled
-                } else {
-                    R.string.ime_status_disabled
-                },
-            )
+            when (status) {
+                ImeStatus.SELECTED ->
+                    "Activé et actuellement sélectionné."
+
+                ImeStatus.ENABLED ->
+                    "Activé, mais un autre clavier est actuellement sélectionné."
+
+                ImeStatus.DISABLED ->
+                    "Non activé dans les méthodes de saisie Android."
+            }
     }
 
     private fun openInputMethodSettings() {
