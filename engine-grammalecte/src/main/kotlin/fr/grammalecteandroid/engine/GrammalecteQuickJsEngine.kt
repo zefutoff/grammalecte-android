@@ -15,17 +15,25 @@ import org.json.JSONObject
 
 class GrammalecteQuickJsEngine internal constructor(
     private val assetLoader: AssetTextLoader,
+    private val rulePreferences: GrammalecteRulePreferences? = null,
 ) : GrammarEngine {
-    constructor(context: Context) : this(AndroidAssetTextLoader(context))
+    constructor(context: Context) :
+        this(
+            AndroidAssetTextLoader(context),
+            GrammalecteRulePreferences(context),
+        )
 
     private val lock = Any()
     private var runtime: QuickJs? = null
+    private var appliedRuleOverrides: Map<String, Boolean>? = null
 
     override fun check(
         text: String,
         localeTag: String,
     ): List<GrammarIssue> {
         if (text.isBlank()) return emptyList()
+
+        synchronizeStoredRuleOptions()
 
         val raw = callBridge("__grammalecteAndroid.check", text, localeTag)
         return IssueNormalizer.normalize(
@@ -56,6 +64,8 @@ class GrammalecteQuickJsEngine internal constructor(
     }
 
     fun ruleOptions(): List<GrammalecteRuleOption> {
+        synchronizeStoredRuleOptions()
+
         val raw =
             callBridge(
                 "__grammalecteAndroid.ruleOptions",
@@ -90,28 +100,83 @@ class GrammalecteQuickJsEngine internal constructor(
             "Grammalecte rule option id must not be blank"
         }
 
-        val updated =
-            callBridge(
-                "__grammalecteAndroid.setRuleOption",
-                id,
-                enabled,
-            ).toBooleanStrictOrNull() ?: false
+        synchronized(lock) {
+            synchronizeStoredRuleOptions()
 
-        require(updated) {
-            "Unknown Grammalecte rule option: $id"
+            val updated =
+                callBridge(
+                    "__grammalecteAndroid.setRuleOption",
+                    id,
+                    enabled,
+                ).toBooleanStrictOrNull() ?: false
+
+            require(updated) {
+                "Unknown Grammalecte rule option: $id"
+            }
+
+            rulePreferences?.let { preferences ->
+                preferences.setRuleOption(
+                    id = id,
+                    enabled = enabled,
+                )
+
+                appliedRuleOverrides =
+                    preferences.overrides()
+            }
         }
     }
 
     fun resetRuleOptions() {
-        callBridge(
-            "__grammalecteAndroid.resetRuleOptions",
-        )
+        synchronized(lock) {
+            callBridge(
+                "__grammalecteAndroid.resetRuleOptions",
+            )
+
+            rulePreferences?.reset()
+
+            appliedRuleOverrides =
+                rulePreferences?.overrides()
+        }
+    }
+
+    private fun synchronizeStoredRuleOptions() {
+        val preferences =
+            rulePreferences ?: return
+
+        val overrides =
+            preferences.overrides()
+
+        synchronized(lock) {
+            if (appliedRuleOverrides == overrides) {
+                return
+            }
+
+            callBridge(
+                "__grammalecteAndroid.resetRuleOptions",
+            )
+
+            overrides.forEach { (id, enabled) ->
+                val updated =
+                    callBridge(
+                        "__grammalecteAndroid.setRuleOption",
+                        id,
+                        enabled,
+                    ).toBooleanStrictOrNull() ?: false
+
+                if (!updated) {
+                    return@forEach
+                }
+            }
+
+            appliedRuleOverrides = overrides
+        }
     }
 
     override fun close() {
         synchronized(lock) {
             runtime?.close()
             runtime = null
+            appliedRuleOverrides = null
         }
     }
 
