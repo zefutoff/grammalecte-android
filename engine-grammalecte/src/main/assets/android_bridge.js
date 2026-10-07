@@ -159,6 +159,78 @@
             return loaded ? "true" : "false";
         },
 
+        setPersonalWords: function (wordsJson) {
+            let rawWords;
+
+            try {
+                rawWords = JSON.parse(String(wordsJson || "[]"));
+            } catch (error) {
+                return "false";
+            }
+
+            if (!Array.isArray(rawWords) || rawWords.length > 2048) {
+                return "false";
+            }
+
+            const words = [];
+            const seen = new Set();
+
+            for (const value of rawWords) {
+                if (typeof value !== "string") {
+                    return "false";
+                }
+
+                const word = value.trim();
+
+                if (
+                    word.length === 0 ||
+                    word.length > 64 ||
+                    /\s/.test(word)
+                ) {
+                    return "false";
+                }
+
+                if (!seen.has(word)) {
+                    seen.add(word);
+                    words.push(word);
+                }
+            }
+
+            const spellChecker = gc_engine.getSpellChecker();
+
+            if (words.length === 0) {
+                spellChecker.setPersonalDictionary(null);
+                spellChecker.clearStorage();
+                return "true";
+            }
+
+            try {
+                const entries = words.map(function (word) {
+                    return [word, word, ":X"];
+                });
+
+                const dictionary = new DAWG(
+                    entries,
+                    "S",
+                    "fr",
+                    "Français",
+                    "Personnel",
+                    "Dictionnaire personnel"
+                ).createBinaryJSON();
+
+                const loaded =
+                    spellChecker.setPersonalDictionary(dictionary);
+
+                if (loaded) {
+                    spellChecker.clearStorage();
+                }
+
+                return loaded ? "true" : "false";
+            } catch (error) {
+                return "false";
+            }
+        },
+
         checkWord: function (word, localeTag, limit) {
             void localeTag;
             const spellChecker = gc_engine.getSpellChecker();

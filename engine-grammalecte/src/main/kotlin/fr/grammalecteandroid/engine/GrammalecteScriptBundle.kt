@@ -7,6 +7,7 @@ internal object GrammalecteScriptBundle {
     val scriptsAfterHelpers =
         listOf(
             "grammalecte/graphspell/str_transform.js",
+            "grammalecte/graphspell/dawg.js",
             "grammalecte/graphspell/char_player.js",
             "grammalecte/graphspell/lexgraph_fr.js",
             "grammalecte/graphspell/ibdawg.js",

@@ -1,6 +1,7 @@
 package fr.grammalecteandroid.unofficial
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -196,6 +197,45 @@ class RuleSettingsActivity : Activity() {
 
         content.addView(
             dictionaryGroup,
+            matchWrapParams(),
+        )
+
+        content.addView(
+            sectionTitle(
+                "Dictionnaire personnel",
+            ),
+            matchWrapParams(),
+        )
+
+        content.addView(
+            TextView(this).apply {
+                text =
+                    "Ajoutez vos noms propres, termes techniques " +
+                    "ou mots absents du dictionnaire Grammalecte."
+
+                textSize = 14f
+
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+            },
+            matchWrapParams(),
+        )
+
+        content.addView(
+            Button(this).apply {
+                text = "Gérer le dictionnaire personnel"
+                isAllCaps = false
+
+                setOnClickListener {
+                    startActivity(
+                        Intent(
+                            this@RuleSettingsActivity,
+                            PersonalDictionaryActivity::class.java,
+                        ),
+                    )
+                }
+            },
             matchWrapParams(),
         )
 
