@@ -279,6 +279,114 @@ class GrammalecteQuickJsEngine internal constructor(
         }
     }
 
+    fun exportPreferences(): String =
+        synchronized(lock) {
+            val dictionary =
+                selectedDictionary()
+
+            val overrides =
+                ruleOverridesFrom(
+                    ruleOptions(),
+                )
+
+            GrammalectePreferencesJson.encode(
+                GrammalectePreferencesSnapshot(
+                    dictionary = dictionary,
+                    ruleOverrides = overrides,
+                ),
+            )
+        }
+
+    fun importPreferences(json: String) {
+        val snapshot =
+            GrammalectePreferencesJson.decode(
+                json,
+            )
+
+        synchronized(lock) {
+            val currentOptions =
+                ruleOptions()
+
+            val supportedOptions =
+                currentOptions.associateBy { option ->
+                    option.id
+                }
+
+            val unknownRuleIds =
+                snapshot.ruleOverrides.keys -
+                    supportedOptions.keys
+
+            require(unknownRuleIds.isEmpty()) {
+                "Unknown Grammalecte rule options: " +
+                    unknownRuleIds
+                        .sorted()
+                        .joinToString(", ")
+            }
+
+            val importedOverrides =
+                snapshot.ruleOverrides
+                    .filter { (id, enabled) ->
+                        enabled !=
+                            supportedOptions
+                                .getValue(id)
+                                .defaultEnabled
+                    }.toSortedMap()
+
+            val previousDictionary =
+                selectedDictionary()
+
+            val previousOverrides =
+                ruleOverridesFrom(
+                    currentOptions,
+                )
+
+            try {
+                applyDictionary(
+                    snapshot.dictionary,
+                )
+
+                applyRuleOverrides(
+                    importedOverrides,
+                )
+            } catch (error: Throwable) {
+                runCatching {
+                    applyDictionary(
+                        previousDictionary,
+                    )
+
+                    applyRuleOverrides(
+                        previousOverrides,
+                    )
+                }.exceptionOrNull()
+                    ?.let(error::addSuppressed)
+
+                throw error
+            }
+
+            if (
+                snapshot.dictionary ==
+                GrammalecteDictionary.ALL_VARIANTS
+            ) {
+                dictionaryPreferences?.reset()
+            } else {
+                dictionaryPreferences?.select(
+                    snapshot.dictionary,
+                )
+            }
+
+            rulePreferences?.replace(
+                importedOverrides,
+            )
+
+            appliedDictionary =
+                snapshot.dictionary
+
+            appliedRuleOverrides =
+                rulePreferences?.overrides()
+                    ?: importedOverrides
+        }
+    }
+
     fun resetToDefaults() {
         synchronized(lock) {
             applyDictionary(
@@ -426,6 +534,35 @@ class GrammalecteQuickJsEngine internal constructor(
         }
 
         return normalized
+    }
+
+    private fun ruleOverridesFrom(options: List<GrammalecteRuleOption>): Map<String, Boolean> =
+        options
+            .asSequence()
+            .filter { option ->
+                option.enabled !=
+                    option.defaultEnabled
+            }.associate { option ->
+                option.id to option.enabled
+            }.toSortedMap()
+
+    private fun applyRuleOverrides(overrides: Map<String, Boolean>) {
+        callBridge(
+            "__grammalecteAndroid.resetRuleOptions",
+        )
+
+        overrides.forEach { (id, enabled) ->
+            val updated =
+                callBridge(
+                    "__grammalecteAndroid.setRuleOption",
+                    id,
+                    enabled,
+                ).toBooleanStrictOrNull() ?: false
+
+            check(updated) {
+                "Unable to apply Grammalecte rule option: $id"
+            }
+        }
     }
 
     private fun synchronizeStoredRuleOptions() {

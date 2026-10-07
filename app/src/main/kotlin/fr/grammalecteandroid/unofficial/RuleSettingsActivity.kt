@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -42,6 +43,8 @@ class RuleSettingsActivity : Activity() {
     private lateinit var optionsContainer: LinearLayout
     private lateinit var resetButton: Button
     private lateinit var resetAllButton: Button
+    private lateinit var exportButton: Button
+    private lateinit var importButton: Button
 
     private var engine: GrammalecteQuickJsEngine? = null
     private var selectedDictionary =
@@ -193,6 +196,68 @@ class RuleSettingsActivity : Activity() {
 
         content.addView(
             resetAllButton,
+            matchWrapParams(),
+        )
+
+        content.addView(
+            sectionTitle(
+                "Import / export",
+            ),
+            matchWrapParams(),
+        )
+
+        content.addView(
+            TextView(this).apply {
+                text =
+                    "Sauvegarde le dictionnaire principal sélectionné " +
+                    "et les réglages des règles Grammalecte. " +
+                    "Le dictionnaire personnel n’est jamais inclus."
+
+                textSize = 14f
+
+                setTextColor(
+                    getColor(R.color.surface_text_secondary),
+                )
+
+                setPadding(
+                    0,
+                    0,
+                    0,
+                    smallSpacing,
+                )
+            },
+            matchWrapParams(),
+        )
+
+        exportButton =
+            Button(this).apply {
+                text = "Exporter les réglages"
+                isAllCaps = false
+                isEnabled = false
+
+                setOnClickListener {
+                    launchExportDocument()
+                }
+            }
+
+        content.addView(
+            exportButton,
+            matchWrapParams(),
+        )
+
+        importButton =
+            Button(this).apply {
+                text = "Importer des réglages"
+                isAllCaps = false
+                isEnabled = false
+
+                setOnClickListener {
+                    launchImportDocument()
+                }
+            }
+
+        content.addView(
+            importButton,
             matchWrapParams(),
         )
 
@@ -401,6 +466,8 @@ class RuleSettingsActivity : Activity() {
 
         resetButton.isEnabled = false
         resetAllButton.isEnabled = false
+        exportButton.isEnabled = false
+        importButton.isEnabled = false
         dictionaryGroup.removeAllViews()
         optionsContainer.removeAllViews()
 
@@ -424,6 +491,7 @@ class RuleSettingsActivity : Activity() {
                         renderDictionary(dictionary)
                         renderOptions(options)
                         resetAllButton.isEnabled = true
+                        setTransferControlsEnabled(true)
                     }.onFailure { error ->
                         showError(error)
                     }
@@ -818,6 +886,237 @@ class RuleSettingsActivity : Activity() {
         }
     }
 
+    @Suppress("DEPRECATION")
+    private fun launchExportDocument() {
+        val intent =
+            Intent(
+                Intent.ACTION_CREATE_DOCUMENT,
+            ).apply {
+                addCategory(
+                    Intent.CATEGORY_OPENABLE,
+                )
+
+                type =
+                    PREFERENCES_MIME_TYPE
+
+                putExtra(
+                    Intent.EXTRA_TITLE,
+                    PREFERENCES_FILE_NAME,
+                )
+            }
+
+        startActivityForResult(
+            intent,
+            REQUEST_EXPORT_PREFERENCES,
+        )
+    }
+
+    @Suppress("DEPRECATION")
+    private fun launchImportDocument() {
+        val intent =
+            Intent(
+                Intent.ACTION_OPEN_DOCUMENT,
+            ).apply {
+                addCategory(
+                    Intent.CATEGORY_OPENABLE,
+                )
+
+                type =
+                    PREFERENCES_MIME_TYPE
+            }
+
+        startActivityForResult(
+            intent,
+            REQUEST_IMPORT_PREFERENCES,
+        )
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
+        super.onActivityResult(
+            requestCode,
+            resultCode,
+            data,
+        )
+
+        if (resultCode != RESULT_OK) {
+            return
+        }
+
+        val uri =
+            data?.data ?: return
+
+        when (requestCode) {
+            REQUEST_EXPORT_PREFERENCES ->
+                exportPreferencesTo(uri)
+
+            REQUEST_IMPORT_PREFERENCES ->
+                importPreferencesFrom(uri)
+        }
+    }
+
+    private fun exportPreferencesTo(uri: Uri) {
+        setTransferControlsEnabled(false)
+
+        statusView.text =
+            "Export des réglages..."
+
+        executor.execute {
+            val result =
+                runCatching {
+                    val json =
+                        currentEngine()
+                            .exportPreferences()
+
+                    writePreferencesDocument(
+                        uri = uri,
+                        json = json,
+                    )
+                }
+
+            mainHandler.post {
+                if (destroyed) {
+                    return@post
+                }
+
+                result
+                    .onSuccess {
+                        setTransferControlsEnabled(true)
+
+                        statusView.text =
+                            "Réglages exportés."
+                    }.onFailure { error ->
+                        showError(error)
+                    }
+            }
+        }
+    }
+
+    private fun importPreferencesFrom(uri: Uri) {
+        setTransferControlsEnabled(false)
+        resetButton.isEnabled = false
+        resetAllButton.isEnabled = false
+        setDictionaryControlsEnabled(false)
+
+        statusView.text =
+            "Import des réglages..."
+
+        executor.execute {
+            val result =
+                runCatching {
+                    val json =
+                        readPreferencesDocument(
+                            uri,
+                        )
+
+                    val currentEngine =
+                        currentEngine()
+
+                    currentEngine.importPreferences(
+                        json,
+                    )
+
+                    currentEngine.selectedDictionary() to
+                        currentEngine.ruleOptions()
+                }
+
+            mainHandler.post {
+                if (destroyed) {
+                    return@post
+                }
+
+                result
+                    .onSuccess { (dictionary, options) ->
+                        renderDictionary(dictionary)
+                        renderOptions(options)
+
+                        resetAllButton.isEnabled = true
+                        setTransferControlsEnabled(true)
+
+                        statusView.text =
+                            "Réglages importés."
+                    }.onFailure { error ->
+                        showError(error)
+                    }
+            }
+        }
+    }
+
+    private fun writePreferencesDocument(
+        uri: Uri,
+        json: String,
+    ) {
+        val output =
+            contentResolver.openOutputStream(
+                uri,
+                "w",
+            ) ?: error(
+                "Impossible d’ouvrir le fichier de destination.",
+            )
+
+        output
+            .bufferedWriter(
+                Charsets.UTF_8,
+            ).use { writer ->
+                writer.write(json)
+            }
+    }
+
+    private fun readPreferencesDocument(uri: Uri): String {
+        val input =
+            contentResolver.openInputStream(
+                uri,
+            ) ?: error(
+                "Impossible d’ouvrir le fichier sélectionné.",
+            )
+
+        return input
+            .bufferedReader(
+                Charsets.UTF_8,
+            ).use { reader ->
+                val result =
+                    StringBuilder()
+
+                val buffer =
+                    CharArray(
+                        IMPORT_BUFFER_SIZE,
+                    )
+
+                while (true) {
+                    val count =
+                        reader.read(buffer)
+
+                    if (count < 0) {
+                        break
+                    }
+
+                    result.append(
+                        buffer,
+                        0,
+                        count,
+                    )
+
+                    require(
+                        result.length <=
+                            MAX_IMPORTED_PREFERENCES_CHARS,
+                    ) {
+                        "Le fichier de réglages est trop volumineux."
+                    }
+                }
+
+                result.toString()
+            }
+    }
+
+    private fun setTransferControlsEnabled(enabled: Boolean) {
+        exportButton.isEnabled = enabled
+        importButton.isEnabled = enabled
+    }
+
     private fun currentEngine(): GrammalecteQuickJsEngine =
         engine
             ?: GrammalecteQuickJsEngine(
@@ -837,6 +1136,7 @@ class RuleSettingsActivity : Activity() {
         resetButton.isEnabled = true
         resetAllButton.isEnabled = true
         setDictionaryControlsEnabled(true)
+        setTransferControlsEnabled(true)
     }
 
     private fun sectionTitle(text: String): TextView =
@@ -886,6 +1186,26 @@ class RuleSettingsActivity : Activity() {
         executor.shutdown()
 
         super.onDestroy()
+    }
+
+    private companion object {
+        const val REQUEST_EXPORT_PREFERENCES =
+            4101
+
+        const val REQUEST_IMPORT_PREFERENCES =
+            4102
+
+        const val PREFERENCES_MIME_TYPE =
+            "application/json"
+
+        const val PREFERENCES_FILE_NAME =
+            "grammalecte-android-preferences.json"
+
+        const val MAX_IMPORTED_PREFERENCES_CHARS =
+            64 * 1024
+
+        const val IMPORT_BUFFER_SIZE =
+            4096
     }
 
     private fun matchWrapParams(): ViewGroup.LayoutParams =

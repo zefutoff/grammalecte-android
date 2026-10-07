@@ -492,6 +492,149 @@ class RealEngineSmokeTest {
     }
 
     @Test
+    fun preferencesExportAndImportRestoreOnlyNonSensitiveSettings() {
+        val engine =
+            GrammalecteQuickJsEngine(
+                FileAssetTextLoader(findAssetRoot()),
+            )
+
+        val personalWord =
+            "zefutologique"
+
+        try {
+            engine.setDictionary(
+                GrammalecteDictionary.CLASSIC,
+            )
+
+            engine.setRuleOption(
+                id = "apos",
+                enabled = false,
+            )
+
+            engine.addPersonalDictionaryWord(
+                personalWord,
+            )
+
+            val exported =
+                engine.exportPreferences()
+
+            val snapshot =
+                GrammalectePreferencesJson.decode(
+                    exported,
+                )
+
+            assertEquals(
+                GrammalecteDictionary.CLASSIC,
+                snapshot.dictionary,
+            )
+
+            assertEquals(
+                mapOf(
+                    "apos" to false,
+                ),
+                snapshot.ruleOverrides,
+            )
+
+            engine.setDictionary(
+                GrammalecteDictionary.REFORM_1990,
+            )
+
+            engine.resetRuleOptions()
+
+            engine.importPreferences(
+                exported,
+            )
+
+            assertEquals(
+                GrammalecteDictionary.CLASSIC,
+                engine.selectedDictionary(),
+            )
+
+            assertFalse(
+                engine
+                    .ruleOptions()
+                    .first { option ->
+                        option.id == "apos"
+                    }.enabled,
+            )
+
+            assertEquals(
+                listOf(personalWord),
+                engine.personalDictionaryWords(),
+            )
+
+            assertTrue(
+                engine
+                    .checkWord(
+                        word = personalWord,
+                        localeTag = "fr-FR",
+                        suggestionLimit = 5,
+                    ).valid,
+            )
+        } finally {
+            engine.close()
+        }
+    }
+
+    @Test
+    fun preferencesImportRejectsUnknownRuleBeforeChangingState() {
+        val engine =
+            GrammalecteQuickJsEngine(
+                FileAssetTextLoader(findAssetRoot()),
+            )
+
+        try {
+            engine.setDictionary(
+                GrammalecteDictionary.REFORM_1990,
+            )
+
+            engine.setRuleOption(
+                id = "apos",
+                enabled = false,
+            )
+
+            val invalidImport =
+                """
+                {
+                  "format": "grammalecte-android-preferences",
+                  "version": 1,
+                  "dictionary": "classic",
+                  "ruleOverrides": {
+                    "unknown-rule-id": true
+                  }
+                }
+                """.trimIndent()
+
+            try {
+                engine.importPreferences(
+                    invalidImport,
+                )
+
+                throw AssertionError(
+                    "Expected unknown rule id to be rejected",
+                )
+            } catch (_: IllegalArgumentException) {
+                // Expected.
+            }
+
+            assertEquals(
+                GrammalecteDictionary.REFORM_1990,
+                engine.selectedDictionary(),
+            )
+
+            assertFalse(
+                engine
+                    .ruleOptions()
+                    .first { option ->
+                        option.id == "apos"
+                    }.enabled,
+            )
+        } finally {
+            engine.close()
+        }
+    }
+
+    @Test
     fun concurrentCallsShareRuntimeSafely() {
         val engine =
             GrammalecteQuickJsEngine(
