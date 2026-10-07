@@ -65,6 +65,144 @@ class RealEngineSmokeTest {
     }
 
     @Test
+    fun ruleOptionsExposeUpstreamMetadataAndCanBeReset() {
+        val engine =
+            GrammalecteQuickJsEngine(
+                FileAssetTextLoader(findAssetRoot()),
+            )
+
+        try {
+            val options = engine.ruleOptions()
+
+            assertTrue(
+                "Expected Grammalecte rule options",
+                options.isNotEmpty(),
+            )
+
+            assertTrue(
+                "Debug options must not be exposed",
+                options.none { option ->
+                    option.groupId == "debug"
+                },
+            )
+
+            val infinitive =
+                options.firstOrNull { option ->
+                    option.id == "infi"
+                } ?: error(
+                    "Expected the upstream infi option",
+                )
+
+            assertEquals(
+                "verbs",
+                infinitive.groupId,
+            )
+
+            assertEquals(
+                "Verbes",
+                infinitive.groupLabel,
+            )
+
+            assertEquals(
+                "Infinitif",
+                infinitive.label,
+            )
+
+            assertTrue(
+                "Expected infi to be enabled by default",
+                infinitive.defaultEnabled,
+            )
+
+            val apostrophe =
+                options.firstOrNull { option ->
+                    option.id == "apos"
+                } ?: error(
+                    "Expected the upstream apos option",
+                )
+
+            assertTrue(
+                "Expected apos to be enabled by default",
+                apostrophe.defaultEnabled,
+            )
+
+            val apostropheText =
+                "Elle c'est rendu compte de son erreur."
+
+            assertTrue(
+                "Expected an apostrophe issue before disabling apos",
+                engine
+                    .check(
+                        text = apostropheText,
+                        localeTag = "fr-FR",
+                    ).any { issue ->
+                        apostropheText.substring(
+                            issue.start,
+                            issue.endExclusive,
+                        ) == "c'" &&
+                            "c’" in issue.suggestions
+                    },
+            )
+
+            engine.setRuleOption(
+                id = "apos",
+                enabled = false,
+            )
+
+            assertFalse(
+                "Expected apos to be disabled",
+                engine
+                    .ruleOptions()
+                    .first { option ->
+                        option.id == "apos"
+                    }.enabled,
+            )
+
+            assertTrue(
+                "Expected disabling apos to suppress the apostrophe issue",
+                engine
+                    .check(
+                        text = apostropheText,
+                        localeTag = "fr-FR",
+                    ).none { issue ->
+                        apostropheText.substring(
+                            issue.start,
+                            issue.endExclusive,
+                        ) == "c'" &&
+                            "c’" in issue.suggestions
+                    },
+            )
+
+            engine.resetRuleOptions()
+
+            assertTrue(
+                "Expected reset to restore apos",
+                engine
+                    .ruleOptions()
+                    .first { option ->
+                        option.id == "apos"
+                    }.enabled,
+            )
+
+            assertTrue(
+                "Expected reset to restore the apostrophe issue",
+                engine
+                    .check(
+                        text = apostropheText,
+                        localeTag = "fr-FR",
+                    ).any { issue ->
+                        apostropheText.substring(
+                            issue.start,
+                            issue.endExclusive,
+                        ) == "c'" &&
+                            "c’" in issue.suggestions
+                    },
+            )
+        } finally {
+            engine.close()
+        }
+    }
+
+    @Test
     fun concurrentCallsShareRuntimeSafely() {
         val engine =
             GrammalecteQuickJsEngine(

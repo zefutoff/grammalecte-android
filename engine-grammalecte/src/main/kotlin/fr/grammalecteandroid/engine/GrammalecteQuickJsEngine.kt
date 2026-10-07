@@ -55,6 +55,59 @@ class GrammalecteQuickJsEngine internal constructor(
         )
     }
 
+    fun ruleOptions(): List<GrammalecteRuleOption> {
+        val raw =
+            callBridge(
+                "__grammalecteAndroid.ruleOptions",
+            )
+
+        val array = JSONArray(raw)
+
+        return buildList(array.length()) {
+            for (index in 0 until array.length()) {
+                val item = array.getJSONObject(index)
+
+                add(
+                    GrammalecteRuleOption(
+                        id = item.getString("id"),
+                        groupId = item.getString("groupId"),
+                        groupLabel = item.getString("groupLabel"),
+                        label = item.getString("label"),
+                        description = item.optString("description"),
+                        enabled = item.getBoolean("enabled"),
+                        defaultEnabled = item.getBoolean("defaultEnabled"),
+                    ),
+                )
+            }
+        }
+    }
+
+    fun setRuleOption(
+        id: String,
+        enabled: Boolean,
+    ) {
+        require(id.isNotBlank()) {
+            "Grammalecte rule option id must not be blank"
+        }
+
+        val updated =
+            callBridge(
+                "__grammalecteAndroid.setRuleOption",
+                id,
+                enabled,
+            ).toBooleanStrictOrNull() ?: false
+
+        require(updated) {
+            "Unknown Grammalecte rule option: $id"
+        }
+    }
+
+    fun resetRuleOptions() {
+        callBridge(
+            "__grammalecteAndroid.resetRuleOptions",
+        )
+    }
+
     override fun close() {
         synchronized(lock) {
             runtime?.close()

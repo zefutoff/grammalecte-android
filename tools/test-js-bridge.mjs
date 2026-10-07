@@ -4,6 +4,14 @@ import vm from "node:vm";
 
 let loadedContext = null;
 
+let fakeOptions = new Map([
+  ["typo", true],
+  ["infi", true],
+  ["idrule", false]
+]);
+
+const fakeDefaultOptions = new Map(fakeOptions);
+
 const loadedFiles = [];
 const initializedModules = {};
 
@@ -54,6 +62,25 @@ const fakeSpellChecker = {
   }
 };
 
+globalThis.gc_options = {
+  lStructOpt: [
+    ["basic", [["typo"]]],
+    ["verbs", [["infi"]]],
+    ["debug", [["idrule"]]]
+  ],
+
+  oOptLabel: {
+    fr: {
+      basic: ["Typographie", ""],
+      typo: ["Signes typographiques", ""],
+      verbs: ["Verbes", ""],
+      infi: ["Infinitif", "Confusion avec une forme verbale."],
+      debug: ["Débogage", ""],
+      idrule: ["Identifiant des règles", ""]
+    }
+  }
+};
+
 globalThis.gc_engine = {
   load(context, colorType, path) {
     loadedContext = { context, colorType, path };
@@ -73,6 +100,24 @@ globalThis.gc_engine = {
 
   getSpellChecker() {
     return fakeSpellChecker;
+  },
+
+  getOptions() {
+    return new Map(fakeOptions);
+  },
+
+  getDefaultOptions() {
+    return new Map(fakeDefaultOptions);
+  },
+
+  setOption(id, enabled) {
+    if (fakeOptions.has(id)) {
+      fakeOptions.set(id, enabled);
+    }
+  },
+
+  resetOptions() {
+    fakeOptions = new Map(fakeDefaultOptions);
   }
 };
 
@@ -184,6 +229,57 @@ assert.deepEqual(
     valid: false,
     suggestions: []
   }
+);
+
+const ruleOptions = JSON.parse(
+  globalThis.__grammalecteAndroid.ruleOptions()
+);
+
+assert.deepEqual(ruleOptions, [
+  {
+    id: "typo",
+    groupId: "basic",
+    groupLabel: "Typographie",
+    label: "Signes typographiques",
+    description: "",
+    enabled: true,
+    defaultEnabled: true
+  },
+  {
+    id: "infi",
+    groupId: "verbs",
+    groupLabel: "Verbes",
+    label: "Infinitif",
+    description: "Confusion avec une forme verbale.",
+    enabled: true,
+    defaultEnabled: true
+  }
+]);
+
+assert.equal(
+  globalThis.__grammalecteAndroid.setRuleOption("infi", false),
+  "true"
+);
+
+assert.equal(
+  JSON.parse(
+    globalThis.__grammalecteAndroid.ruleOptions()
+  ).find((option) => option.id === "infi").enabled,
+  false
+);
+
+assert.equal(
+  globalThis.__grammalecteAndroid.setRuleOption("unknown", true),
+  "false"
+);
+
+globalThis.__grammalecteAndroid.resetRuleOptions();
+
+assert.equal(
+  JSON.parse(
+    globalThis.__grammalecteAndroid.ruleOptions()
+  ).find((option) => option.id === "infi").enabled,
+  true
 );
 
 console.log("JavaScript bridge contract OK");

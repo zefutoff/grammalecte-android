@@ -78,6 +78,60 @@
             return JSON.stringify(issues);
         },
 
+        ruleOptions: function () {
+            const labels = gc_options.oOptLabel.fr || {};
+            const current = gc_engine.getOptions();
+            const defaults = gc_engine.getDefaultOptions();
+            const result = [];
+
+            for (const [groupId, rows] of gc_options.lStructOpt) {
+                if (groupId === "debug") {
+                    continue;
+                }
+
+                const groupMetadata = labels[groupId] || [groupId, ""];
+
+                for (const row of rows) {
+                    for (const optionId of row) {
+                        if (!current.has(optionId)) {
+                            continue;
+                        }
+
+                        const metadata = labels[optionId] || [optionId, ""];
+
+                        result.push({
+                            id: optionId,
+                            groupId: groupId,
+                            groupLabel: String(groupMetadata[0] || groupId),
+                            label: String(metadata[0] || optionId),
+                            description: String(metadata[1] || ""),
+                            enabled: Boolean(current.get(optionId)),
+                            defaultEnabled: Boolean(defaults.get(optionId))
+                        });
+                    }
+                }
+            }
+
+            return JSON.stringify(result);
+        },
+
+        setRuleOption: function (id, enabled) {
+            const optionId = String(id || "");
+            const current = gc_engine.getOptions();
+
+            if (!current.has(optionId)) {
+                return "false";
+            }
+
+            gc_engine.setOption(optionId, Boolean(enabled));
+            return "true";
+        },
+
+        resetRuleOptions: function () {
+            gc_engine.resetOptions();
+            return "ok";
+        },
+
         checkWord: function (word, localeTag, limit) {
             void localeTag;
             const spellChecker = gc_engine.getSpellChecker();
