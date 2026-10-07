@@ -132,6 +132,33 @@
             return "ok";
         },
 
+        setDictionary: function (dictionaryFile) {
+            const fileName = String(dictionaryFile || "");
+
+            const allowed = new Set([
+                "fr-allvars.json",
+                "fr-classic.json",
+                "fr-reform.json"
+            ]);
+
+            if (!allowed.has(fileName)) {
+                return "false";
+            }
+
+            const spellChecker = gc_engine.getSpellChecker();
+
+            const loaded = spellChecker.setMainDictionary(
+                fileName,
+                "grammalecte/graphspell/_dictionaries"
+            );
+
+            if (loaded) {
+                spellChecker.clearStorage();
+            }
+
+            return loaded ? "true" : "false";
+        },
+
         checkWord: function (word, localeTag, limit) {
             void localeTag;
             const spellChecker = gc_engine.getSpellChecker();

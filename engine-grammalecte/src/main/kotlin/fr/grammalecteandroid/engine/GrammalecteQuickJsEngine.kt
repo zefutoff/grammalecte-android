@@ -16,16 +16,19 @@ import org.json.JSONObject
 class GrammalecteQuickJsEngine internal constructor(
     private val assetLoader: AssetTextLoader,
     private val rulePreferences: GrammalecteRulePreferences? = null,
+    private val dictionaryPreferences: GrammalecteDictionaryPreferences? = null,
 ) : GrammarEngine {
     constructor(context: Context) :
         this(
             AndroidAssetTextLoader(context),
             GrammalecteRulePreferences(context),
+            GrammalecteDictionaryPreferences(context),
         )
 
     private val lock = Any()
     private var runtime: QuickJs? = null
     private var appliedRuleOverrides: Map<String, Boolean>? = null
+    private var appliedDictionary: GrammalecteDictionary? = null
 
     override fun check(
         text: String,
@@ -33,6 +36,7 @@ class GrammalecteQuickJsEngine internal constructor(
     ): List<GrammarIssue> {
         if (text.isBlank()) return emptyList()
 
+        synchronizeStoredDictionary()
         synchronizeStoredRuleOptions()
 
         val raw = callBridge("__grammalecteAndroid.check", text, localeTag)
@@ -49,6 +53,9 @@ class GrammalecteQuickJsEngine internal constructor(
         suggestionLimit: Int,
     ): WordCheck {
         if (word.isBlank()) return WordCheck(valid = true)
+
+        synchronizeStoredDictionary()
+
         val safeLimit = suggestionLimit.coerceAtLeast(0)
 
         val raw =
@@ -61,6 +68,41 @@ class GrammalecteQuickJsEngine internal constructor(
             valid = json.getBoolean("valid"),
             suggestions = json.getJSONArray("suggestions").toStringList().take(safeLimit),
         )
+    }
+
+    fun selectedDictionary(): GrammalecteDictionary {
+        synchronizeStoredDictionary()
+
+        return synchronized(lock) {
+            appliedDictionary
+                ?: GrammalecteDictionary.ALL_VARIANTS
+        }
+    }
+
+    fun setDictionary(dictionary: GrammalecteDictionary) {
+        synchronized(lock) {
+            applyDictionary(dictionary)
+
+            dictionaryPreferences?.select(
+                dictionary,
+            )
+
+            appliedDictionary =
+                dictionary
+        }
+    }
+
+    fun resetDictionary() {
+        synchronized(lock) {
+            applyDictionary(
+                GrammalecteDictionary.ALL_VARIANTS,
+            )
+
+            dictionaryPreferences?.reset()
+
+            appliedDictionary =
+                GrammalecteDictionary.ALL_VARIANTS
+        }
     }
 
     fun ruleOptions(): List<GrammalecteRuleOption> {
@@ -139,6 +181,47 @@ class GrammalecteQuickJsEngine internal constructor(
         }
     }
 
+    private fun synchronizeStoredDictionary() {
+        val preferences =
+            dictionaryPreferences ?: return
+
+        val selected =
+            preferences.selected()
+
+        synchronized(lock) {
+            if (appliedDictionary == selected) {
+                return
+            }
+
+            if (
+                runtime == null &&
+                selected == GrammalecteDictionary.ALL_VARIANTS
+            ) {
+                appliedDictionary =
+                    GrammalecteDictionary.ALL_VARIANTS
+
+                return
+            }
+
+            applyDictionary(selected)
+
+            appliedDictionary =
+                selected
+        }
+    }
+
+    private fun applyDictionary(dictionary: GrammalecteDictionary) {
+        val updated =
+            callBridge(
+                "__grammalecteAndroid.setDictionary",
+                dictionary.fileName,
+            ).toBooleanStrictOrNull() ?: false
+
+        check(updated) {
+            "Unable to load Grammalecte dictionary: ${dictionary.fileName}"
+        }
+    }
+
     private fun synchronizeStoredRuleOptions() {
         val preferences =
             rulePreferences ?: return
@@ -177,6 +260,7 @@ class GrammalecteQuickJsEngine internal constructor(
             runtime?.close()
             runtime = null
             appliedRuleOverrides = null
+            appliedDictionary = null
         }
     }
 
@@ -241,6 +325,9 @@ class GrammalecteQuickJsEngine internal constructor(
                 check(initializationErrors.isBlank()) {
                     "Grammalecte initialization reported errors: $initializationErrors"
                 }
+
+                appliedDictionary =
+                    GrammalecteDictionary.ALL_VARIANTS
 
                 js.evaluationTimeoutMillis = ANALYSIS_TIMEOUT_MILLIS
             }
