@@ -91,7 +91,7 @@ Exit criterion: correction remains usable in common editable applications even w
 - [x] Application icon and visual identity
 - [x] Improve first-run setup
 - [x] Explain the three correction modes in-app
-- [ ] Improve accessibility of the application UI
+- [x] Improve accessibility of the application UI
 - [ ] Review all user-facing French strings
 - [x] Add compatibility documentation
 - [ ] Add performance regression tests

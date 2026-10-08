@@ -70,6 +70,9 @@ class GrammalecteImeService : InputMethodService() {
         val smallSpacing = (6 * density).toInt()
         val spacing = (10 * density).toInt()
 
+        val useStackedAccessibilityLayout =
+            resources.configuration.fontScale >= 1.5f
+
         val root =
             LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
@@ -87,13 +90,20 @@ class GrammalecteImeService : InputMethodService() {
 
         val header =
             LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
+                orientation =
+                    if (useStackedAccessibilityLayout) {
+                        LinearLayout.VERTICAL
+                    } else {
+                        LinearLayout.HORIZONTAL
+                    }
+
                 gravity = Gravity.CENTER_VERTICAL
             }
 
         header.addView(
             TextView(this).apply {
                 text = "Grammalecte"
+                markAsAccessibilityHeading()
                 textSize = 20f
                 setTextColor(
                     getColor(R.color.surface_text),
@@ -104,28 +114,42 @@ class GrammalecteImeService : InputMethodService() {
                     android.graphics.Typeface.BOLD,
                 )
             },
-            LinearLayout.LayoutParams(
-                0,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                1f,
-            ),
+            if (useStackedAccessibilityLayout) {
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                )
+            } else {
+                LinearLayout.LayoutParams(
+                    0,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    1f,
+                )
+            },
         )
 
         header.addView(
             Button(this).apply {
                 text = "← Retour clavier"
                 isAllCaps = false
-                minHeight = 0
-                minimumHeight = 0
+                minHeight = (48 * density).toInt()
+                minimumHeight = (48 * density).toInt()
 
                 setOnClickListener {
                     returnToPreviousInputMethod()
                 }
             },
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
+            if (useStackedAccessibilityLayout) {
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                )
+            } else {
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                )
+            },
         )
 
         root.addView(
@@ -169,6 +193,7 @@ class GrammalecteImeService : InputMethodService() {
         statusView =
             TextView(this).apply {
                 text = "Sélectionnez du texte à corriger."
+                enablePoliteAccessibilityUpdates()
                 textSize = 14f
                 setTextColor(
                     getColor(R.color.surface_text_secondary),
@@ -213,7 +238,12 @@ class GrammalecteImeService : InputMethodService() {
 
         val automaticActions =
             LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
+                orientation =
+                    if (useStackedAccessibilityLayout) {
+                        LinearLayout.VERTICAL
+                    } else {
+                        LinearLayout.HORIZONTAL
+                    }
             }
 
         applyAllButton =
@@ -231,7 +261,7 @@ class GrammalecteImeService : InputMethodService() {
 
         automaticActions.addView(
             applyAllButton,
-            weightedButtonParams(),
+            actionButtonParams(useStackedAccessibilityLayout),
         )
 
         applyAllAndReturnButton =
@@ -249,7 +279,7 @@ class GrammalecteImeService : InputMethodService() {
 
         automaticActions.addView(
             applyAllAndReturnButton,
-            weightedButtonParams(),
+            actionButtonParams(useStackedAccessibilityLayout),
         )
 
         root.addView(
@@ -259,7 +289,12 @@ class GrammalecteImeService : InputMethodService() {
 
         val manualActions =
             LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
+                orientation =
+                    if (useStackedAccessibilityLayout) {
+                        LinearLayout.VERTICAL
+                    } else {
+                        LinearLayout.HORIZONTAL
+                    }
             }
 
         applyButton =
@@ -277,7 +312,7 @@ class GrammalecteImeService : InputMethodService() {
 
         manualActions.addView(
             applyButton,
-            weightedButtonParams(),
+            actionButtonParams(useStackedAccessibilityLayout),
         )
 
         applyAndReturnButton =
@@ -295,7 +330,7 @@ class GrammalecteImeService : InputMethodService() {
 
         manualActions.addView(
             applyAndReturnButton,
-            weightedButtonParams(),
+            actionButtonParams(useStackedAccessibilityLayout),
         )
 
         root.addView(
@@ -685,10 +720,10 @@ class GrammalecteImeService : InputMethodService() {
                                 this.text = suggestion
                                 isAllCaps = false
 
-                                minWidth = 0
-                                minimumWidth = 0
-                                minHeight = 0
-                                minimumHeight = 0
+                                minWidth = (48 * density).toInt()
+                                minimumWidth = (48 * density).toInt()
+                                minHeight = (48 * density).toInt()
+                                minimumHeight = (48 * density).toInt()
 
                                 setPadding(
                                     (16 * density).toInt(),
@@ -998,12 +1033,19 @@ class GrammalecteImeService : InputMethodService() {
         const val SELECTION_REFRESH_DELAY_MILLIS = 150L
     }
 
-    private fun weightedButtonParams(): LinearLayout.LayoutParams =
-        LinearLayout.LayoutParams(
-            0,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            1f,
-        )
+    private fun actionButtonParams(stacked: Boolean): LinearLayout.LayoutParams =
+        if (stacked) {
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            )
+        } else {
+            LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f,
+            )
+        }
 
     private fun matchWrapParams(): ViewGroup.LayoutParams =
         LinearLayout.LayoutParams(

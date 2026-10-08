@@ -70,6 +70,7 @@ class MainActivity :
         content.addView(
             TextView(this).apply {
                 text = getString(R.string.title)
+                markAsAccessibilityHeading()
                 textSize = 28f
 
                 setTypeface(
@@ -145,6 +146,7 @@ class MainActivity :
 
         spellCheckerStatusView =
             TextView(this).apply {
+                enablePoliteAccessibilityUpdates()
                 textSize = 14f
                 setTextColor(
                     getColor(R.color.surface_text_secondary),
@@ -170,6 +172,7 @@ class MainActivity :
 
         imeStatusView =
             TextView(this).apply {
+                enablePoliteAccessibilityUpdates()
                 textSize = 14f
                 setTextColor(
                     getColor(R.color.surface_text_secondary),
@@ -389,6 +392,7 @@ class MainActivity :
         resultView =
             TextView(this).apply {
                 text = "Test : $testText"
+                enablePoliteAccessibilityUpdates()
                 textSize = 15f
 
                 setTextColor(
@@ -784,6 +788,7 @@ class MainActivity :
     private fun sectionTitle(text: String): TextView =
         TextView(this).apply {
             this.text = text
+            markAsAccessibilityHeading()
             textSize = 18f
 
             setTypeface(
@@ -844,6 +849,7 @@ class MainActivity :
             addView(
                 TextView(this@MainActivity).apply {
                     text = title
+                    markAsAccessibilityHeading()
                     textSize = 17f
 
                     setTypeface(

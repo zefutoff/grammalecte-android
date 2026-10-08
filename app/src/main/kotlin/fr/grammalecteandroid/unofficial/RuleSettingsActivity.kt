@@ -93,6 +93,7 @@ class RuleSettingsActivity : Activity() {
         header.addView(
             TextView(this).apply {
                 text = "Réglages de correction"
+                markAsAccessibilityHeading()
                 textSize = 24f
 
                 setTypeface(
@@ -361,6 +362,7 @@ class RuleSettingsActivity : Activity() {
         statusView =
             TextView(this).apply {
                 text = "Chargement des règles..."
+                enablePoliteAccessibilityUpdates()
                 textSize = 14f
 
                 setTextColor(
@@ -1142,6 +1144,7 @@ class RuleSettingsActivity : Activity() {
     private fun sectionTitle(text: String): TextView =
         TextView(this).apply {
             this.text = text
+            markAsAccessibilityHeading()
             textSize = 18f
 
             setTypeface(

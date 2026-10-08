@@ -54,6 +54,7 @@ class SetupGuideActivity : Activity() {
         content.addView(
             TextView(this).apply {
                 text = "Bien démarrer avec Grammalecte"
+                markAsAccessibilityHeading()
                 textSize = 26f
 
                 setTypeface(
@@ -378,6 +379,7 @@ class SetupGuideActivity : Activity() {
 
     private fun statusTextView(): TextView =
         TextView(this).apply {
+            enablePoliteAccessibilityUpdates()
             textSize = 15f
 
             setTypeface(
@@ -424,6 +426,7 @@ class SetupGuideActivity : Activity() {
             addView(
                 TextView(this@SetupGuideActivity).apply {
                     text = "$number. $title"
+                    markAsAccessibilityHeading()
                     textSize = 18f
 
                     setTypeface(

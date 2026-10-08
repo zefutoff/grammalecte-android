@@ -61,6 +61,7 @@ class CorrectionStatusActivity : Activity() {
         header.addView(
             TextView(this).apply {
                 text = "État de la correction"
+                markAsAccessibilityHeading()
                 textSize = 24f
 
                 setTypeface(
@@ -341,6 +342,7 @@ class CorrectionStatusActivity : Activity() {
 
     private fun statusTextView(): TextView =
         TextView(this).apply {
+            enablePoliteAccessibilityUpdates()
             textSize = 15f
 
             setTypeface(
@@ -386,6 +388,7 @@ class CorrectionStatusActivity : Activity() {
             addView(
                 TextView(this@CorrectionStatusActivity).apply {
                     text = title
+                    markAsAccessibilityHeading()
                     textSize = 18f
 
                     setTypeface(
