@@ -198,9 +198,12 @@ Use short synthetic French sentences designed to isolate one behavior.
 
 ## Performance tests
 
-An opt-in JVM characterization test measures the real embedded QuickJS/Grammalecte engine without adding unstable timing requirements to normal CI.
+Performance coverage uses two complementary JVM tests against the real
+embedded QuickJS/Grammalecte engine.
 
-Run it with:
+`EnginePerformanceCharacterizationTest` remains an opt-in measurement tool.
+It reports cold-start, sentence and paragraph timings without enforcing
+thresholds:
 
     ./gradlew \
       :engine-grammalecte:testDebugUnitTest \
@@ -209,20 +212,37 @@ Run it with:
       --rerun-tasks \
       --no-daemon
 
-The initial development baseline measured:
+`EnginePerformanceRegressionTest` adds regression protection.
 
-- cold first correction: approximately 808 ms;
-- sentence median: approximately 13.5 ms;
-- sentence p95: approximately 15.6 ms;
-- paragraph median: approximately 30.9 ms;
-- paragraph p95: approximately 35.7 ms.
+Its deterministic test verifies that repeated analyses reuse the initialized
+QuickJS runtime without reloading the embedded Grammalecte assets. This part
+runs with the normal engine test suite.
 
-These measurements characterize the JVM development environment and are not Android-device performance guarantees.
+Its timing test is enabled by `-PgrammalectePerf=1` and is run in CI through:
 
-Future performance work should additionally cover:
+    make performance-check
 
-- cold initialization on representative physical Android devices;
-- memory use after repeated corrections;
-- rapid repeated IME analyses.
+The timing budgets are intentionally wider than the development baseline so
+that normal host load does not make CI flaky:
 
-Performance tests should primarily detect regressions rather than enforce unrealistic device-independent timing thresholds.
+- cold first correction: at most 3000 ms;
+- sentence median: at most 75 ms;
+- sentence p95: at most 200 ms;
+- paragraph median: at most 150 ms;
+- paragraph p95: at most 400 ms.
+
+A three-run development baseline measured:
+
+- cold first correction: 809.54–828.45 ms;
+- sentence median: 13.48–13.84 ms;
+- sentence p95: 14.94–16.45 ms;
+- paragraph median: 31.89–32.23 ms;
+- paragraph p95: 32.85–34.35 ms.
+
+These JVM measurements are regression guards, not Android-device performance
+guarantees. Physical-device latency remains a separate compatibility and
+profiling concern.
+
+Performance regression tests are intended to detect substantial regressions,
+such as accidental runtime reinitialization, repeated asset loading or major
+analysis slowdowns, rather than small timing variations.
