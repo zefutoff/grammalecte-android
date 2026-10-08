@@ -108,6 +108,14 @@ Build the debug APK and verify its final permissions:
 make assemble
 ```
 
+Verify that two independent unsigned release builds are byte-for-byte reproducible:
+
+```sh
+make release-reproducibility
+```
+
+See [`docs/release.md`](docs/release.md) for the complete release procedure.
+
 The debug APK is generated under:
 
 ```text

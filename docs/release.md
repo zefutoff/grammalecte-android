@@ -4,6 +4,82 @@ The repository now contains the committed Gradle wrapper and pinned Grammalecte 
 
 A public release should still be produced only from a clean checkout and after all release checks below succeed.
 
+## Reproducible unsigned release build
+
+The current reproducibility guarantee covers the unsigned release APK.
+Signing is handled separately and is not yet part of this guarantee.
+
+Two builds are considered reproducible when they:
+
+- start from the exact same Git commit;
+- use separate source worktrees;
+- use the committed Gradle wrapper;
+- disable the Gradle build and configuration caches;
+- produce byte-for-byte identical APK files.
+
+Run:
+
+    make release-reproducibility
+
+The command builds the application twice from separate temporary Git
+worktrees and compares both SHA-256 hashes and the final APK bytes.
+
+The expected artifact is:
+
+    app/build/outputs/apk/release/app-release-unsigned.apk
+
+The initial validation produced identical unsigned APKs from two independent
+worktrees.
+
+The release build currently uses:
+
+- Gradle 9.6.1;
+- Android Gradle Plugin 9.4.1;
+- Kotlin 2.4.20;
+- JDK 17;
+- compileSdk 36;
+- targetSdk 36;
+- minSdk 26;
+- Grammalecte 2.3.0;
+- Grammalecte commit 47af2080202e647110e5199ebd5d4b51d2bd51db.
+
+Gradle dependency verification is enabled through
+`gradle/verification-metadata.xml`.
+
+The Gradle distribution checksum is pinned in
+`gradle/wrapper/gradle-wrapper.properties`.
+
+### Manual release build
+
+Build the unsigned release APK with:
+
+    ./gradlew :app:assembleRelease \
+        --no-daemon \
+        --no-build-cache \
+        --no-configuration-cache
+
+Verify the offline privacy invariant with:
+
+    ./tools/check-apk-permissions.sh \
+        app/build/outputs/apk/release/app-release-unsigned.apk
+
+Record its SHA-256 with:
+
+    sha256sum app/build/outputs/apk/release/app-release-unsigned.apk
+
+The current release build may warn that `libquickjs.so` cannot be stripped.
+This is currently non-fatal. The reproducibility check compares the final APK
+bytes and therefore still detects differences in the packaged native library.
+
+### Signing boundary
+
+The reproducibility procedure intentionally stops at the unsigned APK.
+
+Private signing keys must never be committed to the repository.
+
+The signed release pipeline will separately define signing-key storage,
+artifact signing, provenance and signed-artifact verification.
+
 ## Release checklist
 
 1. CI is green on the target commit.
@@ -73,14 +149,14 @@ Do not rebuild a published version from a later commit under the same version nu
 
 ## Before the first stable release
 
-The following project-level items are still expected before declaring a stable public release:
+The remaining Phase 5 work includes:
 
-- application icon and final visual identity;
-- polished first-run setup;
-- compatibility matrix;
-- broader Android-version testing;
-- IME instrumentation coverage;
-- broader end-to-end Android integration coverage for the IME and platform spell-checker paths;
 - signed release pipeline;
-- reproducibility review;
-- final privacy and security review.
+- SBOM and dependency inventory;
+- F-Droid metadata and reproducibility checks;
+- final Android package namespace decision;
+- final third-party license review;
+- first stable release.
+
+Broader physical-device validation across supported Android versions also
+remains useful before making broad compatibility claims.

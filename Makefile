@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check performance-check stress-check test lint assemble instrumented refresh-verification-metadata clean
+.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -28,6 +28,9 @@ stress-check:
 		--tests '*EngineRuntimeStressTest*' \
 		-PgrammalecteStress=1 \
 		--rerun-tasks
+
+release-reproducibility:
+	./tools/check-release-reproducibility.sh
 
 test:
 	$(GRADLE) --no-daemon :core:test :engine-grammalecte:test :spellchecker:test
