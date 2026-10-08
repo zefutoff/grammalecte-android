@@ -4,4 +4,5 @@
     <color name="surface_card">#FF242428</color>
     <color name="surface_text">#FFF1F1F1</color>
     <color name="surface_text_secondary">#FFC4C4CC</color>
+    <color name="brand_primary">#FFC7D2FE</color>
 </resources>
