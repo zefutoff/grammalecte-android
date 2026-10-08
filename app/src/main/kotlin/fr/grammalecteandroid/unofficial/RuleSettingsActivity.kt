@@ -135,9 +135,9 @@ class RuleSettingsActivity : Activity() {
         content.addView(
             TextView(this).apply {
                 text =
-                    "Choisissez le dictionnaire et les contrôles Grammalecte " +
+                    "Choisissez le dictionnaire et les règles Grammalecte " +
                     "à appliquer. Les réglages sont partagés par le correcteur " +
-                    "Android, la correction de sélection et le clavier Grammalecte."
+                    "Android, la correction d’une sélection et le clavier Grammalecte."
 
                 textSize = 14f
 
@@ -202,7 +202,7 @@ class RuleSettingsActivity : Activity() {
 
         content.addView(
             sectionTitle(
-                "Import / export",
+                "Importation et exportation",
             ),
             matchWrapParams(),
         )
@@ -361,7 +361,7 @@ class RuleSettingsActivity : Activity() {
 
         statusView =
             TextView(this).apply {
-                text = "Chargement des règles..."
+                text = "Chargement des règles…"
                 enablePoliteAccessibilityUpdates()
                 textSize = 14f
 
@@ -464,7 +464,7 @@ class RuleSettingsActivity : Activity() {
 
     private fun loadOptions() {
         statusView.text =
-            "Chargement des réglages..."
+            "Chargement des réglages…"
 
         resetButton.isEnabled = false
         resetAllButton.isEnabled = false
@@ -524,7 +524,7 @@ class RuleSettingsActivity : Activity() {
 
         addDictionaryOption(
             dictionary = GrammalecteDictionary.REFORM_1990,
-            label = "Réforme de 1990",
+            label = "Rectifications de 1990",
             description =
                 "Utilise les graphies issues des rectifications " +
                     "orthographiques de 1990.",
@@ -579,7 +579,7 @@ class RuleSettingsActivity : Activity() {
         setDictionaryControlsEnabled(false)
 
         statusView.text =
-            "Changement de dictionnaire..."
+            "Changement de dictionnaire…"
 
         executor.execute {
             val result =
@@ -630,7 +630,11 @@ class RuleSettingsActivity : Activity() {
         }
 
         statusView.text =
-            "${options.size} options configurables."
+            resources.getQuantityString(
+                R.plurals.configurable_options,
+                options.size,
+                options.size,
+            )
 
         resetButton.isEnabled = true
 
@@ -762,7 +766,7 @@ class RuleSettingsActivity : Activity() {
         toggle.isEnabled = false
 
         statusView.text =
-            "Enregistrement..."
+            "Enregistrement…"
 
         executor.execute {
             val result =
@@ -797,7 +801,7 @@ class RuleSettingsActivity : Activity() {
         resetButton.isEnabled = false
 
         statusView.text =
-            "Réinitialisation..."
+            "Réinitialisation…"
 
         executor.execute {
             val result =
@@ -853,7 +857,7 @@ class RuleSettingsActivity : Activity() {
         setDictionaryControlsEnabled(false)
 
         statusView.text =
-            "Réinitialisation de tous les réglages..."
+            "Réinitialisation de tous les réglages…"
 
         executor.execute {
             val result =
@@ -965,7 +969,7 @@ class RuleSettingsActivity : Activity() {
         setTransferControlsEnabled(false)
 
         statusView.text =
-            "Export des réglages..."
+            "Exportation des réglages…"
 
         executor.execute {
             val result =
@@ -1005,7 +1009,7 @@ class RuleSettingsActivity : Activity() {
         setDictionaryControlsEnabled(false)
 
         statusView.text =
-            "Import des réglages..."
+            "Importation des réglages…"
 
         executor.execute {
             val result =

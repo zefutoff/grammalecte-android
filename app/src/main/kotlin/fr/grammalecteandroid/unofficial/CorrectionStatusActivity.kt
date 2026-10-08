@@ -255,7 +255,7 @@ class CorrectionStatusActivity : Activity() {
         spellCheckerStatusView.text =
             when (status.spellChecker) {
                 SpellCheckerStatus.SELECTED ->
-                    "État : sélectionné comme correcteur système."
+                    "État : activé et sélectionné comme correcteur Android."
 
                 SpellCheckerStatus.NOT_SELECTED ->
                     "État : disponible, mais non sélectionné."

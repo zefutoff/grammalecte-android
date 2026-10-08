@@ -527,7 +527,7 @@ class GrammalecteImeService : InputMethodService() {
         val generation = ++analysisGeneration
 
         statusView.text =
-            "Analyse en cours..."
+            "Analyse en cours…"
 
         issuesLayout.removeAllViews()
         latestIssues = emptyList()
@@ -597,7 +597,11 @@ class GrammalecteImeService : InputMethodService() {
         }
 
         statusView.text =
-            "${issues.size} problème(s) détecté(s)."
+            resources.getQuantityString(
+                R.plurals.detected_problems,
+                issues.size,
+                issues.size,
+            )
 
         setApplyAllButtonsEnabled(
             buildAutomaticCorrection(
@@ -875,7 +879,7 @@ class GrammalecteImeService : InputMethodService() {
             analyzedSelectionEnd <= analyzedSelectionStart
         ) {
             statusView.text =
-                "La sélection n'est plus disponible."
+                "La sélection n’est plus disponible."
 
             setApplyButtonsEnabled(false)
             return
@@ -930,7 +934,7 @@ class GrammalecteImeService : InputMethodService() {
             }
         } else {
             statusView.text =
-                "Impossible d'appliquer la correction."
+                "Impossible d’appliquer la correction."
         }
     }
 

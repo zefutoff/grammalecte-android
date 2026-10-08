@@ -56,7 +56,7 @@ class ProcessTextActivity : Activity() {
 
         layout.addView(
             TextView(this).apply {
-                text = "Corriger avec Grammalecte"
+                text = getString(R.string.process_text_label)
                 markAsAccessibilityHeading()
                 textSize = 24f
             },
@@ -130,7 +130,7 @@ class ProcessTextActivity : Activity() {
         val text = editText.text.toString()
         val generation = ++analysisGeneration
 
-        statusView.text = "Analyse en cours..."
+        statusView.text = "Analyse en cours…"
         issuesLayout.removeAllViews()
 
         Thread {
@@ -157,7 +157,7 @@ class ProcessTextActivity : Activity() {
                         showIssues(text, issues)
                     }.onFailure { error ->
                         statusView.text =
-                            "Erreur pendant l'analyse : ${error.message ?: error.javaClass.simpleName}"
+                            "Erreur pendant l’analyse : ${error.message ?: error.javaClass.simpleName}"
                     }
             }
         }.start()
@@ -181,7 +181,12 @@ class ProcessTextActivity : Activity() {
             return
         }
 
-        statusView.text = "${validIssues.size} erreur(s) détectée(s)."
+        statusView.text =
+            resources.getQuantityString(
+                R.plurals.detected_problems,
+                validIssues.size,
+                validIssues.size,
+            )
 
         validIssues.forEach { issue ->
             val fragment =

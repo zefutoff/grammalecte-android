@@ -292,13 +292,13 @@ class SetupGuideActivity : Activity() {
         spellCheckerStatusView.text =
             when (status.spellChecker) {
                 SpellCheckerStatus.SELECTED ->
-                    "État : activé et sélectionné."
+                    "État : activé et sélectionné comme correcteur Android."
 
                 SpellCheckerStatus.NOT_SELECTED ->
                     "État : disponible, mais non sélectionné."
 
                 SpellCheckerStatus.DISABLED ->
-                    "État : correction Android désactivée."
+                    "État : correction orthographique Android désactivée."
 
                 SpellCheckerStatus.UNAVAILABLE ->
                     "État : aucun correcteur Android actif détecté."
@@ -313,7 +313,7 @@ class SetupGuideActivity : Activity() {
                     "État : activé, mais un autre clavier est sélectionné."
 
                 ImeStatus.DISABLED ->
-                    "État : non activé."
+                    "État : non activé dans les méthodes de saisie."
             }
     }
 
