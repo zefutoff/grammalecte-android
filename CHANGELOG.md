@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Versioned JSON import/export for non-sensitive correction preferences, using Android's system document picker without storage permissions; the personal dictionary is intentionally excluded.
 - Dedicated correction status screen showing the native Android spell-checker and Grammalecte IME activation/selection state, with direct access to the relevant system settings.
 - First-run setup guide explaining the three correction modes, showing live activation state and providing direct access to the relevant Android settings; the guide is shown once automatically and remains available from the main screen.
+- Application visual identity with adaptive and themed launcher icons, a matching Quick Settings icon, branded accent colors and a concise launcher label.
 
 ### Changed
 

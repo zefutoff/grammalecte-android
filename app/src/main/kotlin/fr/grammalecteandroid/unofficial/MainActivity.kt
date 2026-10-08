@@ -78,7 +78,7 @@ class MainActivity :
                 )
 
                 setTextColor(
-                    getColor(R.color.surface_text),
+                    getColor(R.color.brand_primary),
                 )
             },
             matchWrapParams(),

@@ -4,4 +4,7 @@
     <color name="surface_card">#FFE9E9EC</color>
     <color name="surface_text">#FF202124</color>
     <color name="surface_text_secondary">#FF5F6368</color>
+    <color name="brand_primary">#FF4338CA</color>
+    <color name="launcher_background">#FF4338CA</color>
+    <color name="launcher_check">#FF22C55E</color>
 </resources>

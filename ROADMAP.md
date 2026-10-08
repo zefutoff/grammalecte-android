@@ -88,7 +88,7 @@ Exit criterion: correction remains usable in common editable applications even w
 
 ## Phase 4 — Product polish
 
-- [ ] Application icon and visual identity
+- [x] Application icon and visual identity
 - [x] Improve first-run setup
 - [x] Explain the three correction modes in-app
 - [ ] Improve accessibility of the application UI

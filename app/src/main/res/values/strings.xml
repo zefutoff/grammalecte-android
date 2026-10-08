@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Grammalecte Android (non officiel)</string>
+    <string name="launcher_name">Grammalecte</string>
     <string name="title">Grammalecte Android</string>
     <string name="intro">Correcteur français local basé sur Grammalecte. Aucun texte n’est envoyé sur Internet.</string>
     <string name="setup_steps">Pour l’activer : Paramètres Android → Système → Langues et saisie → Correcteur orthographique, puis choisissez Grammalecte Android.</string>
