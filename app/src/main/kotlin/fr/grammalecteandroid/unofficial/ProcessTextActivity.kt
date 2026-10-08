@@ -57,6 +57,7 @@ class ProcessTextActivity : Activity() {
         layout.addView(
             TextView(this).apply {
                 text = "Corriger avec Grammalecte"
+                markAsAccessibilityHeading()
                 textSize = 24f
             },
             matchWrapParams(),
@@ -86,6 +87,7 @@ class ProcessTextActivity : Activity() {
         statusView =
             TextView(this).apply {
                 text = "Prêt."
+                enablePoliteAccessibilityUpdates()
                 textSize = 16f
                 setPadding(0, spacing, 0, spacing)
             }

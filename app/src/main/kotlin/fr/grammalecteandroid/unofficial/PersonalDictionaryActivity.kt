@@ -81,6 +81,7 @@ class PersonalDictionaryActivity : Activity() {
         header.addView(
             TextView(this).apply {
                 text = "Dictionnaire personnel"
+                markAsAccessibilityHeading()
                 textSize = 24f
 
                 setTypeface(
@@ -177,6 +178,7 @@ class PersonalDictionaryActivity : Activity() {
         statusView =
             TextView(this).apply {
                 text = "Chargement..."
+                enablePoliteAccessibilityUpdates()
                 textSize = 14f
 
                 setTextColor(

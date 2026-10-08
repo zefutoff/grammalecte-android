@@ -55,6 +55,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Improved Android UI accessibility with semantic headings, TalkBack live-region announcements, minimum IME touch targets and a large-text IME layout that avoids truncated actions.
 - Grammalecte engine initialization now loads conjugation, phonetic and morphology data required by the full grammar engine.
 - Android spell-checker sessions now own their QuickJS engine lifecycle.
 - Android correction is no longer limited to applications supporting `SpellCheckerService`.
