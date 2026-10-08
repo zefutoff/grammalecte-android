@@ -43,6 +43,9 @@ jobs:
       - name: Run performance regression checks
         run: make performance-check
 
+      - name: Run runtime stress checks
+        run: make stress-check
+
       - name: Build debug APK
         run: make assemble
 
