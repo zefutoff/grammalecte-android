@@ -246,3 +246,42 @@ profiling concern.
 Performance regression tests are intended to detect substantial regressions,
 such as accidental runtime reinitialization, repeated asset loading or major
 analysis slowdowns, rather than small timing variations.
+
+## Runtime and memory stress tests
+
+`EngineRuntimeStressTest` exercises the real embedded QuickJS/Grammalecte
+runtime under sustained use.
+
+The stress suite covers:
+
+- a long-lived engine performing hundreds of grammar analyses and repeated
+  spelling checks;
+- retained QuickJS memory before and after sustained analysis, measured after
+  explicit QuickJS garbage collection;
+- concurrent bursts of grammar and spelling requests sharing one serialized
+  runtime;
+- repeated engine creation, use and closure cycles.
+
+Run the suite with:
+
+    make stress-check
+
+The stress tests are opt-in through `-PgrammalecteStress=1` and are executed
+by CI through the dedicated `stress-check` target.
+
+The initial development measurement after 400 long-lived analyses reported:
+
+- QuickJS memory before stress: 30.00 MiB;
+- QuickJS memory after stress: 30.00 MiB;
+- retained-memory growth: 0.00 MiB;
+- QuickJS allocated memory after stress: 40.62 MiB;
+- objects after stress: 91,502;
+- strings after stress: 36,620.
+
+The retained-memory regression budget is 8 MiB. This intentionally allows
+normal runtime and host variation while detecting substantial accumulation
+across repeated corrections.
+
+These measurements concern the embedded QuickJS runtime used by the JVM test
+environment. They protect engine lifecycle and memory behavior but are not a
+claim about total Android process memory or device-specific RSS.

@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check performance-check test lint assemble instrumented refresh-verification-metadata clean
+.PHONY: bootstrap vendor check performance-check stress-check test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -20,6 +20,13 @@ performance-check:
 		:engine-grammalecte:testDebugUnitTest \
 		--tests '*EnginePerformanceRegressionTest*' \
 		-PgrammalectePerf=1 \
+		--rerun-tasks
+
+stress-check:
+	$(GRADLE) --no-daemon \
+		:engine-grammalecte:testDebugUnitTest \
+		--tests '*EngineRuntimeStressTest*' \
+		-PgrammalecteStress=1 \
 		--rerun-tasks
 
 test:

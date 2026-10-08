@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Real-engine performance regression tests covering QuickJS runtime reuse and tolerant cold-start, sentence and paragraph timing budgets.
+- Runtime stress coverage for prolonged Grammalecte analysis, concurrent engine calls, repeated QuickJS lifecycle cycles and retained QuickJS memory growth.
 - Initial modular Android project foundation.
 - Pure Kotlin `GrammarEngine` abstraction for correction results.
 - Native Android `SpellCheckerService` integration.

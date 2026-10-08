@@ -64,6 +64,14 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
             .orElse("0")
             .get(),
     )
+
+    systemProperty(
+        "grammalecte.stress",
+        providers
+            .gradleProperty("grammalecteStress")
+            .orElse("0")
+            .get(),
+    )
 }
 
 dependencies {

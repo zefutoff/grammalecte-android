@@ -13,6 +13,13 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 
+internal data class GrammalecteRuntimeMemorySnapshot(
+    val memoryUsedBytes: Long,
+    val mallocBytes: Long,
+    val objectCount: Long,
+    val stringCount: Long,
+)
+
 class GrammalecteQuickJsEngine internal constructor(
     private val assetLoader: AssetTextLoader,
     private val rulePreferences: GrammalecteRulePreferences? = null,
@@ -597,6 +604,27 @@ class GrammalecteQuickJsEngine internal constructor(
             appliedRuleOverrides = overrides
         }
     }
+
+    internal fun collectRuntimeGarbageAndSnapshot(): GrammalecteRuntimeMemorySnapshot =
+        synchronized(lock) {
+            val js =
+                runtime
+                    ?: createRuntime().also {
+                        runtime = it
+                    }
+
+            js.gc()
+
+            val usage =
+                js.memoryUsage
+
+            GrammalecteRuntimeMemorySnapshot(
+                memoryUsedBytes = usage.memoryUsedSize,
+                mallocBytes = usage.mallocSize,
+                objectCount = usage.objCount,
+                stringCount = usage.strCount,
+            )
+        }
 
     override fun close() {
         synchronized(lock) {
