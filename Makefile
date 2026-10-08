@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check test lint assemble instrumented refresh-verification-metadata clean
+.PHONY: bootstrap vendor check performance-check test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -14,6 +14,13 @@ check:
 	./tools/run-actionlint.sh
 	node tools/test-js-bridge.mjs
 	$(GRADLE) --no-daemon ktlintCheck :core:test :engine-grammalecte:test :spellchecker:test :app:lintDebug
+
+performance-check:
+	$(GRADLE) --no-daemon \
+		:engine-grammalecte:testDebugUnitTest \
+		--tests '*EnginePerformanceRegressionTest*' \
+		-PgrammalectePerf=1 \
+		--rerun-tasks
 
 test:
 	$(GRADLE) --no-daemon :core:test :engine-grammalecte:test :spellchecker:test

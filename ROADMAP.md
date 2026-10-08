@@ -94,7 +94,7 @@ Exit criterion: correction remains usable in common editable applications even w
 - [x] Improve accessibility of the application UI
 - [x] Review all user-facing French strings
 - [x] Add compatibility documentation
-- [ ] Add performance regression tests
+- [x] Add performance regression tests
 - [ ] Add memory/runtime stress tests
 
 ## Phase 5 — Public distribution

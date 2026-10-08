@@ -40,6 +40,9 @@ jobs:
       - name: Run project checks
         run: make check
 
+      - name: Run performance regression checks
+        run: make performance-check
+
       - name: Build debug APK
         run: make assemble
 
