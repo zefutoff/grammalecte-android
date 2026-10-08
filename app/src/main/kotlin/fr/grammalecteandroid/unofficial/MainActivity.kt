@@ -122,6 +122,14 @@ class MainActivity :
                 statusView = null,
                 actions =
                     listOf(
+                        "Guide de démarrage" to {
+                            startActivity(
+                                Intent(
+                                    this@MainActivity,
+                                    SetupGuideActivity::class.java,
+                                ),
+                            )
+                        },
                         "Voir l’état de la correction" to {
                             startActivity(
                                 Intent(
@@ -448,6 +456,26 @@ class MainActivity :
             }
 
         setContentView(scrollView)
+
+        showSetupGuideIfNeeded()
+    }
+
+    private fun showSetupGuideIfNeeded() {
+        val preferences =
+            SetupGuidePreferences(this)
+
+        if (!preferences.shouldShowAutomatically()) {
+            return
+        }
+
+        preferences.markShown()
+
+        startActivity(
+            Intent(
+                this,
+                SetupGuideActivity::class.java,
+            ),
+        )
     }
 
     private fun runSpellCheckerTest() {
