@@ -87,9 +87,7 @@ class MainActivity :
 
         content.addView(
             TextView(this).apply {
-                text =
-                    "Correction française locale avec Grammalecte. " +
-                    "Aucun texte n'est envoyé sur Internet."
+                text = getString(R.string.intro)
 
                 textSize = 15f
 
@@ -184,14 +182,14 @@ class MainActivity :
                 title = "Correction rapide",
                 description =
                     "Permet de corriger une sélection dans les applications " +
-                        "qui n'utilisent pas le correcteur Android.",
+                        "qui n’utilisent pas le correcteur Android.",
                 statusView = imeStatusView,
                 actions =
                     listOf(
-                        "Gérer la méthode de saisie" to {
+                        "Gérer les méthodes de saisie" to {
                             openInputMethodSettings()
                         },
-                        "Choisir Grammalecte" to {
+                        "Choisir le clavier" to {
                             showInputMethodPicker()
                         },
                     ),
@@ -203,8 +201,8 @@ class MainActivity :
             createCard(
                 title = "Réglages de correction",
                 description =
-                    "Choisissez le dictionnaire et les contrôles " +
-                        "Grammalecte utilisés dans les analyses.",
+                    "Choisissez le dictionnaire et les règles " +
+                        "Grammalecte utilisées lors des analyses.",
                 statusView = null,
                 actions =
                     listOf(
@@ -226,7 +224,7 @@ class MainActivity :
                 title = "Accès rapide",
                 description =
                     "Ajoutez Grammalecte aux réglages rapides pour ouvrir " +
-                        "le sélecteur de clavier depuis n'importe quelle application.",
+                        "le sélecteur de clavier depuis n’importe quelle application.",
                 statusView = null,
                 actions =
                     listOf(
@@ -486,7 +484,7 @@ class MainActivity :
         spellCheckerSession?.close()
         spellCheckerSession = null
 
-        resultView.text = "Test en cours...\n\n$testText"
+        resultView.text = "Test en cours…\n\n$testText"
 
         val manager = getSystemService(TextServicesManager::class.java)
 
@@ -500,7 +498,7 @@ class MainActivity :
 
         if (session == null) {
             resultView.text =
-                "Android n'a pas pu créer de session de correction orthographique."
+                "Android n’a pas pu créer de session de correction orthographique."
             return
         }
 
@@ -514,7 +512,7 @@ class MainActivity :
 
     override fun onGetSentenceSuggestions(results: Array<SentenceSuggestionsInfo>?) {
         if (results.isNullOrEmpty()) {
-            resultView.text = "Session appelée, mais aucun résultat reçu."
+            resultView.text = "Session ouverte, mais aucun résultat reçu."
             return
         }
 
@@ -569,7 +567,7 @@ class MainActivity :
         }
 
         if (issueCount == 0) {
-            output.append("\nAucune erreur retournée.")
+            output.append("\nAucune erreur détectée.")
         }
 
         resultView.text = output.toString()
@@ -581,7 +579,12 @@ class MainActivity :
         }
 
         resultView.append(
-            "\n\nLe service a retourné ${results.size} résultat(s) mot par mot.",
+            "\n\n" +
+                resources.getQuantityString(
+                    R.plurals.word_by_word_results,
+                    results.size,
+                    results.size,
+                ),
         )
     }
 
@@ -596,12 +599,12 @@ class MainActivity :
             )
 
         if (spans.isEmpty()) {
-            resultView.text = "Aucun SuggestionSpan present dans le champ."
+            resultView.text = "Aucun SuggestionSpan présent dans le champ."
             return
         }
 
         val output = StringBuilder()
-        output.append("SuggestionSpan trouves : ")
+        output.append("Nombre de SuggestionSpan : ")
         output.append(spans.size)
         output.append("\n")
 
@@ -622,7 +625,7 @@ class MainActivity :
                 output.append("»")
             }
 
-            output.append("\n   flags=")
+            output.append("\n   indicateurs=")
             output.append(span.flags)
 
             output.append("\n   suggestions=")

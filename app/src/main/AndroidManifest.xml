@@ -43,7 +43,7 @@
         <activity
             android:name=".ProcessTextActivity"
             android:exported="true"
-            android:label="Corriger avec Grammalecte">
+            android:label="@string/process_text_label">
             <intent-filter>
                 <action android:name="android.intent.action.PROCESS_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -64,7 +64,7 @@
         <service
             android:name=".GrammalecteImeService"
             android:exported="true"
-            android:label="Grammalecte"
+            android:label="@string/launcher_name"
             android:permission="android.permission.BIND_INPUT_METHOD"
             android:theme="@style/ImeTheme">
             <intent-filter>

@@ -2,21 +2,35 @@
 <resources>
     <string name="app_name">Grammalecte Android (non officiel)</string>
     <string name="launcher_name">Grammalecte</string>
+    <string name="process_text_label">Corriger avec Grammalecte</string>
     <string name="title">Grammalecte Android</string>
-    <string name="intro">Correcteur français local basé sur Grammalecte. Aucun texte n’est envoyé sur Internet.</string>
-    <string name="setup_steps">Pour l’activer : Paramètres Android → Système → Langues et saisie → Correcteur orthographique, puis choisissez Grammalecte Android.</string>
-    <string name="open_settings">Configurer le correcteur Android</string>
-    <string name="enable_ime">Activer la méthode de saisie Grammalecte</string>
-    <string name="choose_ime">Choisir la méthode de saisie</string>
-    <string name="ime_status_enabled">Méthode de saisie Grammalecte : activée.</string>
-    <string name="ime_status_disabled">Méthode de saisie Grammalecte : désactivée. Android affichera un avertissement standard lors de son activation. Grammalecte Android ne possède pas la permission INTERNET.</string>
+    <string name="intro">Correction française locale avec Grammalecte. Aucun texte n’est envoyé sur Internet.</string>
     <string name="engine_status_ready">Moteur Grammalecte embarqué : prêt.</string>
     <string name="engine_status_missing">Moteur Grammalecte non embarqué. Exécutez tools/vendor-grammalecte.sh avant de construire l’APK.</string>
     <string name="qs_tile_label">Grammalecte</string>
-    <string name="add_qs_tile">Ajouter la tuile Grammalecte</string>
     <string name="qs_tile_added">Tuile Grammalecte ajoutée.</string>
     <string name="qs_tile_already_added">La tuile Grammalecte est déjà ajoutée.</string>
     <string name="qs_tile_not_added">La tuile Grammalecte n’a pas été ajoutée.</string>
     <string name="qs_tile_manual_add">Sur cette version d’Android, ajoutez la tuile Grammalecte manuellement depuis les réglages rapides.</string>
     <string name="qs_tile_add_error">Impossible d’ajouter la tuile Grammalecte (code %1$d).</string>
+    <plurals name="detected_problems">
+        <item quantity="one">%1$d problème détecté.</item>
+        <item quantity="other">%1$d problèmes détectés.</item>
+    </plurals>
+
+    <plurals name="word_by_word_results">
+        <item quantity="one">Le service a retourné %1$d résultat mot par mot.</item>
+        <item quantity="other">Le service a retourné %1$d résultats mot par mot.</item>
+    </plurals>
+
+    <plurals name="configurable_options">
+        <item quantity="one">%1$d option configurable.</item>
+        <item quantity="other">%1$d options configurables.</item>
+    </plurals>
+
+    <plurals name="personal_dictionary_word_count">
+        <item quantity="one">%1$d mot enregistré.</item>
+        <item quantity="other">%1$d mots enregistrés.</item>
+    </plurals>
+
 </resources>

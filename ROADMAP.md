@@ -92,7 +92,7 @@ Exit criterion: correction remains usable in common editable applications even w
 - [x] Improve first-run setup
 - [x] Explain the three correction modes in-app
 - [x] Improve accessibility of the application UI
-- [ ] Review all user-facing French strings
+- [x] Review all user-facing French strings
 - [x] Add compatibility documentation
 - [ ] Add performance regression tests
 - [ ] Add memory/runtime stress tests

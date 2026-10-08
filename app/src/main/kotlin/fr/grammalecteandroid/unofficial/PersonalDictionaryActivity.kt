@@ -119,8 +119,8 @@ class PersonalDictionaryActivity : Activity() {
         content.addView(
             TextView(this).apply {
                 text =
-                    "Ajoutez les mots que Grammalecte doit considérer " +
-                    "comme correctement orthographiés. Ils sont utilisés " +
+                    "Ajoutez les mots que Grammalecte doit considérer comme corrects. " +
+                    "Ils sont utilisés " +
                     "par tous les modes de correction."
 
                 textSize = 14f
@@ -177,7 +177,7 @@ class PersonalDictionaryActivity : Activity() {
 
         statusView =
             TextView(this).apply {
-                text = "Chargement..."
+                text = "Chargement…"
                 enablePoliteAccessibilityUpdates()
                 textSize = 14f
 
@@ -259,7 +259,7 @@ class PersonalDictionaryActivity : Activity() {
         setControlsEnabled(false)
 
         statusView.text =
-            "Chargement..."
+            "Chargement…"
 
         executor.execute {
             val result =
@@ -311,7 +311,7 @@ class PersonalDictionaryActivity : Activity() {
         setControlsEnabled(false)
 
         statusView.text =
-            "Ajout en cours..."
+            "Ajout en cours…"
 
         executor.execute {
             val result =
@@ -342,7 +342,7 @@ class PersonalDictionaryActivity : Activity() {
                             if (added) {
                                 "Mot ajouté."
                             } else {
-                                "Ce mot est déjà présent."
+                                "Ce mot est déjà dans le dictionnaire."
                             }
                     }.onFailure { error ->
                         showError(error)
@@ -355,7 +355,7 @@ class PersonalDictionaryActivity : Activity() {
         setControlsEnabled(false)
 
         statusView.text =
-            "Suppression en cours..."
+            "Suppression en cours…"
 
         executor.execute {
             val result =
@@ -393,17 +393,17 @@ class PersonalDictionaryActivity : Activity() {
 
         if (words.isEmpty()) {
             statusView.text =
-                "Aucun mot personnel."
+                "Aucun mot enregistré."
 
             return
         }
 
         statusView.text =
-            if (words.size == 1) {
-                "1 mot personnel."
-            } else {
-                "${words.size} mots personnels."
-            }
+            resources.getQuantityString(
+                R.plurals.personal_dictionary_word_count,
+                words.size,
+                words.size,
+            )
 
         words.forEach { word ->
             addWordRow(word)
