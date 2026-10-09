@@ -99,7 +99,7 @@ Exit criterion: correction remains usable in common editable applications even w
 
 ## Phase 5 — Public distribution
 
-- [ ] Reproducible release build documentation
+- [x] Reproducible release build documentation
 - [ ] Signed release pipeline
 - [ ] SBOM / dependency inventory
 - [ ] F-Droid metadata and reproducibility checks
