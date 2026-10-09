@@ -71,14 +71,54 @@ The current release build may warn that `libquickjs.so` cannot be stripped.
 This is currently non-fatal. The reproducibility check compares the final APK
 bytes and therefore still detects differences in the packaged native library.
 
-### Signing boundary
+### Signed release pipeline
 
-The reproducibility procedure intentionally stops at the unsigned APK.
+The reproducibility procedure above still applies to the unsigned APK.
+Signing is performed as a separate step.
 
 Private signing keys must never be committed to the repository.
 
-The signed release pipeline will separately define signing-key storage,
-artifact signing, provenance and signed-artifact verification.
+The expected release signing certificate SHA-256 fingerprint is stored in:
+
+    config/release-signing-cert.sha256
+
+Local signing requires the following environment variables:
+
+    GRAMMALECTE_SIGNING_KEYSTORE
+    GRAMMALECTE_SIGNING_KEY_ALIAS
+    GRAMMALECTE_SIGNING_STORE_PASSWORD
+    GRAMMALECTE_SIGNING_KEY_PASSWORD
+
+Run:
+
+    make signed-release
+
+This command:
+
+1. builds the unsigned release APK with Gradle caches disabled;
+2. verifies that the unsigned APK does not request INTERNET permission;
+3. signs it with `tools/sign-release-apk.sh`;
+4. verifies the APK signature;
+5. verifies that the signer certificate matches the committed fingerprint;
+6. verifies the privacy invariant again on the signed APK.
+
+The resulting local artifact is:
+
+    app/build/outputs/apk/release/app-release-signed.apk
+
+GitHub Actions also provides the manually triggered workflow:
+
+    .github/workflows/release.yml
+
+The workflow uses the protected `release` environment and is restricted to
+the `main` branch. Its signing material is stored only as GitHub environment
+secrets.
+
+The workflow currently uploads the signed APK and its SHA-256 checksum as
+GitHub Actions artifacts. It does not create or publish a GitHub Release.
+
+Publication remains a separate step until the remaining Phase 5 release
+requirements are complete.
 
 ## Release checklist
 

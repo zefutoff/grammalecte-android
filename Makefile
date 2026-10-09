@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility test lint assemble instrumented refresh-verification-metadata clean
+.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility signed-release test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -31,6 +31,15 @@ stress-check:
 
 release-reproducibility:
 	./tools/check-release-reproducibility.sh
+
+signed-release:
+	$(GRADLE) :app:assembleRelease \
+		--no-daemon \
+		--no-build-cache \
+		--no-configuration-cache
+	./tools/check-apk-permissions.sh app/build/outputs/apk/release/app-release-unsigned.apk
+	./tools/sign-release-apk.sh
+	./tools/check-apk-permissions.sh app/build/outputs/apk/release/app-release-signed.apk
 
 test:
 	$(GRADLE) --no-daemon :core:test :engine-grammalecte:test :spellchecker:test

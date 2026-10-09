@@ -19,3 +19,7 @@ build/
 
 # Local Kotlin project cache
 .kotlin/
+
+# Android release signing keys
+*.jks
+*.keystore
