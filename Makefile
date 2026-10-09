@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility signed-release sbom test lint assemble instrumented refresh-verification-metadata clean
+.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility fdroid-reproducibility signed-release sbom test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -31,6 +31,9 @@ stress-check:
 
 release-reproducibility:
 	./tools/check-release-reproducibility.sh
+
+fdroid-reproducibility:
+	./tools/check-fdroid-reproducibility.sh
 
 signed-release:
 	$(GRADLE) :app:assembleRelease \
