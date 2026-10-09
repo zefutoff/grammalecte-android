@@ -116,6 +116,8 @@ make release-reproducibility
 
 See [`docs/release.md`](docs/release.md) for the complete release procedure.
 
+A configured release-signing environment can also build and verify the signed release artifact with `make signed-release`.
+
 The debug APK is generated under:
 
 ```text
