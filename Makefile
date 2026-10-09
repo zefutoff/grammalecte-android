@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility signed-release test lint assemble instrumented refresh-verification-metadata clean
+.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility signed-release sbom test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -41,6 +41,11 @@ signed-release:
 	./tools/sign-release-apk.sh
 	./tools/check-apk-permissions.sh app/build/outputs/apk/release/app-release-signed.apk
 
+sbom:
+	$(GRADLE) --no-daemon cyclonedxBom
+	node tools/enrich-sbom.mjs
+	node tools/check-sbom.mjs
+
 test:
 	$(GRADLE) --no-daemon :core:test :engine-grammalecte:test :spellchecker:test
 
@@ -63,7 +68,8 @@ refresh-verification-metadata:
 		:app:lintDebug \
 		:app:assembleDebug \
 		:spellchecker:assembleDebugAndroidTest \
-		:app:assembleDebugAndroidTest
+		:app:assembleDebugAndroidTest \
+		cyclonedxBom
 
 clean:
 	$(GRADLE) --no-daemon clean
