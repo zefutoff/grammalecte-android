@@ -253,6 +253,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development setup, project conventi
 - [`docs/compatibility.md`](docs/compatibility.md)
 - [`docs/release.md`](docs/release.md)
 - [`docs/sbom.md`](docs/sbom.md)
+- [`docs/fdroid.md`](docs/fdroid.md)
 - [`docs/adr/`](docs/adr/)
 
 ## Name and affiliation

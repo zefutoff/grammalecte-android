@@ -1,0 +1,17 @@
+Grammalecte Android is an unofficial Android integration of Grammalecte, a French spelling and grammar checker.
+
+All correction runs locally on the Android device. The application does not request the Android INTERNET permission and does not send text to a cloud service.
+
+The same local Grammalecte engine is exposed through several Android integration methods:
+
+- Android SpellCheckerService for applications using the native spelling framework;
+- PROCESS_TEXT for correcting selected text from the Android selection menu;
+- a correction-oriented input method (IME) for editable applications that do not properly expose the other integration methods.
+
+The IME is intended as a correction fallback for selected text, not as a replacement for a full typing keyboard.
+
+The application includes the Grammalecte engine and French Graphspell dictionaries and executes them locally through an embedded QuickJS runtime.
+
+Grammalecte Android is free and open-source software licensed under GPL-3.0-only.
+
+This project is unofficial and is not affiliated with or endorsed by the Grammalecte project or Algoo.
