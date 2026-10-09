@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- CycloneDX runtime SBOM generation and validation, including the vendored Grammalecte engine and release-workflow artifacts.
 - Manual signed-release pipeline with protected GitHub environment secrets, release-certificate fingerprint verification and signed APK artifacts.
 - Reproducible unsigned-release build documentation and a two-worktree byte-for-byte APK verification command.
 - Real-engine performance regression tests covering QuickJS runtime reuse and tolerant cold-start, sentence and paragraph timing budgets.

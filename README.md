@@ -118,6 +118,10 @@ See [`docs/release.md`](docs/release.md) for the complete release procedure.
 
 A configured release-signing environment can also build and verify the signed release artifact with `make signed-release`.
 
+Generate and validate the runtime CycloneDX SBOM with `make sbom`.
+
+See [`docs/sbom.md`](docs/sbom.md) for its scope and maintenance rules.
+
 The debug APK is generated under:
 
 ```text
@@ -248,6 +252,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development setup, project conventi
 - [`docs/testing.md`](docs/testing.md)
 - [`docs/compatibility.md`](docs/compatibility.md)
 - [`docs/release.md`](docs/release.md)
+- [`docs/sbom.md`](docs/sbom.md)
 - [`docs/adr/`](docs/adr/)
 
 ## Name and affiliation

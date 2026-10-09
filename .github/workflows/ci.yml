@@ -46,6 +46,9 @@ jobs:
       - name: Run runtime stress checks
         run: make stress-check
 
+      - name: Generate and validate runtime SBOM
+        run: make sbom
+
       - name: Build debug APK
         run: make assemble
 
