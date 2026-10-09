@@ -102,8 +102,17 @@ EXPECTED_CERT_SHA256="$(
         tr '[:upper:]' '[:lower:]'
 )"
 
+SIGNER_COUNT="$(
+    awk '/Number of signers:/ { print $NF; exit }' <<< "$VERIFY_OUTPUT"
+)"
+
+if [[ "$SIGNER_COUNT" != "1" ]]; then
+    echo "Expected exactly one APK signer, found: ${SIGNER_COUNT:-unknown}" >&2
+    exit 1
+fi
+
 ACTUAL_CERT_SHA256="$(
-    awk -F': '         '/Signer #1 certificate SHA-256 digest:/ { print tolower($2); exit }'         <<< "$VERIFY_OUTPUT"
+    awk '/certificate SHA-256 digest:/ { print tolower($NF); exit }' <<< "$VERIFY_OUTPUT"
 )"
 
 if [[ -z "$ACTUAL_CERT_SHA256" ]]; then
