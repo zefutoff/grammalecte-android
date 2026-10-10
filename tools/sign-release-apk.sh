@@ -26,13 +26,17 @@ if [[ "$INPUT_APK" == "$OUTPUT_APK" ]]; then
     exit 1
 fi
 
-find_android_tool() {
-    local tool="$1"
+find_android_apksigner() {
     local sdk
     local candidate
 
-    if command -v "$tool" >/dev/null 2>&1; then
-        command -v "$tool"
+    if [[ -n "${GRAMMALECTE_APKSIGNER:-}" ]]; then
+        if [[ ! -x "$GRAMMALECTE_APKSIGNER" ]]; then
+            echo "GRAMMALECTE_APKSIGNER is not executable: $GRAMMALECTE_APKSIGNER" >&2
+            return 1
+        fi
+
+        printf '%s\n' "$GRAMMALECTE_APKSIGNER"
         return 0
     fi
 
@@ -41,21 +45,11 @@ find_android_tool() {
         "${ANDROID_HOME:-}" \
         "$HOME/Android/Sdk"
     do
-        [[ -n "$sdk" && -d "$sdk/build-tools" ]] || continue
+        [[ -n "$sdk" ]] || continue
 
-        candidate="$(
-            find "$sdk/build-tools" \
-                -mindepth 2 \
-                -maxdepth 2 \
-                -type f \
-                -name "$tool" \
-                -perm -u+x \
-                -print |
-                sort -V |
-                tail -n 1
-        )"
+        candidate="$sdk/build-tools/34.0.0/apksigner"
 
-        if [[ -n "$candidate" ]]; then
+        if [[ -x "$candidate" ]]; then
             printf '%s\n' "$candidate"
             return 0
         fi
@@ -64,14 +58,18 @@ find_android_tool() {
     return 1
 }
 
-if ! APKSIGNER="$(find_android_tool apksigner)"; then
-    echo "Unable to locate apksigner." >&2
-    echo "Install Android SDK Build Tools or set ANDROID_SDK_ROOT." >&2
+if ! APKSIGNER="$(find_android_apksigner)"; then
+    echo "Unable to locate Android Build Tools 34.0.0 apksigner." >&2
+    echo "Install build-tools;34.0.0 or set GRAMMALECTE_APKSIGNER." >&2
     exit 1
 fi
 
 mkdir -p "$(dirname "$OUTPUT_APK")"
 rm -f "$OUTPUT_APK"
+
+echo "Using apksigner:"
+echo "$APKSIGNER"
+echo
 
 "$APKSIGNER" sign \
     --ks "$GRAMMALECTE_SIGNING_KEYSTORE" \

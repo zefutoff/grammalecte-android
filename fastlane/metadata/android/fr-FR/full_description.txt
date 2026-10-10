@@ -1,0 +1,17 @@
+Grammalecte Android est une intégration Android non officielle de Grammalecte, un correcteur orthographique et grammatical pour le français.
+
+Toutes les corrections sont effectuées localement sur l'appareil Android. L'application ne demande pas la permission Android INTERNET et n'envoie aucun texte vers un service distant.
+
+Le même moteur Grammalecte local est accessible par plusieurs mécanismes Android :
+
+- SpellCheckerService pour les applications utilisant le correcteur natif d'Android ;
+- PROCESS_TEXT pour corriger un texte sélectionné depuis le menu de sélection Android ;
+- une méthode de saisie (IME) dédiée à la correction pour les applications éditables qui n'exploitent pas correctement les autres mécanismes.
+
+L'IME est conçu comme une solution de secours pour corriger du texte sélectionné. Il n'a pas vocation à remplacer un clavier de saisie complet.
+
+L'application embarque le moteur Grammalecte et les dictionnaires français Graphspell et les exécute localement avec un moteur QuickJS intégré.
+
+Grammalecte Android est un logiciel libre et open source distribué sous licence GPL-3.0-only.
+
+Ce projet est non officiel et n'est ni affilié ni approuvé par le projet Grammalecte ou Algoo.

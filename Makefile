@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility signed-release sbom test lint assemble instrumented refresh-verification-metadata clean
+.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility fdroid-reproducibility signed-release sbom test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -12,6 +12,7 @@ check:
 	./tools/check-no-network-permission.sh
 	shellcheck tools/*.sh
 	./tools/run-actionlint.sh
+	node tools/check-fdroid-metadata.mjs
 	node tools/test-js-bridge.mjs
 	$(GRADLE) --no-daemon ktlintCheck :core:test :engine-grammalecte:test :spellchecker:test :app:lintDebug
 
@@ -31,6 +32,9 @@ stress-check:
 
 release-reproducibility:
 	./tools/check-release-reproducibility.sh
+
+fdroid-reproducibility:
+	./tools/check-fdroid-reproducibility.sh
 
 signed-release:
 	$(GRADLE) :app:assembleRelease \
