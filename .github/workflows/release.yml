@@ -39,7 +39,28 @@ jobs:
           cache-provider: basic
 
       - name: Install F-Droid-compatible Android signing tools
-        run: sdkmanager "build-tools;34.0.0"
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+
+          if [[ -z "$SDK_ROOT" ]]; then
+            echo "Android SDK root is not configured." >&2
+            exit 1
+          fi
+
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+
+          if [[ ! -x "$SDKMANAGER" ]]; then
+            echo "sdkmanager not found at: $SDKMANAGER" >&2
+            exit 1
+          fi
+
+          echo "Using sdkmanager:"
+          echo "$SDKMANAGER"
+
+          "$SDKMANAGER" "build-tools;34.0.0"
 
       - name: Install F-Droid reproducibility tools
         run: |
