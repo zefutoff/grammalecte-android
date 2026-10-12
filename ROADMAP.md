@@ -103,6 +103,6 @@ Exit criterion: correction remains usable in common editable applications even w
 - [x] Signed release pipeline
 - [x] SBOM / dependency inventory
 - [x] F-Droid metadata and reproducibility checks
-- [ ] Review Android package namespace before stable release
+- [x] Review Android package namespace before stable release
 - [ ] Final third-party license review
 - [ ] First stable release
