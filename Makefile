@@ -9,6 +9,7 @@ vendor:
 	./tools/vendor-grammalecte.sh
 
 check:
+	./tools/check-android-package-id.sh
 	./tools/check-no-network-permission.sh
 	shellcheck tools/*.sh
 	./tools/run-actionlint.sh

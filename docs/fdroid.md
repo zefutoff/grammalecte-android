@@ -68,18 +68,22 @@ metadata and the source repository.
 
 ## F-Droid build recipe
 
-The final F-Droid build recipe is intentionally deferred until the Android
-application ID has been reviewed and finalized.
+The Android namespace and application ID are finalized as:
 
-The current development application ID is:
+    fr.zefut.grammalecte
+
+This identifier is considered stable and must not change after the first
+public release.
+
+The previous development identifier:
 
     fr.grammalecteandroid.unofficial
 
-Changing an Android application ID after public distribution would create a
-different application from Android's point of view, so this decision must be
-made before the first stable release.
+was used only by pre-release development builds. Android treats the new
+application ID as a different application, so development installations using
+the previous identifier do not upgrade in place.
 
-Once the namespace is final, the F-Droid recipe can define:
+The final F-Droid recipe can now define:
 
 - the final application ID;
 - the public Git repository;
@@ -96,9 +100,8 @@ verifies it against the independently rebuilt APK.
 
 Before an F-Droid submission:
 
-1. finalize the Android package namespace;
-2. finalize the first stable version name and version code;
-3. publish a versioned upstream APK;
-4. add release screenshots and changelog metadata;
-5. prepare and validate the final F-Droid build recipe;
-6. complete the third-party license review.
+1. finalize the first stable version name and version code;
+2. publish a versioned upstream APK;
+3. add release screenshots and changelog metadata;
+4. prepare and validate the final F-Droid build recipe;
+5. complete the third-party license review.

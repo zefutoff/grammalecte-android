@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "fr.grammalecteandroid.unofficial"
+    namespace = "fr.zefut.grammalecte"
     compileSdk = 36
 
     androidResources {
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "fr.grammalecteandroid.unofficial"
+        applicationId = "fr.zefut.grammalecte"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
