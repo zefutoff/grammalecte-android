@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 APK="app/build/outputs/apk/debug/app-debug.apk"
-PACKAGE="fr.grammalecteandroid.unofficial"
+PACKAGE="fr.zefut.grammalecte"
 ACTIVITY=".MainActivity"
 
 # Android SDK

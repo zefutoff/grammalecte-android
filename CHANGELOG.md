@@ -60,6 +60,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Finalized the Android namespace and application ID as `fr.zefut.grammalecte` before public distribution; development installs using `fr.grammalecteandroid.unofficial` are treated as a separate Android application.
 - Reviewed and normalized user-facing French wording, typography and pluralization across the application, correction IME, setup screens and diagnostics.
 - Improved Android UI accessibility with semantic headings, TalkBack live-region announcements, minimum IME touch targets and a large-text IME layout that avoids truncated actions.
 - Grammalecte engine initialization now loads conjugation, phonetic and morphology data required by the full grammar engine.
