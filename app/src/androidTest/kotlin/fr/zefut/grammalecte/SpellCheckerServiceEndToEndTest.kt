@@ -2,17 +2,22 @@ package fr.zefut.grammalecte
 
 import android.content.ComponentName
 import android.content.Context
+import android.os.Build
+import android.os.LocaleList
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.view.textservice.SentenceSuggestionsInfo
+import android.view.textservice.SpellCheckerInfo
 import android.view.textservice.SpellCheckerSession
 import android.view.textservice.SuggestionsInfo
 import android.view.textservice.TextInfo
 import android.view.textservice.TextServicesManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import fr.grammalecteandroid.spellchecker.GrammalecteSpellCheckerService
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -140,6 +145,136 @@ class SpellCheckerServiceEndToEndTest {
                 originalEnabled,
             )
         }
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = 31)
+    fun statusReflectsFrenchSubtypeSelection() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return
+        }
+
+        val context =
+            ApplicationProvider.getApplicationContext<Context>()
+
+        val manager =
+            context.getSystemService(TextServicesManager::class.java)
+
+        val originalSelected =
+            readSecureSetting(SELECTED_SPELL_CHECKER)
+
+        val originalEnabled =
+            readSecureSetting(SPELL_CHECKER_ENABLED)
+
+        val originalSubtype =
+            readSecureSetting(SELECTED_SPELL_CHECKER_SUBTYPE)
+
+        val component =
+            ComponentName(
+                context,
+                GrammalecteSpellCheckerService::class.java,
+            ).flattenToString()
+
+        try {
+            writeSecureSetting(SELECTED_SPELL_CHECKER, component)
+            writeSecureSetting(SPELL_CHECKER_ENABLED, "1")
+
+            var selectedInfo: SpellCheckerInfo? = null
+
+            for (attempt in 0 until SESSION_SELECTION_ATTEMPTS) {
+                val candidate = manager.currentSpellCheckerInfo
+
+                if (candidate?.packageName == context.packageName) {
+                    selectedInfo = candidate
+                    break
+                }
+
+                SystemClock.sleep(SESSION_SELECTION_DELAY_MILLIS)
+            }
+
+            val info =
+                requireNotNull(selectedInfo) {
+                    "Grammalecte was not selected by Android"
+                }
+
+            @Suppress("DEPRECATION")
+            val frenchSubtype =
+                (0 until info.subtypeCount)
+                    .map(info::getSubtypeAt)
+                    .single { it.locale == "fr_FR" }
+
+            if (LocaleList.getDefault()[0].language != "fr") {
+                writeSecureSetting(
+                    SELECTED_SPELL_CHECKER_SUBTYPE,
+                    "0",
+                )
+
+                assertSpellCheckerStatusEventually(
+                    context,
+                    SpellCheckerStatus.FRENCH_SESSION_UNAVAILABLE,
+                )
+            }
+
+            writeSecureSetting(
+                SELECTED_SPELL_CHECKER_SUBTYPE,
+                frenchSubtype.hashCode().toString(),
+            )
+
+            assertSpellCheckerStatusEventually(
+                context,
+                SpellCheckerStatus.SELECTED,
+            )
+        } finally {
+            restoreSecureSetting(
+                SELECTED_SPELL_CHECKER,
+                originalSelected,
+            )
+
+            restoreSecureSetting(
+                SELECTED_SPELL_CHECKER_SUBTYPE,
+                originalSubtype,
+            )
+
+            restoreSecureSetting(
+                SPELL_CHECKER_ENABLED,
+                originalEnabled,
+            )
+        }
+    }
+
+    private fun assertSpellCheckerStatusEventually(
+        context: Context,
+        expected: SpellCheckerStatus,
+    ) {
+        var actual: SpellCheckerStatus? = null
+
+        repeat(SESSION_SELECTION_ATTEMPTS) {
+            val result = AtomicReference<SpellCheckerStatus>()
+
+            InstrumentationRegistry
+                .getInstrumentation()
+                .runOnMainSync {
+                    result.set(
+                        CorrectionStatusReader(context)
+                            .read()
+                            .spellChecker,
+                    )
+                }
+
+            actual = result.get()
+
+            if (actual == expected) {
+                return
+            }
+
+            SystemClock.sleep(SESSION_SELECTION_DELAY_MILLIS)
+        }
+
+        assertEquals(
+            "Unexpected native French session status",
+            expected,
+            actual,
+        )
     }
 
     private fun createGrammalecteSession(
@@ -286,6 +421,9 @@ class SpellCheckerServiceEndToEndTest {
 
         const val SPELL_CHECKER_ENABLED =
             "spell_checker_enabled"
+
+        const val SELECTED_SPELL_CHECKER_SUBTYPE =
+            "selected_spell_checker_subtype"
 
         const val SUGGESTION_LIMIT = 8
 

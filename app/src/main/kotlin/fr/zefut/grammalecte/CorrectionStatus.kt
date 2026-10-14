@@ -18,6 +18,7 @@ data class CorrectionStatus(
 
 enum class SpellCheckerStatus {
     SELECTED,
+    FRENCH_SESSION_UNAVAILABLE,
     NOT_SELECTED,
     DISABLED,
     UNAVAILABLE,
@@ -53,7 +54,7 @@ class CorrectionStatusReader(
                 manager.currentSpellCheckerInfo
                     ?.packageName == context.packageName
             ) {
-                SpellCheckerStatus.SELECTED
+                configuredFrenchSessionStatus(manager)
             } else {
                 SpellCheckerStatus.NOT_SELECTED
             }
@@ -74,10 +75,32 @@ class CorrectionStatusReader(
 
                 session.spellChecker.packageName ==
                     context.packageName ->
-                    SpellCheckerStatus.SELECTED
+                    configuredFrenchSessionStatus(manager)
 
                 else ->
                     SpellCheckerStatus.NOT_SELECTED
+            }
+        } finally {
+            session?.close()
+        }
+    }
+
+    private fun configuredFrenchSessionStatus(manager: TextServicesManager): SpellCheckerStatus {
+        val session =
+            runCatching {
+                manager.newSpellCheckerSession(
+                    null,
+                    Locale.FRANCE,
+                    EMPTY_SPELL_CHECKER_LISTENER,
+                    true,
+                )
+            }.getOrNull()
+
+        return try {
+            if (session?.spellChecker?.packageName == context.packageName) {
+                SpellCheckerStatus.SELECTED
+            } else {
+                SpellCheckerStatus.FRENCH_SESSION_UNAVAILABLE
             }
         } finally {
             session?.close()

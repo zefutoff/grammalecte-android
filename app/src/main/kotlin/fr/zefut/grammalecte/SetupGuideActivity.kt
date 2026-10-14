@@ -294,6 +294,11 @@ class SetupGuideActivity : Activity() {
                 SpellCheckerStatus.SELECTED ->
                     "État : activé et sélectionné comme correcteur Android."
 
+                SpellCheckerStatus.FRENCH_SESSION_UNAVAILABLE ->
+                    "Grammalecte est sélectionné, mais la session française " +
+                        "est indisponible. Dans les réglages Android du " +
+                        "correcteur, choisissez Français plutôt qu’Automatique."
+
                 SpellCheckerStatus.NOT_SELECTED ->
                     "État : disponible, mais non sélectionné."
 
