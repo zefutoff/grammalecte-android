@@ -702,6 +702,11 @@ class MainActivity :
                 SpellCheckerStatus.SELECTED ->
                     "Activé et sélectionné comme correcteur Android."
 
+                SpellCheckerStatus.FRENCH_SESSION_UNAVAILABLE ->
+                    "Grammalecte est sélectionné, mais la session française " +
+                        "est indisponible. Dans les réglages Android du " +
+                        "correcteur, choisissez Français plutôt qu’Automatique."
+
                 SpellCheckerStatus.NOT_SELECTED ->
                     "Disponible, mais non sélectionné comme correcteur Android."
 
