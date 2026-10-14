@@ -67,6 +67,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
           target: ${{ matrix.api-level == '37.0' && 'google_apis' || 'default' }}
+          emulator-build: ${{ matrix.api-level == '37.0' && '15507667' || '' }}
           disable-spellchecker: false
           disable-animations: true
           script: |
