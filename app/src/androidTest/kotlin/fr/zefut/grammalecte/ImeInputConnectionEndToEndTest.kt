@@ -2,8 +2,10 @@ package fr.zefut.grammalecte
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.ComponentName
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
+import android.view.WindowInsets
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.test.core.app.ActivityScenario
@@ -99,17 +101,20 @@ class ImeInputConnectionEndToEndTest {
                                 InputMethodManager::class.java,
                             )
 
+                        activity.editor.requestFocus()
+
                         inputMethodManager.restartInput(
                             activity.editor,
                         )
 
-                        inputMethodManager.hideSoftInputFromWindow(
-                            activity.editor.windowToken,
-                            0,
-                        )
-
                         activity.editor.postDelayed(
                             {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    activity.editor.windowInsetsController?.show(
+                                        WindowInsets.Type.ime(),
+                                    )
+                                }
+
                                 inputMethodManager.showSoftInput(
                                     activity.editor,
                                     InputMethodManager.SHOW_IMPLICIT,
