@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Icon
@@ -435,8 +436,15 @@ class MainActivity :
                                     WindowInsets.Type.systemBars(),
                                 )
 
+                            val imeInsets =
+                                insets.getInsets(WindowInsets.Type.ime())
+
                             topInset = systemBars.top
-                            bottomInset = systemBars.bottom
+                            bottomInset =
+                                maxOf(
+                                    systemBars.bottom,
+                                    imeInsets.bottom,
+                                )
                         } else {
                             @Suppress("DEPRECATION")
                             topInset = insets.systemWindowInsetTop
@@ -456,6 +464,39 @@ class MainActivity :
                     }
                 }
             }
+
+        scrollView.viewTreeObserver.addOnGlobalLayoutListener {
+            val imeVisible =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    scrollView.rootWindowInsets?.isVisible(
+                        WindowInsets.Type.ime(),
+                    ) == true
+                } else {
+                    true
+                }
+
+            if (!systemEditText.hasFocus() || !imeVisible) {
+                return@addOnGlobalLayoutListener
+            }
+
+            val editorRect = Rect()
+            systemEditText.getDrawingRect(editorRect)
+            scrollView.offsetDescendantRectToMyCoords(
+                systemEditText,
+                editorRect,
+            )
+
+            val visibleBottom =
+                scrollView.scrollY +
+                    scrollView.height -
+                    scrollView.paddingBottom
+
+            val delta = editorRect.bottom + spacing - visibleBottom
+
+            if (delta > 0) {
+                scrollView.scrollBy(0, delta)
+            }
+        }
 
         setContentView(scrollView)
 
