@@ -2,8 +2,10 @@ package fr.zefut.grammalecte
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.ComponentName
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
+import android.view.WindowInsets
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.test.core.app.ActivityScenario
@@ -27,6 +29,9 @@ class ImeInputConnectionEndToEndTest {
         val originalIme =
             shell("settings get secure default_input_method")
 
+        val originalShowImeWithHardKeyboard =
+            shell("settings get secure show_ime_with_hard_keyboard")
+
         val componentName =
             ComponentName(
                 context,
@@ -43,6 +48,9 @@ class ImeInputConnectionEndToEndTest {
             )
 
         try {
+            // Android can hide the software IME when a hardware keyboard is detected.
+            shell("settings put secure show_ime_with_hard_keyboard 1")
+
             assertTrue(
                 "Grammalecte IME was not registered by Android",
                 waitForImeListed(
@@ -99,17 +107,20 @@ class ImeInputConnectionEndToEndTest {
                                 InputMethodManager::class.java,
                             )
 
+                        activity.editor.requestFocus()
+
                         inputMethodManager.restartInput(
                             activity.editor,
                         )
 
-                        inputMethodManager.hideSoftInputFromWindow(
-                            activity.editor.windowToken,
-                            0,
-                        )
-
                         activity.editor.postDelayed(
                             {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    activity.editor.windowInsetsController?.show(
+                                        WindowInsets.Type.ime(),
+                                    )
+                                }
+
                                 inputMethodManager.showSoftInput(
                                     activity.editor,
                                     InputMethodManager.SHOW_IMPLICIT,
@@ -126,7 +137,8 @@ class ImeInputConnectionEndToEndTest {
                             IME_TITLE_LABEL,
                         ),
                     ) {
-                        "Expected Grammalecte IME to be visible before late selection"
+                        "Expected Grammalecte IME to be visible before late selection.\n" +
+                            imeVisibilityDiagnostics(scenario)
                     }
 
                     scenario.onActivity { activity ->
@@ -178,11 +190,93 @@ class ImeInputConnectionEndToEndTest {
                     }
                 }
         } finally {
-            restoreInputMethod(
-                originalIme = originalIme,
-                component = component,
-                grammalecteWasEnabled = grammalecteWasEnabled,
-            )
+            try {
+                restoreInputMethod(
+                    originalIme = originalIme,
+                    component = component,
+                    grammalecteWasEnabled = grammalecteWasEnabled,
+                )
+            } finally {
+                restoreSecureSetting(
+                    key = "show_ime_with_hard_keyboard",
+                    originalValue = originalShowImeWithHardKeyboard,
+                )
+            }
+        }
+    }
+
+    private fun imeVisibilityDiagnostics(scenario: ActivityScenario<ImeIntegrationTestActivity>): String {
+        var editorState = "unavailable"
+
+        scenario.onActivity { activity ->
+            val editor = activity.editor
+            val inputMethodManager =
+                activity.getSystemService(InputMethodManager::class.java)
+
+            val imeVisible =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    editor.rootWindowInsets?.isVisible(
+                        WindowInsets.Type.ime(),
+                    )
+                } else {
+                    null
+                }
+
+            editorState =
+                "editorFocused=${editor.hasFocus()}, " +
+                "windowFocused=${editor.hasWindowFocus()}, " +
+                "inputActive=${inputMethodManager.isActive(editor)}, " +
+                "imeInsetsVisible=$imeVisible, " +
+                "keyboard=${activity.resources.configuration.keyboard}, " +
+                "hardKeyboardHidden=${activity.resources.configuration.hardKeyboardHidden}"
+        }
+
+        val inputMethodState =
+            shell("dumpsys input_method")
+                .lineSequence()
+                .filter { line ->
+                    listOf(
+                        "mCurId",
+                        "mCurFocusedWindow",
+                        "mCurClient",
+                        "mCurMethod",
+                        "mShowRequested",
+                        "mInputShown",
+                        "mImeWindowVis",
+                        "mEditorInfo",
+                        "mInputViewShown",
+                    ).any { key ->
+                        line.contains(key)
+                    }
+                }.take(30)
+                .joinToString("\n")
+
+        val windowFocus =
+            shell("dumpsys window")
+                .lineSequence()
+                .filter { line ->
+                    line.contains("mCurrentFocus") ||
+                        line.contains("mFocusedApp") ||
+                        line.contains("mInputMethodWindow")
+                }.take(10)
+                .joinToString("\n")
+
+        val accessibilityWindows =
+            InstrumentationRegistry
+                .getInstrumentation()
+                .uiAutomation
+                .windows
+                .joinToString { window ->
+                    "${window.type}:${window.title}"
+                }
+
+        return buildString {
+            appendLine(editorState)
+            appendLine("defaultIme=${shell("settings get secure default_input_method")}")
+            appendLine("showWithHardKeyboard=${shell("settings get secure show_ime_with_hard_keyboard")}")
+            appendLine("accessibilityWindows=$accessibilityWindows")
+            appendLine("inputMethodState:\n$inputMethodState")
+            appendLine("windowFocus:\n$windowFocus")
         }
     }
 
@@ -323,6 +417,17 @@ class ImeInputConnectionEndToEndTest {
             shell(
                 "ime disable $component",
             )
+        }
+    }
+
+    private fun restoreSecureSetting(
+        key: String,
+        originalValue: String,
+    ) {
+        if (originalValue.isBlank() || originalValue == "null") {
+            shell("settings delete secure $key")
+        } else {
+            shell("settings put secure $key $originalValue")
         }
     }
 

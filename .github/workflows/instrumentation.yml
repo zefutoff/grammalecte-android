@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: ${{ fromJSON(github.event_name == 'pull_request' && '[35]' || '[26,30,35]') }}
+        api-level: ${{ fromJSON(github.event_name == 'pull_request' && '["35","37.0"]' || '["26","30","35","37.0"]') }}
 
     steps:
       - name: Checkout
@@ -61,12 +61,30 @@ jobs:
             :spellchecker:assembleDebugAndroidTest \
             :app:assembleDebugAndroidTest
 
+      - name: Install compatible AVD tooling for Android 17
+        if: matrix.api-level == '37.0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" --install 'cmdline-tools;22.0'
+          test -x "$SDK/cmdline-tools/22.0/bin/avdmanager"
+          mv "$SDK/cmdline-tools/latest" "$SDK/cmdline-tools/previous-latest"
+          ln -s "$SDK/cmdline-tools/22.0" "$SDK/cmdline-tools/latest"
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" --version
+
       - name: Run connected tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
+          target: ${{ matrix.api-level == '37.0' && 'google_apis' || 'default' }}
+          emulator-build: ${{ matrix.api-level == '37.0' && '15507667' || '' }}
+          disable-spellchecker: false
           disable-animations: true
+          pre-emulator-launch-script: |
+            grep '^target=' "$ANDROID_AVD_HOME/test.ini"
+            test "${{ matrix.api-level }}" != '37.0' || grep -qx 'target=android-37.0' "$ANDROID_AVD_HOME/test.ini"
           script: |
             set -e
             ./gradlew --no-daemon --no-parallel :spellchecker:connectedDebugAndroidTest
