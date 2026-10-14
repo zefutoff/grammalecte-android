@@ -131,7 +131,8 @@ class ImeInputConnectionEndToEndTest {
                             IME_TITLE_LABEL,
                         ),
                     ) {
-                        "Expected Grammalecte IME to be visible before late selection"
+                        "Expected Grammalecte IME to be visible before late selection.\n" +
+                            imeVisibilityDiagnostics(scenario)
                     }
 
                     scenario.onActivity { activity ->
@@ -188,6 +189,83 @@ class ImeInputConnectionEndToEndTest {
                 component = component,
                 grammalecteWasEnabled = grammalecteWasEnabled,
             )
+        }
+    }
+
+    private fun imeVisibilityDiagnostics(
+        scenario: ActivityScenario<ImeIntegrationTestActivity>,
+    ): String {
+        var editorState = "unavailable"
+
+        scenario.onActivity { activity ->
+            val editor = activity.editor
+            val inputMethodManager =
+                activity.getSystemService(InputMethodManager::class.java)
+
+            val imeVisible =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    editor.rootWindowInsets?.isVisible(
+                        WindowInsets.Type.ime(),
+                    )
+                } else {
+                    null
+                }
+
+            editorState =
+                "editorFocused=${editor.hasFocus()}, " +
+                    "windowFocused=${editor.hasWindowFocus()}, " +
+                    "inputActive=${inputMethodManager.isActive(editor)}, " +
+                    "imeInsetsVisible=$imeVisible, " +
+                    "keyboard=${activity.resources.configuration.keyboard}, " +
+                    "hardKeyboardHidden=${activity.resources.configuration.hardKeyboardHidden}"
+        }
+
+        val inputMethodState =
+            shell("dumpsys input_method")
+                .lineSequence()
+                .filter { line ->
+                    listOf(
+                        "mCurId",
+                        "mCurFocusedWindow",
+                        "mCurClient",
+                        "mCurMethod",
+                        "mShowRequested",
+                        "mInputShown",
+                        "mImeWindowVis",
+                        "mEditorInfo",
+                        "mInputViewShown",
+                    ).any { key ->
+                        line.contains(key)
+                    }
+                }.take(30)
+                .joinToString("\n")
+
+        val windowFocus =
+            shell("dumpsys window")
+                .lineSequence()
+                .filter { line ->
+                    line.contains("mCurrentFocus") ||
+                        line.contains("mFocusedApp") ||
+                        line.contains("mInputMethodWindow")
+                }.take(10)
+                .joinToString("\n")
+
+        val accessibilityWindows =
+            InstrumentationRegistry
+                .getInstrumentation()
+                .uiAutomation
+                .windows
+                .joinToString { window ->
+                    "${window.type}:${window.title}"
+                }
+
+        return buildString {
+            appendLine(editorState)
+            appendLine("defaultIme=${shell("settings get secure default_input_method")}")
+            appendLine("showWithHardKeyboard=${shell("settings get secure show_ime_with_hard_keyboard")}")
+            appendLine("accessibilityWindows=$accessibilityWindows")
+            appendLine("inputMethodState:\n$inputMethodState")
+            appendLine("windowFocus:\n$windowFocus")
         }
     }
 
