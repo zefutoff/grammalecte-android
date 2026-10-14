@@ -205,9 +205,7 @@ class ImeInputConnectionEndToEndTest {
         }
     }
 
-    private fun imeVisibilityDiagnostics(
-        scenario: ActivityScenario<ImeIntegrationTestActivity>,
-    ): String {
+    private fun imeVisibilityDiagnostics(scenario: ActivityScenario<ImeIntegrationTestActivity>): String {
         var editorState = "unavailable"
 
         scenario.onActivity { activity ->
@@ -226,11 +224,11 @@ class ImeInputConnectionEndToEndTest {
 
             editorState =
                 "editorFocused=${editor.hasFocus()}, " +
-                    "windowFocused=${editor.hasWindowFocus()}, " +
-                    "inputActive=${inputMethodManager.isActive(editor)}, " +
-                    "imeInsetsVisible=$imeVisible, " +
-                    "keyboard=${activity.resources.configuration.keyboard}, " +
-                    "hardKeyboardHidden=${activity.resources.configuration.hardKeyboardHidden}"
+                "windowFocused=${editor.hasWindowFocus()}, " +
+                "inputActive=${inputMethodManager.isActive(editor)}, " +
+                "imeInsetsVisible=$imeVisible, " +
+                "keyboard=${activity.resources.configuration.keyboard}, " +
+                "hardKeyboardHidden=${activity.resources.configuration.hardKeyboardHidden}"
         }
 
         val inputMethodState =
