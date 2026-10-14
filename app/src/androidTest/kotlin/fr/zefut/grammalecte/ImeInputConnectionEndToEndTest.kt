@@ -29,6 +29,9 @@ class ImeInputConnectionEndToEndTest {
         val originalIme =
             shell("settings get secure default_input_method")
 
+        val originalShowImeWithHardKeyboard =
+            shell("settings get secure show_ime_with_hard_keyboard")
+
         val componentName =
             ComponentName(
                 context,
@@ -45,6 +48,9 @@ class ImeInputConnectionEndToEndTest {
             )
 
         try {
+            // Android can hide the software IME when a hardware keyboard is detected.
+            shell("settings put secure show_ime_with_hard_keyboard 1")
+
             assertTrue(
                 "Grammalecte IME was not registered by Android",
                 waitForImeListed(
@@ -184,11 +190,18 @@ class ImeInputConnectionEndToEndTest {
                     }
                 }
         } finally {
-            restoreInputMethod(
-                originalIme = originalIme,
-                component = component,
-                grammalecteWasEnabled = grammalecteWasEnabled,
-            )
+            try {
+                restoreInputMethod(
+                    originalIme = originalIme,
+                    component = component,
+                    grammalecteWasEnabled = grammalecteWasEnabled,
+                )
+            } finally {
+                restoreSecureSetting(
+                    key = "show_ime_with_hard_keyboard",
+                    originalValue = originalShowImeWithHardKeyboard,
+                )
+            }
         }
     }
 
@@ -406,6 +419,17 @@ class ImeInputConnectionEndToEndTest {
             shell(
                 "ime disable $component",
             )
+        }
+    }
+
+    private fun restoreSecureSetting(
+        key: String,
+        originalValue: String,
+    ) {
+        if (originalValue.isBlank() || originalValue == "null") {
+            shell("settings delete secure $key")
+        } else {
+            shell("settings put secure $key $originalValue")
         }
     }
 
