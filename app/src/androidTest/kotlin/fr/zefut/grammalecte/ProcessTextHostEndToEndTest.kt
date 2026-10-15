@@ -2,8 +2,6 @@ package fr.zefut.grammalecte
 
 import android.app.Activity
 import android.os.SystemClock
-import android.view.View
-import android.widget.Button
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
