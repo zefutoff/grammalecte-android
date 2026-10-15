@@ -26,6 +26,7 @@ class ProcessTextHostTestActivity : Activity() {
     enum class HostMode {
         REPLACE,
         APPEND,
+        INSERT_AT_SELECTION_END,
         IGNORE,
     }
 
@@ -107,6 +108,14 @@ class ProcessTextHostTestActivity : Activity() {
                 }
             }
             HostMode.APPEND -> editor.text.append(corrected)
+            HostMode.INSERT_AT_SELECTION_END -> {
+                // Intentionally incorrect host behavior, matching the observed
+                // insertion position in Samsung Messages. This fixture does
+                // not represent Samsung's unknown implementation.
+                if (requestedEnd in 0..editor.text.length) {
+                    editor.text.insert(requestedEnd, corrected)
+                }
+            }
             HostMode.IGNORE -> Unit
         }
     }

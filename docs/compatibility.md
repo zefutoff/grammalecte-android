@@ -160,6 +160,45 @@ The following summary only counts the latest retest for each application:
   SpellCheckerService before attributing missing underlines to Grammalecte.
   Preserve the working IME path as a fallback.
 
+## Samsung Messages selection-end retest (2026-10-15)
+
+A further manual retest on the Samsung Galaxy S21 (SM-G998B, Android 15)
+confirmed that Samsung Messages inserts corrected text immediately **after
+the original selection**, not necessarily at the end of the entire message.
+
+The user selected the synthetic phrase inside a larger unsent message.
+After using **Remplacer le texte sélectionné**, the visible result was:
+
+```text
+Avant : je vais au magazin.je vais au magasin. Après.
+```
+
+The original phrase remains, and the correction appears **before** the
+trailing ` Après.`. This refines the earlier Samsung Messages compatibility
+entry, which described the result only as appended text.
+
+A separate metadata-only `GrammalectePT` trace showed:
+- **Copier et revenir:** `opened` followed by `clipboard_copied`;
+  the source editor remains unchanged and pasting is manual.
+- **Remplacer le texte sélectionné:** `opened` followed by `result_ok`;
+  the host editor inserted the returned correction after the selected text.
+- Both invocations: `readOnly=false`, read-only extra present, calling
+  activity present, and 19-character input/output lengths.
+
+The installed application version and the exact APK source commit were not
+freshly attested for this additional retest; do not reuse the previous test's
+build metadata as proof of this run.
+
+The controlled instrumentation host now models insertion at the selection
+end while preserving surrounding text. **This reproduces the visible symptom,
+not the internal Samsung implementation.** The Android `PROCESS_TEXT`
+contract has already passed instrumentation in the controlled host; the
+precise mechanism in Samsung Messages remains undetermined.
+
+For Samsung Messages, **IME correction** was previously reported working.
+The explicit **Copier et revenir** fallback only copies; it does not
+automatically replace text. Issue #45 remains open.
+
 ## Test procedure
 
 ### SpellCheckerService

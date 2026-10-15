@@ -73,6 +73,28 @@ test case, whether the action appeared, which button was used,
 whether a result was replaced/appended/ignored, and only the metadata trace
 for that synthetic test.
 
+## Observed physical-device result (2026-10-15)
+
+The partial-selection experiment was completed on the Galaxy S21.
+After selecting the synthetic misspelling inside a longer unsent message,
+**Remplacer le texte sélectionné** produced:
+
+```text
+Avant : je vais au magazin.je vais au magasin. Après.
+```
+
+The correction was inserted at the **end of the original selection**, before
+the surrounding suffix, without deleting the original text. The
+`GrammalectePT` trace recorded `opened` followed by `result_ok`.
+This does not establish how Samsung Messages internally handles the callback.
+
+**Copier et revenir** recorded `opened` then `clipboard_copied`.
+It copied the correction and returned to the conversation, but made
+**no automatic change** to the source text. The user must paste manually.
+
+Exact installed APK commit and current Samsung Messages version were not
+re-attested for this run. See issue #45 for the evidence.
+
 ## Interpretation
 
 - `result_ok` with one corrected payload on our controlled host, but append
