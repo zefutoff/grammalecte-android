@@ -71,9 +71,7 @@ class ProcessTextResultEndToEndTest {
             val clip = requireNotNull(clipboard.primaryClip)
             assertEquals(
                 text,
-                clip.getItemAt(0).coerceToText(
-                    InstrumentationRegistry.getInstrumentation().targetContext,
-                ).toString(),
+                clip.getItemAt(0).text?.toString(),
             )
         }
     }
@@ -138,7 +136,7 @@ class ProcessTextResultEndToEndTest {
         root: View,
         label: String,
     ): Button? {
-        val views = mutableListOf<View>()
+        val views = ArrayList<View>()
         root.findViewsWithText(
             views,
             label,
