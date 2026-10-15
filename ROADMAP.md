@@ -97,6 +97,40 @@ Exit criterion: correction remains usable in common editable applications even w
 - [x] Add performance regression tests
 - [x] Add memory/runtime stress tests
 
+## Pre-release hardening backlog (October 2026 audit)
+
+The following tasks remain open despite the completion of the
+initial feature and product-polish milestones.
+
+Work through them in the order below, with local regression tests
+before any production-code changes.
+
+### A — IME correction safety
+
+- [ ] Revalidate selected text, not only selection coordinates, before replacement.
+- [ ] Add regression coverage for changed content at unchanged selection coordinates.
+- [ ] Review sensitive input types, including password fields, and prevent unintended correction.
+
+### B — PROCESS_TEXT reliability
+
+- [ ] Serialize engine creation, analysis and closure across activity lifecycle changes.
+- [ ] Invalidate stale suggestions when the editable correction text changes.
+- [ ] Preserve the standard Android PROCESS_TEXT result contract.
+
+### C — Local testing and CI consistency
+
+- [ ] Align `make instrumented` with both Android instrumentation modules.
+- [ ] Add unsigned release build validation to regular CI.
+- [ ] Review automated coverage for older supported Android API levels.
+
+### Parallel compatibility investigations
+
+- [ ] Investigate native spell-checking on GrapheneOS Android 17 (issue #34).
+- [ ] Track Samsung Messages PROCESS_TEXT replacement incompatibility (issue #50).
+
+These investigations must distinguish observed device behavior
+from assumptions about Android or vendor implementations.
+
 ## Phase 5 — Public distribution
 
 - [x] Reproducible release build documentation

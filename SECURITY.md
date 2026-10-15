@@ -46,9 +46,11 @@ The Grammalecte IME is intentionally limited to correction workflows:
 - it presents correction suggestions;
 - it replaces text only through the active editor's `InputConnection`.
 
-Before applying a correction, the implementation verifies that the current selection still matches the text that was originally analyzed.
+Before applying a correction, the current IME implementation checks whether the editor's last reported selection range still matches the analyzed range. It then requests that range through `InputConnection.setSelection()` before committing the corrected text.
 
-If the selection changed while analysis was running, the correction must not be applied automatically.
+This check compares selection **coordinates**, not the current selected **text**. Editor content could change without changing those coordinates, potentially invalidating an earlier correction. Content revalidation and dedicated regression tests remain necessary.
+
+The current IME has no explicit `EditorInfo.inputType` exclusion for password fields. Sensitive-field handling requires targeted privacy tests and hardening before stable release.
 
 The project does not require an Android Accessibility Service for text replacement.
 

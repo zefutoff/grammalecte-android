@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Interactive `PROCESS_TEXT` correction screen with issue messages and individual suggestions.
 - Writable `PROCESS_TEXT` replacement support.
 - Clipboard fallback for read-only `PROCESS_TEXT` callers.
+- Explicit **Copier et revenir** action for editable `PROCESS_TEXT` selections, copying corrected text without changing the source editor.
+- Opt-in, metadata-only `GrammalectePT` diagnostics in debuggable builds, without logging selected or corrected text.
 - Grammalecte correction IME based on Android `InputMethodService`.
 - Selected-text reading and replacement through `InputConnection`.
 - Interactive IME correction workflow with per-error suggestions.
@@ -87,6 +89,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - IME selected-text reads no longer block the UI thread on slow `InputConnection` implementations such as Android WebView.
 - IME replacement now tracks and restores the analyzed selection range before committing corrected text, while rejecting stale selections.
 
+### Known limitations
+
+- Samsung Messages on the tested Galaxy S21 / Android 15 can insert returned `PROCESS_TEXT` corrections immediately after the original selection instead of replacing it (issue #50). An independent debug provider reproduces the symptom; the precise host-side cause remains unconfirmed. IME replacement works in the tested configuration.
+- Native spell checking on GrapheneOS Android 17 remains under investigation (issue #34). Successful tests on a standard Android 17 emulator do not establish GrapheneOS compatibility.
+
 ### Validated manually
 
 The current development APK has successfully performed real local corrections on a physical Android device using:
@@ -102,4 +109,4 @@ The following integration paths have been validated during development:
 - `ACTION_PROCESS_TEXT`;
 - Grammalecte IME through `InputConnection`.
 
-These tests are development validation only and do not yet constitute a complete public compatibility matrix.
+These results are development observations recorded in the compatibility matrix. They do not establish complete coverage across Android versions, ROMs or application editors.

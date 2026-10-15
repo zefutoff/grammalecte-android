@@ -22,7 +22,7 @@ Grammalecte Android currently exposes the same local correction engine through t
    - adds a **Corriger avec Grammalecte** action to Android's selected-text menu;
    - opens a correction screen with explanations and individual suggestions;
    - can return corrected text to compatible applications;
-   - falls back to copying corrected text when Android exposes the selection as read-only.
+   - offers **Copier et revenir** for read-only and editable selections; this copies the correction without modifying the source editor.
 
 3. **Grammalecte IME**
    - a correction-oriented `InputMethodService`;
@@ -39,6 +39,8 @@ Android applications do not all expose text correction in the same way.
 A standard `EditText` can use Android's native spell-checker service, while some custom editors and web fields never call it.
 
 `PROCESS_TEXT` works in many applications, but some editors do not accept returned replacement text.
+
+For example, Samsung Messages may insert the correction immediately after the original selection instead of replacing it. The Grammalecte IME remains the preferred direct-replacement fallback in that application. See the [compatibility matrix](docs/compatibility.md).
 
 The IME fallback uses Android's normal `InputConnection` editing interface instead of an Accessibility Service. This keeps the replacement mechanism generic across editable applications while avoiding the broader permissions and privacy surface of accessibility automation.
 
@@ -159,7 +161,8 @@ In a compatible application:
 2. open the Android text-selection menu;
 3. choose **Corriger avec Grammalecte**;
 4. review the detected issues and suggestions;
-5. return the corrected text to the application, or copy it when the source selection is read-only.
+5. choose **Remplacer le texte sélectionné** when the source editor correctly handles replacement, or **Copier et revenir** to copy the correction;
+6. when using the clipboard fallback in an editable field, manually select the original text and paste the correction; read-only content cannot be replaced through this action.
 
 ## Using the Grammalecte IME
 
@@ -172,7 +175,7 @@ Once enabled in Android's keyboard/input-method settings:
 3. review and apply the proposed corrections;
 4. switch back to the usual keyboard.
 
-Basic activation and keyboard-return workflows are implemented. First-run onboarding and compatibility polish are still planned before public distribution.
+The first-run setup guide, activation status screen and keyboard-return workflow are implemented. Compatibility improvements remain ongoing before public distribution.
 
 ## Privacy invariant
 
@@ -262,7 +265,7 @@ This is an **unofficial** Android integration of Grammalecte.
 
 It is not affiliated with or endorsed by the Grammalecte project or Algoo.
 
-The Android package namespace is intentionally marked `unofficial` during the current development phase and should be reviewed before the first stable public release.
+The Android application ID and namespace are `fr.zefut.grammalecte`.
 
 ## License
 

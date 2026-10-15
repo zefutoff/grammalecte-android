@@ -1,12 +1,13 @@
 # Samsung Messages PROCESS_TEXT retest (Android 15)
 
-Related: issue #45; compatibility campaign in `docs/compatibility.md`.
+Related: Samsung Messages issue #50 (open), completed contract-test issue #45 (closed), and `docs/compatibility.md`.
 
 ## Purpose
 
-Determine whether the Samsung Messages editor duplicates a valid returned
-`ACTION_PROCESS_TEXT` result and validate the explicit **Copier et revenir**
-fallback. Do not use real conversations, contact names or identifiers.
+Document the observed Samsung Messages replacement failure,
+the independent-provider comparison and the explicit
+**Copier et revenir** fallback. Do not use real conversations,
+contact names or identifiers.
 
 The existing synthetic host integration tests prove that Grammalecte sends
 one correction and host callback behavior can replace, append or ignore it.
@@ -25,11 +26,20 @@ They **do not prove** Samsung Messages implements any particular callback.
 Check installed versions and build environment with:
 
 ```sh
+adb devices -l
 ./tools/collect-compatibility-env.sh com.samsung.android.messaging
-adb -s "$ANDROID_SERIAL" shell pm list packages | grep -i samsung.*messag
+adb -d shell pm list packages | grep -i 'samsung.*messag'
 ```
 
-The second command is only a fallback if the package identifier differs.
+The `adb -d` commands target a USB-connected physical device.
+For an emulator, use `adb -s SERIAL` instead, replacing `SERIAL`
+with the identifier shown by `adb devices -l`.
+
+The environment collection helper selects the only connected device
+automatically. When several devices are connected, set `ANDROID_SERIAL`
+to the intended device serial before running the helper.
+
+The package-listing command is only a fallback if the package identifier differs.
 
 ## Opt-in, metadata-only trace
 
@@ -42,15 +52,14 @@ recipient, package name, or contact details are logged.
 Enable the tag only while conducting the test (no persistent setting):
 
 ```sh
-adb -s "$ANDROID_SERIAL" shell setprop log.tag.GrammalectePT DEBUG
-adb -s "$ANDROID_SERIAL" logcat -c
-adb -s "$ANDROID_SERIAL" logcat -s GrammalectePT:D '*:S'
+adb -d shell setprop log.tag.GrammalectePT DEBUG
+adb -d logcat -s GrammalectePT:D '*:S'
 ```
 
 Stop the foreground logcat after the test. Disable the tag again:
 
 ```sh
-adb -s "$ANDROID_SERIAL" shell setprop log.tag.GrammalectePT INFO
+adb -d shell setprop log.tag.GrammalectePT INFO
 ```
 
 **Privacy:** do not collect a complete logcat dump. Use only synthetic messages.
@@ -93,7 +102,38 @@ It copied the correction and returned to the conversation, but made
 **no automatic change** to the source text. The user must paste manually.
 
 Exact installed APK commit and current Samsung Messages version were not
-re-attested for this run. See issue #45 for the evidence.
+re-attested for this run. See issue #50 for the Samsung Messages
+evidence. Issue #45 contains the completed generic contract tests.
+
+## Independent provider comparison (PR #51)
+
+An additional physical-device test used an independent debug-only
+`ACTION_PROCESS_TEXT` provider. It returned a fixed synthetic
+correction without invoking the Grammalecte engine.
+
+Observed Samsung Messages result:
+
+```text
+Je vais au magazin.Je vais au magasin.
+```
+
+The original selection remained intact, with the correction
+inserted immediately after it.
+
+This reproduces the behavior observed with the normal
+Grammalecte PROCESS_TEXT activity.
+
+**Conclusion:** The results strongly support a Samsung Messages
+host-side replacement incompatibility independent of the
+Grammalecte engine.
+
+The exact internal Samsung implementation remains unknown.
+
+The diagnostic probe is preserved in the branch associated
+with PR #51, which was closed without merging into `main`.
+
+Issue #50 remains open. Grammalecte IME replacement is the
+previously validated alternative.
 
 ## Interpretation
 
