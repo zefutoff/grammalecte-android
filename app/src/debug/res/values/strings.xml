@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="process_text_probe_label">Grammalecte : sonde (debug)</string>
+    <string name="process_text_probe_supported">Test hors ligne : renvoyer une correction prédéfinie pour cette phrase fictive, sans utiliser le moteur Grammalecte.</string>
+    <string name="process_text_probe_unsupported">Sélection non reconnue ou en lecture seule. Le test est limité à une phrase fictive et ne renverra aucune correction.</string>
+    <string name="process_text_probe_return">Renvoyer la correction de test</string>
+    <string name="process_text_probe_cancel">Annuler le test</string>
+</resources>
