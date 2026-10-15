@@ -33,6 +33,26 @@ class ProcessTextHostEndToEndTest {
     }
 
     @Test
+    fun selectionEndInsertionReproducesSamsungMessagesPartialSelectionSymptom() {
+        assertHostResult(
+            mode = ProcessTextHostTestActivity.HostMode.INSERT_AT_SELECTION_END,
+            expectedEditorText = "Avant : Je vais au magazin.Je vais au magasin. Après.",
+            initialEditorText = "Avant : Je vais au magazin. Après.",
+            selectedText = ORIGINAL,
+        )
+    }
+
+    @Test
+    fun replacementPreservesSurroundingTextAndDoesNotDuplicateSelection() {
+        assertHostResult(
+            mode = ProcessTextHostTestActivity.HostMode.REPLACE,
+            expectedEditorText = "Avant : Je vais au magasin. Après.",
+            initialEditorText = "Avant : Je vais au magazin. Après.",
+            selectedText = ORIGINAL,
+        )
+    }
+
+    @Test
     fun ignoredResultPreservesUncorrectedText() {
         assertHostResult(
             mode = ProcessTextHostTestActivity.HostMode.IGNORE,
@@ -43,6 +63,8 @@ class ProcessTextHostEndToEndTest {
     private fun assertHostResult(
         mode: ProcessTextHostTestActivity.HostMode,
         expectedEditorText: String,
+        initialEditorText: String = ORIGINAL,
+        selectedText: String = ORIGINAL,
     ) {
         val scenario =
             ActivityScenario.launch(ProcessTextHostTestActivity::class.java)
@@ -50,8 +72,17 @@ class ProcessTextHostEndToEndTest {
         scenario.use {
             scenario.onActivity { activity ->
                 activity.mode = mode
-                activity.editor.setText(ORIGINAL)
-                activity.editor.setSelection(0, ORIGINAL.length)
+                activity.editor.setText(initialEditorText)
+
+                val selectedStart = initialEditorText.indexOf(selectedText)
+                require(selectedStart >= 0) {
+                    "Expected synthetic selected text inside the host fixture"
+                }
+
+                activity.editor.setSelection(
+                    selectedStart,
+                    selectedStart + selectedText.length,
+                )
                 activity.startCorrection()
             }
 
