@@ -6,6 +6,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ProcessTextHostTestActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".WebViewCompatibilityTestActivity"
             android:exported="true" />
     </application>
