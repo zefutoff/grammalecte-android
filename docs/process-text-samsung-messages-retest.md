@@ -1,6 +1,7 @@
 # Samsung Messages PROCESS_TEXT retest (Android 15)
 
-Related: issue #45; compatibility campaign in `docs/compatibility.md`.
+Related: unresolved Samsung Messages bug #50; completed contract-test issue #45;
+compatibility campaign in `docs/compatibility.md`.
 
 ## Purpose
 
@@ -94,6 +95,71 @@ It copied the correction and returned to the conversation, but made
 
 Exact installed APK commit and current Samsung Messages version were not
 re-attested for this run. See issue #45 for the evidence.
+
+## Differential diagnosis with the independent debug provider
+
+PR for issue #50 adds an additional **debug-only** entry in the text-selection
+menu: **Grammalecte : sonde (debug)**. It does not call the Grammalecte engine,
+the IME, the clipboard or the network. It is **not present in release APKs**.
+It offers a return button only for two exact, fictional French selections:
+`Je vais au magazin.` and `je vais au magazin.`. All other selections,
+read-only fields and unknown inputs have the return action disabled.
+
+This comparison is more informative than simulating an editor that appends
+text, because **Samsung Messages itself** receives two distinct
+`ACTION_PROCESS_TEXT` results from independent providers.
+
+1. Build/install the **debug APK from the PR branch**, not an older `main`
+   APK. Use `git rev-parse --short HEAD` to record the commit.
+2. Create a new **unsent** draft in Samsung Messages using exactly
+   `Avant : Je vais au magazin. Après.`.
+3. Select only `Je vais au magazin.`, choose the normal Grammalecte
+   `PROCESS_TEXT` action, correct `magazin` to `magasin` and select
+   **Remplacer le texte sélectionné**. Record the visible result.
+4. **Reset** the draft to the original sentence; select the same phrase
+   again. In the selection menu (possibly under overflow), choose
+   **Grammalecte : sonde (debug)**, then **Renvoyer la correction de test**.
+   Record the complete resulting sentence. The probe waits for user
+   confirmation before returning a single hardcoded corrected phrase.
+5. Optional control: repeat step 4 in WhatsApp or K-9 Mail using only a
+   fresh synthetic **unsent** draft, to check normal host behavior.
+
+If only the normal Grammalecte action appends, investigate the difference
+between the two activities (lifecycle, UI, selection state, and timing).
+If **both** append at the same selection boundary, that is strong evidence
+of host-dependent behavior unrelated to the grammar engine. It still does
+not reveal Samsung's implementation or prove that every `PROCESS_TEXT`
+provider must fail.
+
+Opt-in, metadata-only probe logs (no text, identifiers, or content lengths):
+
+```sh
+adb devices -l
+adb -d shell setprop log.tag.GrammalectePT DEBUG
+adb -d shell setprop log.tag.GrammalecteProbe DEBUG
+adb -d logcat -s GrammalectePT:D GrammalecteProbe:D '*:S'
+```
+
+Stop logcat with Ctrl+C and restore the default tag levels:
+
+```sh
+adb -d shell setprop log.tag.GrammalectePT INFO
+adb -d shell setprop log.tag.GrammalecteProbe INFO
+```
+
+The probe logs only `opened`, `result_ok`, or `cancelled`, plus
+`fixtureAccepted`, `readOnly`, and `callingActivityPresent`.
+An accepted fixture **must** still be manually confirmed by tapping the
+return button.
+
+The standard Android result contract is `RESULT_OK` with
+`Intent.EXTRA_PROCESS_TEXT`. AOSP `Editor` explicitly preserves the
+selection when starting a `PROCESS_TEXT` action. Losing the selection
+and collapsing it at the end fits the Samsung symptom, but this is a
+**hypothesis**, not an established Samsung source-code fact:
+
+- https://developer.android.com/reference/kotlin/android/content/Intent#ACTION_PROCESS_TEXT
+- https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/widget/Editor.java
 
 ## Interpretation
 
