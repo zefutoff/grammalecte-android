@@ -45,6 +45,34 @@ class ProcessTextResultEndToEndTest {
     }
 
     @Test
+    fun editableSelectionCanCopyCorrectionWithoutReturningReplacement() {
+        val scenario =
+            ActivityScenario.launchActivityForResult<ProcessTextActivity>(
+                processTextIntent(
+                    text = "Je vais au magazin.",
+                    readOnly = false,
+                ),
+            )
+
+        scenario.use {
+            assertTrue(
+                "Expected real Grammalecte suggestion for magazin",
+                waitForButton(scenario, "magasin"),
+            )
+
+            clickButton(scenario, "magasin")
+            clickButton(scenario, "Copier et revenir")
+
+            assertEquals(
+                android.app.Activity.RESULT_CANCELED,
+                scenario.result.resultCode,
+            )
+
+            assertClipboardContains("Je vais au magasin.")
+        }
+    }
+
+    @Test
     fun readOnlySelectionCopiesTextInsteadOfClaimingToReplaceIt() {
         val text = "Je vais au magasin."
         val scenario =
@@ -62,24 +90,27 @@ class ProcessTextResultEndToEndTest {
 
             assertEquals(android.app.Activity.RESULT_CANCELED, result.resultCode)
 
-            // Android restricts clipboard reads when the app is not in the
-            // foreground. After PROCESS_TEXT finishes, launch a test editor
-            // in our own app before verifying the copied content.
-            ActivityScenario.launch(ImeIntegrationTestActivity::class.java).use { foreground ->
-                foreground.onActivity { activity ->
-                    val clipboard =
-                        activity.getSystemService(ClipboardManager::class.java)
+            assertClipboardContains(text)
+        }
+    }
 
-                    val clip =
-                        requireNotNull(clipboard.primaryClip) {
-                            "Expected corrected text on clipboard when host is in foreground"
-                        }
+    private fun assertClipboardContains(expected: String) {
+        // Android restricts clipboard reads when the app is not in the
+        // foreground. Reopen our own test editor after PROCESS_TEXT returns.
+        ActivityScenario.launch(ImeIntegrationTestActivity::class.java).use { foreground ->
+            foreground.onActivity { activity ->
+                val clipboard =
+                    activity.getSystemService(ClipboardManager::class.java)
 
-                    assertEquals(
-                        text,
-                        clip.getItemAt(0).text?.toString(),
-                    )
-                }
+                val clip =
+                    requireNotNull(clipboard.primaryClip) {
+                        "Expected corrected text on clipboard when host is in foreground"
+                    }
+
+                assertEquals(
+                    expected,
+                    clip.getItemAt(0).text?.toString(),
+                )
             }
         }
     }
