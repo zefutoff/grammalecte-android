@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
@@ -43,6 +45,11 @@ class ProcessTextActivity : Activity() {
                 Intent.EXTRA_PROCESS_TEXT_READONLY,
                 false,
             )
+
+        traceProcessText(
+            phase = "opened",
+            textLength = selectedText.length,
+        )
 
         val padding = (24 * resources.displayMetrics.density).toInt()
         val spacing = (12 * resources.displayMetrics.density).toInt()
@@ -120,6 +127,20 @@ class ProcessTextActivity : Activity() {
             },
             matchWrapParams(),
         )
+
+        // Some third-party editors ignore or incorrectly apply the result.
+        // Offer a non-replacing clipboard path even for editable selections.
+        if (!readOnly) {
+            layout.addView(
+                Button(this).apply {
+                    text = "Copier et revenir"
+                    setOnClickListener {
+                        copyCorrectedText()
+                    }
+                },
+                matchWrapParams(),
+            )
+        }
 
         setContentView(layout)
 
@@ -286,6 +307,11 @@ class ProcessTextActivity : Activity() {
                 Toast.LENGTH_SHORT,
             ).show()
 
+        traceProcessText(
+            phase = "clipboard_copied",
+            textLength = editText.length(),
+        )
+
         finish()
     }
 
@@ -298,8 +324,33 @@ class ProcessTextActivity : Activity() {
                 )
             }
 
+        traceProcessText(
+            phase = "result_ok",
+            textLength = editText.length(),
+        )
+
         setResult(RESULT_OK, result)
         finish()
+    }
+
+    // Opt-in, debug-only contract diagnostics. Never log selected or corrected text.
+    private fun traceProcessText(
+        phase: String,
+        textLength: Int,
+    ) {
+        if (
+            (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) == 0 ||
+            !Log.isLoggable(PROCESS_TEXT_TRACE_TAG, Log.DEBUG)
+        ) {
+            return
+        }
+
+        Log.d(
+            PROCESS_TEXT_TRACE_TAG,
+            "phase=$phase readOnly=$readOnly " +
+                "readOnlyExtraPresent=${intent.hasExtra(Intent.EXTRA_PROCESS_TEXT_READONLY)} " +
+                "textLength=$textLength callingActivityPresent=${callingActivity != null}",
+        )
     }
 
     override fun onDestroy() {
@@ -314,4 +365,8 @@ class ProcessTextActivity : Activity() {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
         )
+
+    private companion object {
+        const val PROCESS_TEXT_TRACE_TAG = "GrammalectePT"
+    }
 }
