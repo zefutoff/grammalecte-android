@@ -19,6 +19,10 @@ class ProcessTextHostTestActivity : Activity() {
     var returnedText: String? = null
         private set
 
+    private var requestedStart = -1
+    private var requestedEnd = -1
+    private var requestedText = ""
+
     enum class HostMode {
         REPLACE,
         APPEND,
@@ -43,6 +47,10 @@ class ProcessTextHostTestActivity : Activity() {
         }
 
         val selected = editor.text.substring(start, end)
+        requestedStart = start
+        requestedEnd = end
+        requestedText = selected
+
         val intent =
             Intent(Intent.ACTION_PROCESS_TEXT).apply {
                 setClass(
@@ -81,12 +89,20 @@ class ProcessTextHostTestActivity : Activity() {
         }
 
         val corrected = returnedText ?: return
-        val start = minOf(editor.selectionStart, editor.selectionEnd)
-        val end = maxOf(editor.selectionStart, editor.selectionEnd)
 
         when (mode) {
             HostMode.REPLACE -> {
-                if (start >= 0 && end > start) {
+                val start = requestedStart
+                val end = requestedEnd
+
+                // A correct editor applies the result to the original selection,
+                // not to the cursor position left after a focus change.
+                if (
+                    start >= 0 &&
+                    end > start &&
+                    end <= editor.text.length &&
+                    editor.text.substring(start, end) == requestedText
+                ) {
                     editor.text.replace(start, end, corrected)
                 }
             }
