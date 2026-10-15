@@ -97,6 +97,13 @@ third-party application or with GrapheneOS.
 
 | Device / Android | Application | Version (code) | Grammalecte build | SpellCheckerService | PROCESS_TEXT | IME / InputConnection | Notes |
 | --- | --- | --- | --- | :---: | :---: | :---: | --- |
+| SM-G998B / Android 15 | WhatsApp | 2.26.39.79 (263907900) | `735e893` (reported Git HEAD) | ✅ | ✅ | ✅ | Retest on 2026-10-14: native `magazin` suggestion and replacement, PROCESS_TEXT correction, IME replacement and late selection refresh were all reported working. Grammalecte 0.1.0-dev (1); explicit `fr_FR` spellchecker subtype (`-1266611582`). APK's exact source commit is not independently attested by package metadata. |
+| SM-G998B / Android 15 | Samsung Messages | 16.0.10.49 (1601000049) | `735e893` (reported Git HEAD) | ⚠️ | ⚠️ | ✅ | Retest reported on 2026-10-14 with explicit `fr_FR` subtype (`-1266611582`). Native spelling feedback is intermittent: underlines may only appear after repeated spaces or leaving and returning to the editor. PROCESS_TEXT appends the corrected text instead of replacing the selection; observed result: `Je suis aller au magazin.Je suis allé au magasin.` IME replacement and selection made after opening the IME both work. APK exact source commit not independently attested. |
+| SM-G998B / Android 15 | Samsung Notes | 4.4.45.37 (444537000) | `735e893` (reported Git HEAD) | ❌ | ❌ | ✅ | Retest reported on 2026-10-14 with explicit `fr_FR` subtype (`-1266611582`). Native spelling: no underline in the tested note editor. PROCESS_TEXT: corrected text does not replace the selected text (whether clipboard fallback occurs was not recorded). IME replacement and selection made after opening the IME both work. Underline refresh was reported as working after correction, but with no native underline visible initially the earlier stale-underline behavior is not conclusively ruled out. APK exact source commit not independently attested. |
+| SM-G998B / Android 15 | Firefox | 157.0.1 (2016188623) | `735e893` (reported Git HEAD) | ❌ | ⚠️ | ✅ | Retest reported on 2026-10-15 using the Firefox HTML textarea on a Galaxy S21 (SM-G998B, Android 15/API 35), with the explicit `fr_FR` spellchecker subtype (`-1266611582`). Native correction: no misspelling underline. PROCESS_TEXT: correction suggestions appear and the corrected text is copied to the clipboard, but the original selected text is not replaced in the editor. IME correction and selection made after opening the IME both work. APK exact source commit not independently attested. |
+| SM-G998B / Android 15 | Chrome | 155.0.8059.39 (805903904) | `735e893` (reported Git HEAD) | ❌ | ⚠️ | ✅ | Retest reported on 2026-10-15 in a Chrome HTML textarea on the Galaxy S21 (SM-G998B, Android 15/API 35), with explicit `fr_FR` spellchecker subtype (`-1266611582`). Native Grammalecte suggestions were not confirmed: a red underline appeared once and then stopped appearing; the option to add the word to the personal dictionary suggests Chrome/editor spellchecking rather than confirmed Grammalecte integration, but is not conclusive. PROCESS_TEXT generates correction and places it on the clipboard, without replacing text in the source editor. IME replacement and selection made after opening the IME both work. APK exact source commit not independently attested. |
+| SM-G998B / Android 15 | Proton Mail | 7.11.10 (18325) | `735e893` (reported Git HEAD) | ❌ | ❌ | ✅ | Retest reported on 2026-10-15 in the mail composer on Galaxy S21 (SM-G998B, Android 15/API 35), with explicit `fr_FR` spellchecker subtype (`-1266611582`). Native spellchecking failed in this editor; the PROCESS_TEXT action was not offered in the text selection menu, so no direct replacement could be attempted. IME replacement and selection made after opening the IME both work. Package: `ch.protonmail.android`; Grammalecte 0.1.0-dev (1). APK exact source commit not independently attested. |
+| SM-G998B / Android 15 | K-9 Mail | 23.1 (39045) | `735e893` (reported Git HEAD) | ✅ | ✅ | ✅ | Retest reported on 2026-10-15 on Samsung Galaxy S21 (SM-G998B, Android 15/API 35) with explicit French spellchecker subtype `fr_FR` (`-1266611582`). The user reports usable native spelling correction, a working PROCESS_TEXT action with replacement, IME correction and correction of text selected after the IME is already open. Earlier testing on the same K-9 Mail version reported partial native support, no PROCESS_TEXT action and failed late-selection refresh; results now differ with the newer Grammalecte build/configuration. Package: `com.fsck.k9`. Grammalecte 0.1.0-dev (1); APK exact source commit not independently attested. |
 | Android 17 AVD / API 37 | Grammalecte diagnostics `EditText` | Built-in | `c713cf5` | ✅ | — | — | Native correction works with the explicit French subtype; automatic selection fails. Both spellchecker instrumentation tests passed. |
 | SM-G998B / Android 15 | Grammalecte diagnostics `EditText` | Built-in | PR #42 test build | ✅ | — | — | Native correction works with the explicit French subtype; automatic selection fails when English is the primary system language. |
 | Android SDK built for x86 / Android 8.0 (API 26, AVD) | Android System WebView (Chrome provider) | 69.0.3497.100 (349710017) | `a04dc56` | ❌ | ⚠️ | ✅ | The API 26 AVD exposed no native spell-checker feedback in the local WebView fixture; PROCESS_TEXT was offered and Grammalecte produced a correction, but WebView did not apply the returned replacement; IME correction works, including when the text is selected after the Grammalecte IME is already open. Returning from the Grammalecte IME opens Android's input-method picker on API 26. |
@@ -108,6 +115,50 @@ third-party application or with GrapheneOS.
 | SM-G998B / Android 15 | Proton Mail | 7.11.9 (18324) | `5f724dd` | ❌ | ❌ | ✅ | Grammalecte was explicitly selected as the system spell checker, but the composer exposed no native spell-checker UI; the PROCESS_TEXT action was not offered for the tested selection; IME replacement works correctly, including text selected after the Grammalecte IME is already open. |
 | SM-G998B / Android 15 | K-9 Mail | 23.1 (39045) | `5f724dd` | ⚠️ | ❌ | ⚠️ | Grammalecte is invoked by the editor and marks the misspelling, but K-9 exposes no usable native suggestion action when the marked word is tapped; PROCESS_TEXT is not offered; IME replacement works when text is selected before switching to Grammalecte, but a selection made after the IME is already open does not trigger a refresh. |
 | SM-G998B / Android 15 | WhatsApp | 2.26.38.73 (263807322) | `5f724dd` | ⚠️ | ✅ | ⚠️ | Grammalecte is invoked and the misspelling is underlined, but WhatsApp exposes no usable native suggestion action when the marked word is tapped; PROCESS_TEXT replaces the selected text correctly; IME replacement works when text is selected before switching to Grammalecte, but a selection made after the IME is already open does not trigger a refresh. |
+
+## October 2026 Galaxy S21 application retest summary
+
+These manually reported results cover seven applications on one physical Samsung
+Galaxy S21 (SM-G998B, Android 15/API 35), with Grammalecte selected as the
+system spellchecker and the explicit French subtype `fr_FR` (`-1266611582`).
+The reported Git HEAD was `735e893`, and the installed Grammalecte APK
+identified itself as 0.1.0-dev (version code 1); package metadata does not
+independently prove the APK's source commit.
+
+The rows above preserve earlier test results and their application versions.
+The following summary only counts the latest retest for each application:
+
+| Application | Native spellchecking | PROCESS_TEXT | IME correction | Late IME selection |
+| --- | :---: | :---: | :---: | :---: |
+| WhatsApp 2.26.39.79 | ✅ | ✅ | ✅ | ✅ |
+| Samsung Messages 16.0.10.49 | ⚠️ | ⚠️ | ✅ | ✅ |
+| Samsung Notes 4.4.45.37 | ❌ | ❌ | ✅ | ✅ |
+| Firefox 157.0.1 | ❌ | ⚠️ | ✅ | ✅ |
+| Chrome 155.0.8059.39 | ❌ | ⚠️ | ✅ | ✅ |
+| Proton Mail 7.11.10 | ❌ | ❌ | ✅ | ✅ |
+| K-9 Mail 23.1 | ✅ | ✅ | ✅ | ✅ |
+| **Works / partial / fails** | **2 / 1 / 4** | **2 / 3 / 2** | **7 / 0 / 0** | **7 / 0 / 0** |
+
+- **Native spelling:** Samsung Messages updates the underline intermittently,
+  while Samsung Notes, Firefox and Proton Mail expose no usable native
+  Grammalecte suggestions. Chrome displayed an occasional underline whose
+  origin was not confirmed as Grammalecte; it is not counted as a native success.
+- **PROCESS_TEXT:** Samsung Messages appends the corrected phrase instead of
+  replacing the source selection. Firefox and Chrome offer correction but return
+  only a clipboard copy. Samsung Notes does not replace the source text; the
+  precise fallback behavior was not captured. Proton Mail does not expose the
+  PROCESS_TEXT menu action for the tested selection.
+- **IME:** Correction and late selection worked in all seven tested editors.
+  These results are specific to the listed application, Android and ROM builds.
+- **Improvement:** WhatsApp and K-9 Mail now report all four checks as working.
+  K-9 Mail's app version did not change since its earlier compatibility test,
+  but the Grammalecte build/configuration did. The evidence does not isolate
+  which change produced the improvement.
+- **Follow-up:** Investigate PROCESS_TEXT result handling and read-only
+  selection behavior without assuming that the host editor always supports
+  replacement. Investigate whether editors request Android's selected
+  SpellCheckerService before attributing missing underlines to Grammalecte.
+  Preserve the working IME path as a fallback.
 
 ## Test procedure
 
