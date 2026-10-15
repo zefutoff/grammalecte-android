@@ -70,9 +70,10 @@ class ProcessTextResultEndToEndTest {
                     val clipboard =
                         activity.getSystemService(ClipboardManager::class.java)
 
-                    val clip = requireNotNull(clipboard.primaryClip) {
-                        "Expected corrected text on clipboard when host is in foreground"
-                    }
+                    val clip =
+                        requireNotNull(clipboard.primaryClip) {
+                            "Expected corrected text on clipboard when host is in foreground"
+                        }
 
                     assertEquals(
                         text,
