@@ -2,9 +2,13 @@ package fr.zefut.grammalecte
 
 import android.app.Activity
 import android.os.SystemClock
+import android.view.View
+import android.widget.Button
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
+import androidx.test.runner.lifecycle.Stage
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -73,8 +77,16 @@ class ProcessTextHostEndToEndTest {
     }
 
     private fun waitForSuggestion(): Boolean {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+
         repeat(80) {
-            if (findButton("magasin") != null) {
+            var found = false
+
+            instrumentation.runOnMainSync {
+                found = findCorrectionButtonOnMainThread("magasin") != null
+            }
+
+            if (found) {
                 return true
             }
 
@@ -85,31 +97,53 @@ class ProcessTextHostEndToEndTest {
     }
 
     private fun clickCorrectionButton(label: String) {
-        val button =
-            requireNotNull(findButton(label)) {
-                "Expected PROCESS_TEXT button: $label"
-            }
+        var clicked = false
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val button =
+                requireNotNull(findCorrectionButtonOnMainThread(label)) {
+                    "Expected PROCESS_TEXT button: $label"
+                }
+
+            clicked = button.performClick()
+        }
 
         assertTrue(
             "Failed to click PROCESS_TEXT button: $label",
-            button.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK),
+            clicked,
         )
     }
 
-    private fun findButton(label: String): android.view.accessibility.AccessibilityNodeInfo? {
-        val automation =
-            InstrumentationRegistry.getInstrumentation().uiAutomation
+    private fun findCorrectionButtonOnMainThread(label: String): Button? {
+        // Android accessibility queries can return disconnected nodes while
+        // switching activities. Both activities belong to this test process,
+        // so inspect the resumed correction activity directly instead.
+        val activities =
+            ActivityLifecycleMonitorRegistry
+                .getInstance()
+                .getActivitiesInStage(Stage.RESUMED)
 
-        return automation.rootInActiveWindow
-            ?.findAccessibilityNodeInfosByText(label)
-            ?.firstOrNull {
-                it.text?.toString() == label && it.isClickable
+        val activity =
+            activities
+                .filterIsInstance<ProcessTextActivity>()
+                .firstOrNull()
+                ?: return null
+
+        val views = ArrayList<View>()
+        activity.window.decorView.findViewsWithText(
+            views,
+            label,
+            View.FIND_VIEWS_WITH_TEXT,
+        )
+
+        return views
+            .filterIsInstance<Button>()
+            .firstOrNull {
+                it.text.toString() == label
             }
     }
 
-    private fun waitForCallback(
-        scenario: ActivityScenario<ProcessTextHostTestActivity>,
-    ): Boolean {
+    private fun waitForCallback(scenario: ActivityScenario<ProcessTextHostTestActivity>): Boolean {
         repeat(80) {
             var finished = false
 
