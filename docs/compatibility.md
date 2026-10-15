@@ -197,7 +197,24 @@ precise mechanism in Samsung Messages remains undetermined.
 
 For Samsung Messages, **IME correction** was previously reported working.
 The explicit **Copier et revenir** fallback only copies; it does not
-automatically replace text. Issue #45 remains open.
+automatically replace text.
+
+An additional physical-device test used an independent, debug-only
+`ACTION_PROCESS_TEXT` provider that returns a fixed synthetic correction
+without invoking the Grammalecte engine. Samsung Messages again
+inserted the correction without replacing the original selection:
+
+```text
+Je vais au magazin.Je vais au magasin.
+```
+
+This strongly supports a Samsung Messages host-side replacement
+incompatibility independent of the grammar engine. The precise
+internal cause remains unconfirmed.
+
+The generic PROCESS_TEXT test issue #45 is closed. The Samsung
+Messages bug remains tracked in issue #50. The independent probe
+is preserved in the closed, unmerged PR #51 branch.
 
 ## Test procedure
 

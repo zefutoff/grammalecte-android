@@ -126,10 +126,23 @@ The `spellchecker` instrumentation suite verifies Android result mapping, includ
 
 The instrumentation workflow runs:
 
-- API 35 for relevant pull requests;
-- API 26, API 30 and API 35 on scheduled/manual runs.
+- API 35 and API 37.0 for relevant pull requests;
+- API 26, API 30, API 35 and API 37.0 on scheduled/manual runs.
 
-API 26 is the current minimum supported Android API. Additional device, ROM and application coverage is still planned.
+API 26 is the minimum supported Android API.
+
+The standard Android 17 emulator provides automated framework
+coverage, but does not establish compatibility with GrapheneOS.
+GrapheneOS-specific behavior remains under investigation in issue #34.
+
+For local instrumentation, use a dedicated emulator with other
+Android devices disconnected, then run both module suites:
+
+    ./gradlew --no-daemon --no-parallel :spellchecker:connectedDebugAndroidTest
+    ./gradlew --no-daemon --no-parallel :app:connectedDebugAndroidTest
+
+The current `make instrumented` target executes only the `app` suite.
+Aligning this target with CI remains a separate build-system task.
 
 ## 6. Build and privacy checks
 
@@ -137,8 +150,10 @@ API 26 is the current minimum supported Android API. Additional device, ROM and 
 
 It currently runs:
 
+- the Android package identity check;
 - the source-manifest offline privacy check;
-- ShellCheck;
+- ShellCheck and actionlint;
+- the F-Droid metadata validation;
 - the JavaScript bridge contract test;
 - ktlint;
 - JVM tests;
