@@ -9,6 +9,18 @@
             android:name=".ProcessTextHostTestActivity"
             android:exported="false" />
 
+        <!-- Isolated manual comparison provider; excluded from release builds. -->
+        <activity
+            android:name=".ProcessTextProbeActivity"
+            android:exported="true"
+            android:label="@string/process_text_probe_label">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".WebViewCompatibilityTestActivity"
             android:exported="true" />
