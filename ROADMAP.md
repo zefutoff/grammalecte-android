@@ -107,8 +107,8 @@ before any production-code changes.
 
 ### A — IME correction safety
 
-- [ ] Revalidate selected text, not only selection coordinates, before replacement.
-- [ ] Add regression coverage for changed content at unchanged selection coordinates.
+- [x] Revalidate selected text, not only selection coordinates, before replacement.
+- [x] Add regression coverage for changed content at unchanged selection coordinates.
 - [ ] Review sensitive input types, including password fields, and prevent unintended correction.
 
 ### B — PROCESS_TEXT reliability
