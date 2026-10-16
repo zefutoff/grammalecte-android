@@ -20,6 +20,15 @@ import org.junit.runner.RunWith
 class ImeInputConnectionEndToEndTest {
     @Test
     fun imeRefreshesLateSelectionAndReplacesItThroughRealInputConnection() {
+        runImeScenario(staleChangeBeforeApply = false)
+    }
+
+    @Test
+    fun imeRejectsChangedTextAtUnchangedSelectionCoordinates() {
+        runImeScenario(staleChangeBeforeApply = true)
+    }
+
+    private fun runImeScenario(staleChangeBeforeApply: Boolean) {
         val instrumentation =
             InstrumentationRegistry.getInstrumentation()
 
@@ -167,6 +176,24 @@ class ImeInputConnectionEndToEndTest {
                             "Expected Grammalecte IME to refresh the late selection"
                         }
 
+                    if (staleChangeBeforeApply) {
+                        scenario.onActivity { activity ->
+                            assertEquals(INITIAL_TEXT.length, STALE_TEXT.length)
+                            assertEquals(0, activity.editor.selectionStart)
+                            assertEquals(INITIAL_TEXT.length, activity.editor.selectionEnd)
+
+                            activity.editor.text.replace(
+                                0,
+                                INITIAL_TEXT.length,
+                                STALE_TEXT,
+                            )
+
+                            assertEquals(0, activity.editor.selectionStart)
+                            assertEquals(STALE_TEXT.length, activity.editor.selectionEnd)
+                            assertEquals(STALE_TEXT, activity.editor.text.toString())
+                        }
+                    }
+
                     assertTrue(
                         "Unable to click Grammalecte correction action",
                         button.performAction(
@@ -174,19 +201,36 @@ class ImeInputConnectionEndToEndTest {
                         ),
                     )
 
-                    assertTrue(
-                        "Timed out waiting for corrected EditText content",
-                        waitForText(
-                            scenario = scenario,
-                            expected = EXPECTED_TEXT,
-                        ),
-                    )
-
-                    scenario.onActivity { activity ->
-                        assertEquals(
-                            EXPECTED_TEXT,
-                            activity.editor.text.toString(),
+                    if (staleChangeBeforeApply) {
+                        assertTrue(
+                            "IME did not reject the changed selected text",
+                            waitForNode(
+                                "Le texte a changé. Sélectionnez-le de nouveau.",
+                            ) != null,
                         )
+
+                        scenario.onActivity { activity ->
+                            assertEquals(
+                                "Stale correction overwrote modified editor content",
+                                STALE_TEXT,
+                                activity.editor.text.toString(),
+                            )
+                        }
+                    } else {
+                        assertTrue(
+                            "Timed out waiting for corrected EditText content",
+                            waitForText(
+                                scenario = scenario,
+                                expected = EXPECTED_TEXT,
+                            ),
+                        )
+
+                        scenario.onActivity { activity ->
+                            assertEquals(
+                                EXPECTED_TEXT,
+                                activity.editor.text.toString(),
+                            )
+                        }
                     }
                 }
         } finally {
@@ -452,6 +496,9 @@ class ImeInputConnectionEndToEndTest {
 
         const val EXPECTED_TEXT =
             "Je suis allé au magasin hier."
+
+        const val STALE_TEXT =
+            "Je suis passe au magasin hier."
 
         const val IME_TITLE_LABEL =
             "Grammalecte"

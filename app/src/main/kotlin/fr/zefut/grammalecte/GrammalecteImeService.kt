@@ -863,78 +863,120 @@ class GrammalecteImeService : InputMethodService() {
     }
 
     private fun applyCorrectedText(returnToPrevious: Boolean) {
-        if (
-            workingText.isEmpty() ||
-            workingText == originalSelectedText
-        ) {
+        val correctedText = workingText
+        val expectedText = originalSelectedText
+
+        if (correctedText.isEmpty() || correctedText == expectedText) {
             return
         }
 
-        val inputConnection =
-            currentInputConnection
-                ?: return
+        val inputConnection = currentInputConnection ?: return
+        val selectionStart = analyzedSelectionStart
+        val selectionEnd = analyzedSelectionEnd
 
-        if (
-            analyzedSelectionStart < 0 ||
-            analyzedSelectionEnd <= analyzedSelectionStart
-        ) {
-            statusView.text =
-                "La sélection n’est plus disponible."
-
+        if (selectionStart < 0 || selectionEnd <= selectionStart) {
+            statusView.text = "La sélection n’est plus disponible."
             setApplyButtonsEnabled(false)
             return
         }
 
         if (
-            latestSelectionStart != analyzedSelectionStart ||
-            latestSelectionEnd != analyzedSelectionEnd
+            latestSelectionStart != selectionStart ||
+            latestSelectionEnd != selectionEnd
         ) {
             statusView.text =
                 "La sélection a changé. Sélectionnez de nouveau le texte."
-
             setApplyButtonsEnabled(false)
             return
         }
 
-        val selectionRestored =
-            inputConnection.setSelection(
-                analyzedSelectionStart,
-                analyzedSelectionEnd,
-            )
+        val requestGeneration = selectionRequestGeneration
 
-        if (!selectionRestored) {
-            statusView.text =
-                "Impossible de restaurer la sélection."
+        statusView.text = "Vérification du texte sélectionné…"
+        setApplyButtonsEnabled(false)
+        setApplyAllButtonsEnabled(false)
 
-            setApplyButtonsEnabled(false)
-            return
-        }
+        // InputConnection reads can block on some editors (e.g. WebView).
+        // Keep the read off the IME main thread.
+        selectionExecutor.execute {
+            val selectedText =
+                runCatching {
+                    inputConnection.getSelectedText(0)?.toString()
+                }.getOrNull()
 
-        val committed =
-            inputConnection.commitText(
-                workingText,
-                1,
-            )
+            mainHandler.post {
+                if (requestGeneration != selectionRequestGeneration) {
+                    return@post
+                }
 
-        if (committed) {
-            statusView.text =
-                "Correction appliquée."
+                if (
+                    currentInputConnection !== inputConnection ||
+                    analyzedSelectionStart != selectionStart ||
+                    analyzedSelectionEnd != selectionEnd ||
+                    latestSelectionStart != selectionStart ||
+                    latestSelectionEnd != selectionEnd ||
+                    originalSelectedText != expectedText ||
+                    workingText != correctedText
+                ) {
+                    statusView.text =
+                        "La sélection a changé. Sélectionnez de nouveau le texte."
+                    setApplyButtonsEnabled(false)
+                    setApplyAllButtonsEnabled(false)
+                    return@post
+                }
 
-            originalSelectedText = ""
-            workingText = ""
-            latestIssues = emptyList()
-            issuesLayout.removeAllViews()
-            setApplyButtonsEnabled(false)
-            setApplyAllButtonsEnabled(false)
+                if (selectedText != expectedText) {
+                    statusView.text =
+                        if (selectedText == null) {
+                            "Impossible de vérifier le texte sélectionné."
+                        } else {
+                            "Le texte a changé. Sélectionnez-le de nouveau."
+                        }
 
-            if (returnToPrevious) {
-                mainHandler.post {
-                    returnToPreviousInputMethod()
+                    setApplyButtonsEnabled(false)
+                    setApplyAllButtonsEnabled(false)
+                    return@post
+                }
+
+                val selectionRestored =
+                    inputConnection.setSelection(
+                        selectionStart,
+                        selectionEnd,
+                    )
+
+                if (!selectionRestored) {
+                    statusView.text =
+                        "Impossible de restaurer la sélection."
+                    setApplyButtonsEnabled(false)
+                    return@post
+                }
+
+                val committed =
+                    inputConnection.commitText(
+                        correctedText,
+                        1,
+                    )
+
+                if (committed) {
+                    statusView.text = "Correction appliquée."
+
+                    originalSelectedText = ""
+                    workingText = ""
+                    latestIssues = emptyList()
+                    issuesLayout.removeAllViews()
+                    setApplyButtonsEnabled(false)
+                    setApplyAllButtonsEnabled(false)
+
+                    if (returnToPrevious) {
+                        mainHandler.post {
+                            returnToPreviousInputMethod()
+                        }
+                    }
+                } else {
+                    statusView.text =
+                        "Impossible d’appliquer la correction."
                 }
             }
-        } else {
-            statusView.text =
-                "Impossible d’appliquer la correction."
         }
     }
 
