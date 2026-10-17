@@ -1,8 +1,8 @@
 [versions]
 agp = "9.4.1"
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 ktlint = "14.2.0"
-cyclonedx = "3.5.0"
+cyclonedx = "3.5.1"
 quickjs = "1.0.15"
 coroutines = "1.11.0"
 junit4 = "4.13.2"
