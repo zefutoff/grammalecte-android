@@ -109,7 +109,7 @@ before any production-code changes.
 
 - [x] Revalidate selected text, not only selection coordinates, before replacement.
 - [x] Add regression coverage for changed content at unchanged selection coordinates.
-- [ ] Review sensitive input types, including password fields, and prevent unintended correction.
+- [x] Review sensitive input types, including password fields, and prevent unintended correction.
 
 ### B — PROCESS_TEXT reliability
 

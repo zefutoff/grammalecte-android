@@ -52,7 +52,13 @@ Before committing, the IME also checks the active `InputConnection`, selection c
 
 These checks are not atomic with `setSelection()` and `commitText()`. An editor could theoretically change its content between verification and replacement. The reproduced stale-content case is covered by an Android integration regression test.
 
-The current IME has no explicit `EditorInfo.inputType` exclusion for password fields. Sensitive-field handling requires targeted privacy tests and hardening before stable release.
+The IME checks `EditorInfo.inputType` and disables correction in text password, visible password, web password and numeric password fields. Missing or `TYPE_NULL` input types are also treated as unsafe.
+
+When a sensitive field becomes active, the IME invalidates pending selection and analysis results, clears previously prepared corrections and blocks new selected-text reads and replacements.
+
+This protection depends on the input type declared by the editor. An application that incorrectly identifies a password field as ordinary text may bypass this classification. A read already in progress before an editor switch cannot be cancelled retroactively.
+
+Instrumentation tests verify that sensitive fields are not read or modified by the Grammalecte IME, including transitions from ordinary editors. Only synthetic test data is used.
 
 The project does not require an Android Accessibility Service for text replacement.
 
