@@ -113,7 +113,7 @@ before any production-code changes.
 
 ### B — PROCESS_TEXT reliability
 
-- [ ] Serialize engine creation, analysis and closure across activity lifecycle changes.
+- [x] Serialize engine creation, analysis and closure across activity lifecycle changes.
 - [ ] Invalidate stale suggestions when the editable correction text changes.
 - [ ] Preserve the standard Android PROCESS_TEXT result contract.
 

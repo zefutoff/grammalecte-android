@@ -77,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - CI verifies the permissions of the final debug APK in addition to source manifests.
 - IME analysis now uses a single serialized background worker so QuickJS engine creation, evaluation and shutdown cannot race during rapid repeated corrections or service destruction.
 - The IME now reacts to selection changes while it is already open, allowing text selected after switching keyboards to be analyzed automatically.
+- `PROCESS_TEXT` now serializes Grammalecte engine creation, analysis and shutdown on a dedicated worker. Superseded analysis results and callbacks after activity destruction are discarded, while engine shutdown no longer blocks the UI thread.
 
 ### Fixed
 

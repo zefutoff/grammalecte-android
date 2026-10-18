@@ -23,8 +23,7 @@ class ProcessTextActivity : Activity() {
     private lateinit var issuesLayout: LinearLayout
 
     private var readOnly = false
-    private var engine: GrammalecteQuickJsEngine? = null
-    private var analysisGeneration = 0
+    private lateinit var analysisCoordinator: ProcessTextAnalysisCoordinator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +32,16 @@ class ProcessTextActivity : Activity() {
             finish()
             return
         }
+
+        analysisCoordinator =
+            ProcessTextAnalysisCoordinator(
+                engineFactory = {
+                    GrammalecteQuickJsEngine(applicationContext)
+                },
+                callbackDispatcher = { callback ->
+                    runOnUiThread { callback() }
+                },
+            )
 
         val selectedText =
             intent
@@ -149,39 +158,19 @@ class ProcessTextActivity : Activity() {
 
     private fun analyzeCurrentText() {
         val text = editText.text.toString()
-        val generation = ++analysisGeneration
 
         statusView.text = "Analyse en cours…"
         issuesLayout.removeAllViews()
 
-        Thread {
-            val result =
-                runCatching {
-                    val currentEngine =
-                        engine ?: GrammalecteQuickJsEngine(applicationContext).also {
-                            engine = it
-                        }
-
-                    currentEngine.check(
-                        text = text,
-                        localeTag = "fr-FR",
-                    )
+        analysisCoordinator.analyze(text) { result ->
+            result
+                .onSuccess { issues ->
+                    showIssues(text, issues)
+                }.onFailure { error ->
+                    statusView.text =
+                        "Erreur pendant l’analyse : ${error.message ?: error.javaClass.simpleName}"
                 }
-
-            runOnUiThread {
-                if (generation != analysisGeneration) {
-                    return@runOnUiThread
-                }
-
-                result
-                    .onSuccess { issues ->
-                        showIssues(text, issues)
-                    }.onFailure { error ->
-                        statusView.text =
-                            "Erreur pendant l’analyse : ${error.message ?: error.javaClass.simpleName}"
-                    }
-            }
-        }.start()
+        }
     }
 
     private fun showIssues(
@@ -354,9 +343,9 @@ class ProcessTextActivity : Activity() {
     }
 
     override fun onDestroy() {
-        analysisGeneration++
-        engine?.close()
-        engine = null
+        if (::analysisCoordinator.isInitialized) {
+            analysisCoordinator.close()
+        }
         super.onDestroy()
     }
 
