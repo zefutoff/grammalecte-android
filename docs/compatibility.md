@@ -93,10 +93,49 @@ These results validate the native correction path in the tested
 diagnostics field. They do not establish compatibility with every
 third-party application or with GrapheneOS.
 
+
+### GrapheneOS Android 17 local emulator (2026-10-18)
+
+| Field | Value |
+| --- | --- |
+| Environment | Locally built GrapheneOS emulator, x86_64 (`emu64x`) |
+| GrapheneOS source tag | `2026100600` |
+| Build target | `sdk_phone64_x86_64-cur-userdebug` |
+| Android / API | Android 17 / API 37 |
+| Build ID | `CP2A.260605.016` |
+| Security patch | `2026-10-05` |
+| Emulator-only build adjustment | Dynamic partition group size increased from 2800 MiB to 3000 MiB to fit `super.img`; no spellchecker source changes |
+| Grammalecte commits | `22ce813` (original issue #34 report) and `fd2db61` (newer build) |
+| Selected spellchecker subtype | Explicit French `fr_FR` (`-1266611582`) |
+| Package at `22ce813` | `fr.grammalecteandroid.unofficial` |
+| Package at `fd2db61` | `fr.zefut.grammalecte` |
+
+**Both commits passed the native spellchecker checks in this emulator:**
+
+- The app's direct `TextServicesManager` diagnostic returned a real `magazin` → `magasin` suggestion.
+- After manually clearing and retyping `Je suis aller au magazin.` in the app's native diagnostic `EditText`, the editor displayed misspelling/grammar underlines and `SuggestionSpan`s.
+- Tapping `magazin` and choosing `magasin` replaced the misspelled word in the editor.
+- With `fd2db61`, the `SpellCheckerServiceEndToEndTest` XML reported **2 tests, 0 failures, 0 errors, 0 skipped**.
+- With `22ce813`, a targeted `connectedDebugAndroidTest` invocation completed with `BUILD SUCCESSFUL` in 27 seconds. The historical test class defines one test, but its result XML was not provided for this run.
+
+**Important test-fixture distinction:** the app's automatically prefilled
+diagnostic `EditText` initially had no `SuggestionSpan`, whereas manually
+entered text did. The initial absence of spans alone does not establish
+that the selected spellchecker is broken; it can depend on when the editor
+requests spellchecking.
+
+These results **do not reproduce issue #34** in this x86_64 emulator, even
+at the reporter's original commit. They do **not** establish compatibility
+with a physical Pixel 9 running GrapheneOS. The original report remains
+open pending device-specific investigation; `PROCESS_TEXT` and IME were
+not tested as part of this emulator comparison.
+
 ## Compatibility matrix
 
 | Device / Android | Application | Version (code) | Grammalecte build | SpellCheckerService | PROCESS_TEXT | IME / InputConnection | Notes |
 | --- | --- | --- | --- | :---: | :---: | :---: | --- |
+| GrapheneOS 17 emulator / API 37 | Grammalecte diagnostics `EditText` | Built-in | `22ce813` | ✅ | — | — | Local GrapheneOS `2026100600`; explicit `fr_FR` subtype; direct session correction, manual typing, `SuggestionSpan` inspection and native `magasin` replacement all worked. Targeted instrumentation: `BUILD SUCCESSFUL`; exact test count not independently confirmed by XML. Issue #34 not reproduced on emulator. |
+| GrapheneOS 17 emulator / API 37 | Grammalecte diagnostics `EditText` | Built-in | `fd2db61` | ✅ | — | — | Same emulator and explicit French subtype; two `SuggestionSpan`s observed after manual typing, native suggestion/replacement worked; spellchecker instrumentation XML: 2 tests, 0 failures, 0 errors. Initially prefilled `EditText` had no spans. |
 | SM-G998B / Android 15 | WhatsApp | 2.26.39.79 (263907900) | `735e893` (reported Git HEAD) | ✅ | ✅ | ✅ | Retest on 2026-10-14: native `magazin` suggestion and replacement, PROCESS_TEXT correction, IME replacement and late selection refresh were all reported working. Grammalecte 0.1.0-dev (1); explicit `fr_FR` spellchecker subtype (`-1266611582`). APK's exact source commit is not independently attested by package metadata. |
 | SM-G998B / Android 15 | Samsung Messages | 16.0.10.49 (1601000049) | `735e893` (reported Git HEAD) | ⚠️ | ⚠️ | ✅ | Retest reported on 2026-10-14 with explicit `fr_FR` subtype (`-1266611582`). Native spelling feedback is intermittent: underlines may only appear after repeated spaces or leaving and returning to the editor. PROCESS_TEXT appends the corrected text instead of replacing the selection; observed result: `Je suis aller au magazin.Je suis allé au magasin.` IME replacement and selection made after opening the IME both work. APK exact source commit not independently attested. |
 | SM-G998B / Android 15 | Samsung Notes | 4.4.45.37 (444537000) | `735e893` (reported Git HEAD) | ❌ | ❌ | ✅ | Retest reported on 2026-10-14 with explicit `fr_FR` subtype (`-1266611582`). Native spelling: no underline in the tested note editor. PROCESS_TEXT: corrected text does not replace the selected text (whether clipboard fallback occurs was not recorded). IME replacement and selection made after opening the IME both work. Underline refresh was reported as working after correction, but with no native underline visible initially the earlier stale-underline behavior is not conclusively ruled out. APK exact source commit not independently attested. |
