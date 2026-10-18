@@ -89,6 +89,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - IME selected-text reads no longer block the UI thread on slow `InputConnection` implementations such as Android WebView.
 - IME replacement now tracks and restores the analyzed selection range before committing corrected text, while rejecting stale selections.
 - IME correction now verifies the current selected text asynchronously before replacement, preventing the reproduced stale-content overwrite when selection coordinates remain unchanged.
+- IME correction is disabled for password, visible-password, web-password and numeric-password fields, with pending input work invalidated on editor changes and Android instrumentation regression coverage.
 
 ### Known limitations
 

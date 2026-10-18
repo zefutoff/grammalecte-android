@@ -5,10 +5,12 @@ import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.text.InputType
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.HorizontalScrollView
@@ -24,7 +26,7 @@ class GrammalecteImeService : InputMethodService() {
 
     private val selectionRefreshRunnable =
         Runnable {
-            if (::selectedTextView.isInitialized) {
+            if (!sensitiveInputActive && ::selectedTextView.isInitialized) {
                 requestSelectionAndAnalyze()
             }
         }
@@ -63,6 +65,9 @@ class GrammalecteImeService : InputMethodService() {
 
     @Volatile
     private var analysisGeneration = 0
+
+    @Volatile
+    private var sensitiveInputActive = false
 
     override fun onCreateInputView(): View {
         val density = resources.displayMetrics.density
@@ -341,8 +346,55 @@ class GrammalecteImeService : InputMethodService() {
         return root
     }
 
+    override fun onStartInput(
+        info: EditorInfo?,
+        restarting: Boolean,
+    ) {
+        super.onStartInput(info, restarting)
+        updateInputSafetyState(info)
+    }
+
+    private fun isSensitiveInputType(inputType: Int?): Boolean {
+        if (inputType == null || inputType == InputType.TYPE_NULL) {
+            return true
+        }
+
+        val inputClass = inputType and InputType.TYPE_MASK_CLASS
+        val variation = inputType and InputType.TYPE_MASK_VARIATION
+
+        return when (inputClass) {
+            InputType.TYPE_CLASS_TEXT ->
+                variation == InputType.TYPE_TEXT_VARIATION_PASSWORD ||
+                    variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD ||
+                    variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD
+
+            InputType.TYPE_CLASS_NUMBER ->
+                variation == InputType.TYPE_NUMBER_VARIATION_PASSWORD
+
+            else -> false
+        }
+    }
+
+    private fun updateInputSafetyState(info: EditorInfo?) {
+        sensitiveInputActive = isSensitiveInputType(info?.inputType)
+
+        // Invalidate pending work from the previous editor.
+        selectionRequestGeneration++
+        analysisGeneration++
+        mainHandler.removeCallbacks(selectionRefreshRunnable)
+
+        if (::selectedTextView.isInitialized) {
+            clearSelectionState()
+
+            if (sensitiveInputActive) {
+                statusView.text =
+                    "Correction désactivée dans les champs sensibles."
+            }
+        }
+    }
+
     override fun onStartInputView(
-        info: android.view.inputmethod.EditorInfo?,
+        info: EditorInfo?,
         restarting: Boolean,
     ) {
         super.onStartInputView(
@@ -350,11 +402,11 @@ class GrammalecteImeService : InputMethodService() {
             restarting,
         )
 
-        mainHandler.removeCallbacks(
-            selectionRefreshRunnable,
-        )
+        updateInputSafetyState(info)
 
-        selectionRequestGeneration++
+        if (sensitiveInputActive) {
+            return
+        }
 
         updateLatestSelection(
             info?.initialSelStart ?: -1,
@@ -397,6 +449,10 @@ class GrammalecteImeService : InputMethodService() {
             candidatesEnd,
         )
 
+        if (sensitiveInputActive) {
+            return
+        }
+
         if (
             oldSelStart == newSelStart &&
             oldSelEnd == newSelEnd
@@ -434,6 +490,10 @@ class GrammalecteImeService : InputMethodService() {
     }
 
     private fun requestSelectionAndAnalyze() {
+        if (sensitiveInputActive) {
+            return
+        }
+
         val inputConnection =
             currentInputConnection
                 ?: run {
@@ -445,6 +505,13 @@ class GrammalecteImeService : InputMethodService() {
             ++selectionRequestGeneration
 
         selectionExecutor.execute {
+            if (
+                sensitiveInputActive ||
+                requestGeneration != selectionRequestGeneration
+            ) {
+                return@execute
+            }
+
             val selectedText =
                 runCatching {
                     inputConnection
@@ -455,6 +522,7 @@ class GrammalecteImeService : InputMethodService() {
 
             mainHandler.post {
                 if (
+                    sensitiveInputActive ||
                     requestGeneration != selectionRequestGeneration ||
                     !::selectedTextView.isInitialized
                 ) {
@@ -469,6 +537,10 @@ class GrammalecteImeService : InputMethodService() {
     }
 
     private fun applySelectedTextAndAnalyze(selectedText: String) {
+        if (sensitiveInputActive) {
+            return
+        }
+
         if (selectedText.isEmpty()) {
             clearSelectionState()
             return
@@ -523,6 +595,10 @@ class GrammalecteImeService : InputMethodService() {
     }
 
     private fun analyzeWorkingText() {
+        if (sensitiveInputActive) {
+            return
+        }
+
         val text = workingText
         val generation = ++analysisGeneration
 
@@ -785,6 +861,10 @@ class GrammalecteImeService : InputMethodService() {
         issue: GrammarIssue,
         suggestion: String,
     ) {
+        if (sensitiveInputActive) {
+            return
+        }
+
         if (
             issue.start < 0 ||
             issue.endExclusive > workingText.length ||
@@ -808,6 +888,10 @@ class GrammalecteImeService : InputMethodService() {
     }
 
     private fun applyAllSuggestions(returnToPrevious: Boolean) {
+        if (sensitiveInputActive) {
+            return
+        }
+
         val correctedText =
             buildAutomaticCorrection(
                 text = workingText,
@@ -863,6 +947,10 @@ class GrammalecteImeService : InputMethodService() {
     }
 
     private fun applyCorrectedText(returnToPrevious: Boolean) {
+        if (sensitiveInputActive) {
+            return
+        }
+
         val correctedText = workingText
         val expectedText = originalSelectedText
 
@@ -899,13 +987,23 @@ class GrammalecteImeService : InputMethodService() {
         // InputConnection reads can block on some editors (e.g. WebView).
         // Keep the read off the IME main thread.
         selectionExecutor.execute {
+            if (
+                sensitiveInputActive ||
+                requestGeneration != selectionRequestGeneration
+            ) {
+                return@execute
+            }
+
             val selectedText =
                 runCatching {
                     inputConnection.getSelectedText(0)?.toString()
                 }.getOrNull()
 
             mainHandler.post {
-                if (requestGeneration != selectionRequestGeneration) {
+                if (
+                    sensitiveInputActive ||
+                    requestGeneration != selectionRequestGeneration
+                ) {
                     return@post
                 }
 

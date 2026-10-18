@@ -5,6 +5,8 @@ import android.content.ComponentName
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
+import android.text.InputType
+import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.inputmethod.InputMethodManager
@@ -28,7 +30,44 @@ class ImeInputConnectionEndToEndTest {
         runImeScenario(staleChangeBeforeApply = true)
     }
 
-    private fun runImeScenario(staleChangeBeforeApply: Boolean) {
+    @Test
+    fun imeDoesNotReadOrModifyPasswordFields() {
+        val sensitiveTypes =
+            listOf(
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD,
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD,
+                InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD,
+            )
+
+        sensitiveTypes.forEach { type ->
+            runImeScenario(
+                staleChangeBeforeApply = false,
+                sensitiveInputType = type,
+            )
+        }
+    }
+
+    @Test
+    fun imeDisablesCorrectionAfterSwitchingToPasswordEditor() {
+        runImeScenario(
+            staleChangeBeforeApply = false,
+            switchToSensitiveEditor = true,
+        )
+    }
+
+    private fun runImeScenario(
+        staleChangeBeforeApply: Boolean,
+        sensitiveInputType: Int? = null,
+        switchToSensitiveEditor: Boolean = false,
+    ) {
+        val numericPasswordType =
+            InputType.TYPE_CLASS_NUMBER or
+                InputType.TYPE_NUMBER_VARIATION_PASSWORD
+
+        val sampleText =
+            if (sensitiveInputType == numericPasswordType) "123456" else INITIAL_TEXT
+
         val instrumentation =
             InstrumentationRegistry.getInstrumentation()
 
@@ -82,12 +121,16 @@ class ImeInputConnectionEndToEndTest {
                 .launch(ImeIntegrationTestActivity::class.java)
                 .use { scenario ->
                     scenario.onActivity { activity ->
-                        activity.editor.setText(INITIAL_TEXT)
+                        if (sensitiveInputType != null) {
+                            activity.editor.inputType = sensitiveInputType
+                        }
+
+                        activity.editor.setText(sampleText)
 
                         activity.editor.requestFocus()
 
                         activity.editor.setSelection(
-                            INITIAL_TEXT.length,
+                            sampleText.length,
                         )
 
                         activity.editor.post {
@@ -117,6 +160,10 @@ class ImeInputConnectionEndToEndTest {
                             )
 
                         activity.editor.requestFocus()
+
+                        if (sensitiveInputType != null) {
+                            activity.editor.resetImeCounters()
+                        }
 
                         inputMethodManager.restartInput(
                             activity.editor,
@@ -152,19 +199,49 @@ class ImeInputConnectionEndToEndTest {
 
                     scenario.onActivity { activity ->
                         assertEquals(
-                            INITIAL_TEXT.length,
+                            sampleText.length,
                             activity.editor.selectionStart,
                         )
 
                         assertEquals(
-                            INITIAL_TEXT.length,
+                            sampleText.length,
                             activity.editor.selectionEnd,
                         )
 
                         activity.editor.setSelection(
                             0,
-                            INITIAL_TEXT.length,
+                            sampleText.length,
                         )
+                    }
+
+                    if (sensitiveInputType != null) {
+                        val blockedMessageVisible =
+                            waitForNode(
+                                "Correction désactivée dans les champs sensibles.",
+                            ) != null
+
+                        SystemClock.sleep(400L)
+
+                        scenario.onActivity { activity ->
+                            assertEquals(sampleText, activity.editor.text.toString())
+                            assertEquals(
+                                "IME read selected text from a sensitive field",
+                                0,
+                                activity.editor.selectedTextReadCount,
+                            )
+                            assertEquals(
+                                "IME committed text into a sensitive field",
+                                0,
+                                activity.editor.commitTextCount,
+                            )
+                        }
+
+                        assertTrue(
+                            "The IME did not disable correction for a sensitive field",
+                            blockedMessageVisible,
+                        )
+
+                        return@use
                     }
 
                     val button =
@@ -175,6 +252,78 @@ class ImeInputConnectionEndToEndTest {
                         ) {
                             "Expected Grammalecte IME to refresh the late selection"
                         }
+
+                    if (switchToSensitiveEditor) {
+                        var switchedEditor: ObservedEditText? = null
+
+                        scenario.onActivity { activity ->
+                            val passwordEditor =
+                                ObservedEditText(activity).apply {
+                                    inputType =
+                                        InputType.TYPE_CLASS_TEXT or
+                                        InputType.TYPE_TEXT_VARIATION_PASSWORD
+                                    setText(SYNTHETIC_PASSWORD)
+                                    setSelection(0, SYNTHETIC_PASSWORD.length)
+                                }
+
+                            activity.addContentView(
+                                passwordEditor,
+                                ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                                ),
+                            )
+
+                            assertTrue(
+                                "Password editor did not receive focus",
+                                passwordEditor.requestFocus(),
+                            )
+
+                            val inputMethodManager =
+                                activity.getSystemService(
+                                    InputMethodManager::class.java,
+                                )
+
+                            inputMethodManager.restartInput(passwordEditor)
+                            inputMethodManager.showSoftInput(
+                                passwordEditor,
+                                InputMethodManager.SHOW_IMPLICIT,
+                            )
+
+                            switchedEditor = passwordEditor
+                        }
+
+                        assertTrue(
+                            "IME did not block correction after editor switch",
+                            waitForNode(
+                                "Correction désactivée dans les champs sensibles.",
+                            ) != null,
+                        )
+
+                        SystemClock.sleep(400L)
+
+                        scenario.onActivity { activity ->
+                            val passwordEditor = requireNotNull(switchedEditor)
+
+                            assertTrue(passwordEditor.hasFocus())
+                            assertEquals(
+                                SYNTHETIC_PASSWORD,
+                                passwordEditor.text.toString(),
+                            )
+                            assertEquals(
+                                "Sensitive editor was read after focus change",
+                                0,
+                                passwordEditor.selectedTextReadCount,
+                            )
+                            assertEquals(
+                                "Sensitive editor was modified after focus change",
+                                0,
+                                passwordEditor.commitTextCount,
+                            )
+                        }
+
+                        return@use
+                    }
 
                     if (staleChangeBeforeApply) {
                         scenario.onActivity { activity ->
@@ -499,6 +648,9 @@ class ImeInputConnectionEndToEndTest {
 
         const val STALE_TEXT =
             "Je suis passe au magasin hier."
+
+        const val SYNTHETIC_PASSWORD =
+            "FAKE_test_12345"
 
         const val IME_TITLE_LABEL =
             "Grammalecte"
