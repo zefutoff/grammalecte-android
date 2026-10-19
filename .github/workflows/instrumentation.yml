@@ -15,6 +15,7 @@ on:
       - 'settings.gradle.kts'
       - 'build.gradle.kts'
       - 'gradlew'
+      - 'Makefile'
       - '.github/workflows/instrumentation.yml'
 
 permissions:
@@ -86,9 +87,7 @@ jobs:
             grep '^target=' "$ANDROID_AVD_HOME/test.ini"
             test "${{ matrix.api-level }}" != '37.0' || grep -qx 'target=android-37.0' "$ANDROID_AVD_HOME/test.ini"
           script: |
-            set -e
-            ./gradlew --no-daemon --no-parallel :spellchecker:connectedDebugAndroidTest
-            ./gradlew --no-daemon --no-parallel :app:connectedDebugAndroidTest
+            make instrumented
 
       - name: Upload instrumentation reports
         if: always()

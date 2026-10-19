@@ -119,7 +119,7 @@ before any production-code changes.
 
 ### C — Local testing and CI consistency
 
-- [ ] Align `make instrumented` with both Android instrumentation modules.
+- [x] Align `make instrumented` with both Android instrumentation modules.
 - [ ] Add unsigned release build validation to regular CI.
 - [ ] Review automated coverage for older supported Android API levels.
 
