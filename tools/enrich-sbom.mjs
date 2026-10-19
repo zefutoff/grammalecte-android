@@ -145,6 +145,62 @@ bom.components = bom.components.filter(
 
 bom.components.push(grammalecteComponent);
 
+// CycloneDX may retain the requested annotations:13.0 component
+// even though Gradle resolves the release runtime to 23.0.0.
+// This normalization is intentionally version-specific.
+const staleAnnotations = bom.components.find(
+    (component) =>
+        component.group === "org.jetbrains" &&
+        component.name === "annotations" &&
+        component.version === "13.0",
+);
+
+if (staleAnnotations) {
+    const selectedAnnotations = bom.components.find(
+        (component) =>
+            component.group === "org.jetbrains" &&
+            component.name === "annotations" &&
+            component.version === "23.0.0",
+    );
+
+    if (!selectedAnnotations) {
+        fail("Expected resolved JetBrains annotations 23.0.0.");
+    }
+
+    const staleRef = staleAnnotations["bom-ref"];
+    const selectedRef = selectedAnnotations["bom-ref"];
+
+    if (!staleRef || !selectedRef) {
+        fail("Missing JetBrains annotations component reference.");
+    }
+
+    const staleRelation = bom.dependencies.find(
+        (dependency) => dependency.ref === staleRef,
+    );
+
+    if ((staleRelation?.dependsOn ?? []).length > 0) {
+        fail("Cannot safely remove annotations 13.0 with dependencies.");
+    }
+
+    bom.components = bom.components.filter(
+        (component) => component["bom-ref"] !== staleRef,
+    );
+
+    bom.dependencies = bom.dependencies.filter(
+        (dependency) => dependency.ref !== staleRef,
+    );
+
+    for (const dependency of bom.dependencies) {
+        dependency.dependsOn = Array.from(
+            new Set(
+                (dependency.dependsOn ?? []).map((ref) =>
+                    ref === staleRef ? selectedRef : ref,
+                ),
+            ),
+        ).sort();
+    }
+}
+
 bom.components.sort((left, right) =>
     String(left["bom-ref"] ?? "").localeCompare(
         String(right["bom-ref"] ?? ""),

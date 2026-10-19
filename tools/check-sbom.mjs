@@ -175,6 +175,21 @@ for (const name of requiredRuntimeComponents) {
     }
 }
 
+// The release runtime resolves JetBrains annotations to 23.0.0.
+// Reject duplicate or stale entries in the published inventory.
+const annotations = bom.components.filter(
+    (component) =>
+        component.group === "org.jetbrains" &&
+        component.name === "annotations",
+);
+
+if (
+    annotations.length !== 1 ||
+    annotations[0].version !== "23.0.0"
+) {
+    fail("unexpected resolved JetBrains annotations inventory");
+}
+
 const forbiddenTestComponents = [
     "junit",
     "json",

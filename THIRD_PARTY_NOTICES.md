@@ -76,8 +76,8 @@ License text:
 
 - Project: Kotlin
 - Upstream: https://github.com/JetBrains/kotlin
-- Maven artifact: `org.jetbrains.kotlin:kotlin-stdlib:2.4.20`
-- Version: 2.4.20
+- Maven artifact: `org.jetbrains.kotlin:kotlin-stdlib:2.4.21`
+- Version: 2.4.21
 - License: Apache-2.0
 
 License text:
