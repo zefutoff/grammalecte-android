@@ -52,6 +52,9 @@ jobs:
       - name: Build debug APK
         run: make assemble
 
+      - name: Build unsigned release APK
+        run: make unsigned-release
+
       - name: Upload debug APK
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
