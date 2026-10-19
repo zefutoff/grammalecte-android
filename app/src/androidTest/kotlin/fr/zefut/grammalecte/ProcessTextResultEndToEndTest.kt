@@ -4,7 +4,9 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.os.SystemClock
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -73,6 +75,146 @@ class ProcessTextResultEndToEndTest {
     }
 
     @Test
+    fun staleSuggestionDoesNotOverwriteEditedTextAtSameOffsets() {
+        val originalText = "Je vais au magazin."
+        val editedText = "Je vais au cabinet."
+
+        assertEquals(originalText.length, editedText.length)
+
+        val scenario =
+            ActivityScenario.launch<ProcessTextActivity>(
+                processTextIntent(
+                    text = originalText,
+                    readOnly = false,
+                ),
+            )
+
+        scenario.use {
+            assertTrue(
+                "Expected initial Grammalecte suggestion",
+                waitForButton(scenario, "magasin"),
+            )
+
+            scenario.onActivity { activity ->
+                val root = activity.window.decorView
+                val staleButton =
+                    requireNotNull(findButton(root, "magasin"))
+                val editor =
+                    requireNotNull(findEditor(root))
+
+                editor.setText(editedText)
+
+                assertTrue(staleButton.performClick())
+
+                assertEquals(
+                    "Stale suggestion must not overwrite user edits",
+                    editedText,
+                    editor.text.toString(),
+                )
+
+                // Even restoring the original text must not reactivate
+                // a suggestion from the previous analysis revision.
+                editor.setText(originalText)
+
+                assertTrue(staleButton.performClick())
+
+                assertEquals(
+                    "Restoring text must not reactivate a stale suggestion",
+                    originalText,
+                    editor.text.toString(),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun editingTextImmediatelyRemovesVisibleSuggestions() {
+        val scenario =
+            ActivityScenario.launch<ProcessTextActivity>(
+                processTextIntent(
+                    text = "Je vais au magazin.",
+                    readOnly = false,
+                ),
+            )
+
+        scenario.use {
+            assertTrue(
+                "Expected the initial spelling suggestion",
+                waitForButton(scenario, "magasin"),
+            )
+
+            scenario.onActivity { activity ->
+                val root = activity.window.decorView
+                val editor = requireNotNull(findEditor(root))
+
+                editor.setText("Je vais au cabinet.")
+
+                assertEquals(
+                    "Je vais au cabinet.",
+                    editor.text.toString(),
+                )
+                assertTrue(
+                    "Old suggestion remained visible after editing",
+                    findButton(root, "magasin") == null,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun pendingAnalysisDoesNotRestoreSuggestionsAfterEditing() {
+        val editedText = "Je vais au cabinet."
+
+        val scenario =
+            ActivityScenario.launch<ProcessTextActivity>(
+                processTextIntent(
+                    text = "Je vais au magazin.",
+                    readOnly = false,
+                ),
+            )
+
+        scenario.use {
+            assertTrue(
+                "Expected the initial spelling suggestion",
+                waitForButton(scenario, "magasin"),
+            )
+
+            scenario.onActivity { activity ->
+                val root = activity.window.decorView
+                val editor = requireNotNull(findEditor(root))
+                val analyzeButton =
+                    requireNotNull(findButton(root, "Analyser"))
+
+                // Start analysis and edit before the main thread can
+                // process its asynchronous completion callback.
+                assertTrue(analyzeButton.performClick())
+                editor.setText(editedText)
+
+                assertTrue(
+                    findButton(root, "magasin") == null,
+                )
+            }
+
+            // Allow the background analysis time to complete.
+            SystemClock.sleep(3000L)
+
+            scenario.onActivity { activity ->
+                val root = activity.window.decorView
+                val editor = requireNotNull(findEditor(root))
+
+                assertEquals(
+                    editedText,
+                    editor.text.toString(),
+                )
+                assertTrue(
+                    "Obsolete analysis restored an old suggestion",
+                    findButton(root, "magasin") == null,
+                )
+            }
+        }
+    }
+
+    @Test
     fun readOnlySelectionCopiesTextInsteadOfClaimingToReplaceIt() {
         val text = "Je vais au magasin."
         val scenario =
@@ -92,6 +234,22 @@ class ProcessTextResultEndToEndTest {
 
             assertClipboardContains(text)
         }
+    }
+
+    private fun findEditor(root: View): EditText? {
+        if (root is EditText) {
+            return root
+        }
+
+        if (root is ViewGroup) {
+            for (index in 0 until root.childCount) {
+                findEditor(root.getChildAt(index))?.let {
+                    return it
+                }
+            }
+        }
+
+        return null
     }
 
     private fun assertClipboardContains(expected: String) {

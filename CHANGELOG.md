@@ -81,6 +81,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- `PROCESS_TEXT` now invalidates suggestions after manual edits, rejects obsolete analysis results and prevents stale correction actions from overwriting edited or subsequently restored text.
+
 - Grammalecte JavaScript compatibility issues with QuickJS involving `RegExp.leftContext`.
 - Grammalecte module initialization required for grammar suggestions.
 - Asset packaging of Graphspell dictionary directories beginning with `_`.
