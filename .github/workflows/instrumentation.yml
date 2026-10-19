@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: ${{ fromJSON(github.event_name == 'pull_request' && '["35","37.0"]' || '["26","30","35","37.0"]') }}
+        api-level: ${{ fromJSON(github.event_name == 'pull_request' && '["26","35","37.0"]' || '["26","30","35","37.0"]') }}
 
     steps:
       - name: Checkout

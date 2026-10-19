@@ -126,7 +126,7 @@ The `spellchecker` instrumentation suite verifies Android result mapping, includ
 
 The instrumentation workflow runs:
 
-- API 35 and API 37.0 for relevant pull requests;
+- API 26, API 35 and API 37.0 for relevant pull requests;
 - API 26, API 30, API 35 and API 37.0 on scheduled/manual runs.
 
 API 26 is the minimum supported Android API.
@@ -141,8 +141,8 @@ Android devices disconnected, then run both module suites:
     ./gradlew --no-daemon --no-parallel :spellchecker:connectedDebugAndroidTest
     ./gradlew --no-daemon --no-parallel :app:connectedDebugAndroidTest
 
-The current `make instrumented` target executes only the `app` suite.
-Aligning this target with CI remains a separate build-system task.
+The `make instrumented` target runs both the `spellchecker` and
+`app` instrumentation suites sequentially, matching CI.
 
 ## 6. Build and privacy checks
 

@@ -121,7 +121,7 @@ before any production-code changes.
 
 - [x] Align `make instrumented` with both Android instrumentation modules.
 - [x] Add unsigned release build validation to regular CI.
-- [ ] Review automated coverage for older supported Android API levels.
+- [x] Review automated coverage for older supported Android API levels.
 
 ### Parallel compatibility investigations
 
