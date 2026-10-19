@@ -6,6 +6,8 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup
@@ -24,6 +26,7 @@ class ProcessTextActivity : Activity() {
 
     private var readOnly = false
     private lateinit var analysisCoordinator: ProcessTextAnalysisCoordinator
+    private var textRevision = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -153,16 +156,45 @@ class ProcessTextActivity : Activity() {
 
         setContentView(layout)
 
+        editText.addTextChangedListener(
+            object : TextWatcher {
+                override fun beforeTextChanged(
+                    text: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) = Unit
+
+                override fun onTextChanged(
+                    text: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int,
+                ) = Unit
+
+                override fun afterTextChanged(text: Editable?) {
+                    textRevision++
+                    issuesLayout.removeAllViews()
+                    statusView.text = "Texte modifié. Relancez l’analyse."
+                }
+            },
+        )
+
         analyzeCurrentText()
     }
 
     private fun analyzeCurrentText() {
         val text = editText.text.toString()
+        val revision = textRevision
 
         statusView.text = "Analyse en cours…"
         issuesLayout.removeAllViews()
 
         analysisCoordinator.analyze(text) { result ->
+            if (textRevision != revision || editText.text.toString() != text) {
+                return@analyze
+            }
+
             result
                 .onSuccess { issues ->
                     showIssues(text, issues)
@@ -177,6 +209,7 @@ class ProcessTextActivity : Activity() {
         analyzedText: String,
         issues: List<GrammarIssue>,
     ) {
+        val analyzedRevision = textRevision
         issuesLayout.removeAllViews()
 
         val validIssues =
@@ -238,6 +271,8 @@ class ProcessTextActivity : Activity() {
                             text = suggestion
                             setOnClickListener {
                                 applySuggestion(
+                                    analyzedText = analyzedText,
+                                    analyzedRevision = analyzedRevision,
                                     issue = issue,
                                     suggestion = suggestion,
                                 )
@@ -251,10 +286,21 @@ class ProcessTextActivity : Activity() {
     }
 
     private fun applySuggestion(
+        analyzedText: String,
+        analyzedRevision: Long,
         issue: GrammarIssue,
         suggestion: String,
     ) {
         val current = editText.text
+
+        if (
+            analyzedRevision != textRevision ||
+            current.toString() != analyzedText
+        ) {
+            issuesLayout.removeAllViews()
+            statusView.text = "Texte modifié. Relancez l’analyse."
+            return
+        }
 
         if (
             issue.start < 0 ||
