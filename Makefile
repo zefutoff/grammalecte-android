@@ -1,6 +1,6 @@
 GRADLE := ./gradlew
 
-.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility fdroid-reproducibility signed-release sbom test lint assemble instrumented refresh-verification-metadata clean
+.PHONY: bootstrap vendor check performance-check stress-check release-reproducibility fdroid-reproducibility signed-release unsigned-release sbom test lint assemble instrumented refresh-verification-metadata clean
 
 bootstrap:
 	./tools/bootstrap-gradle-wrapper.sh
@@ -36,6 +36,11 @@ release-reproducibility:
 
 fdroid-reproducibility:
 	./tools/check-fdroid-reproducibility.sh
+
+unsigned-release:
+	$(GRADLE) --no-daemon :app:assembleRelease
+	test -s app/build/outputs/apk/release/app-release-unsigned.apk
+	./tools/check-apk-permissions.sh app/build/outputs/apk/release/app-release-unsigned.apk
 
 signed-release:
 	$(GRADLE) :app:assembleRelease \
