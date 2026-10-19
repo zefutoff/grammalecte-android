@@ -62,7 +62,8 @@ assemble:
 	./tools/check-apk-permissions.sh app/build/outputs/apk/debug/app-debug.apk
 
 instrumented:
-	$(GRADLE) --no-daemon :app:connectedDebugAndroidTest
+	$(GRADLE) --no-daemon --no-parallel :spellchecker:connectedDebugAndroidTest
+	$(GRADLE) --no-daemon --no-parallel :app:connectedDebugAndroidTest
 
 refresh-verification-metadata:
 	$(GRADLE) --no-daemon --refresh-dependencies --write-verification-metadata sha256 \
