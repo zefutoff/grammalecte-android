@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.0-rc1]
+
 ### Added
 
 - CycloneDX runtime SBOM generation and validation, including the vendored Grammalecte engine and release-workflow artifacts.
