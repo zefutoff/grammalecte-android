@@ -67,6 +67,20 @@ The resulting dependency relationship explicitly records:
 The SBOM also records the upstream VCS reference, GPL-3.0 license metadata,
 vendored status and pinned upstream commit.
 
+## Resolved dependency normalization
+
+Gradle resolves `org.jetbrains:annotations:13.0` to `23.0.0`
+for the current release runtime.
+
+The CycloneDX generator may list both the requested and the
+selected versions. During enrichment, the obsolete 13.0 component
+is removed and references are redirected to the resolved 23.0.0
+component.
+
+This normalization is specific to the currently verified dependency
+versions and must be reviewed when Kotlin or related dependencies
+are upgraded.
+
 ## Validation
 
 The SBOM validator checks:

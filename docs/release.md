@@ -35,7 +35,7 @@ The release build currently uses:
 
 - Gradle 9.6.1;
 - Android Gradle Plugin 9.4.1;
-- Kotlin 2.4.20;
+- Kotlin 2.4.21;
 - JDK 17;
 - compileSdk 36;
 - targetSdk 36;

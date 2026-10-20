@@ -138,5 +138,5 @@ from assumptions about Android or vendor implementations.
 - [x] SBOM / dependency inventory
 - [x] F-Droid metadata and reproducibility checks
 - [x] Review Android package namespace before stable release
-- [ ] Final third-party license review
+- [x] Final third-party license review
 - [ ] First stable release
