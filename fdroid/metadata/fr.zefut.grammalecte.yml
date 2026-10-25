@@ -17,9 +17,10 @@ Builds:
     versionCode: 2
     commit: 4beb0c088745ea76c493e6e27ccc874f75713fdd
     sudo:
+      - echo "deb https://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/bookworm.list
       - apt-get update
-      - apt-get install -y openjdk-17-jdk-headless
-    build: JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleRelease --no-daemon --no-build-cache --no-configuration-cache
+      - apt-get install -y -t bookworm openjdk-17-jdk-headless
+    build: JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 gradlew-fdroid :app:assembleRelease --no-daemon --no-build-cache --no-configuration-cache
     output: app/build/outputs/apk/release/app-release-unsigned.apk
 
 AllowedAPKSigningKeys: 0d8ac9f2341257482c8380be5758169f889e606691787d13edbbb9649a2f3144
