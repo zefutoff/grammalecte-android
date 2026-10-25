@@ -8,7 +8,36 @@ A local, open-source French spelling and grammar checker for Android, powered by
 
 All correction runs on-device. The application does not request the Android `INTERNET` permission and does not use a cloud API or LLM.
 
-> **Project status:** early development, but the correction engine is functional on a physical Android device. Native spell-checking, `PROCESS_TEXT` correction and an IME-based fallback have all been validated during development.
+> **Project status:** the first public release candidate, **1.0.0-rc1**,
+> is available. The signed APK has passed reproducibility checks and
+> seven manual acceptance tests on a Samsung Galaxy S21 / Android 15.
+> Compatibility validation across other devices and applications is ongoing.
+
+## Download
+
+**[Download Grammalecte Android 1.0.0-rc1](https://github.com/zefutoff/grammalecte-android/releases/tag/v1.0.0-rc1)**
+
+The release provides:
+
+- a signed Android APK;
+- a CycloneDX software bill of materials (SBOM);
+- a `SHA256SUMS` file for integrity verification.
+
+The application supports **Android 8.0 (API 26) and later**.
+
+Download the APK from the release assets and install it using Android's
+package installer. Enable Grammalecte as the system spell checker, or
+use its selected-text correction and IME workflows described below.
+
+**Upgrading from a development APK:** debug and release builds may use
+different signing certificates. Android cannot install an update signed
+with a different certificate. Back up application data before uninstalling
+an existing development build. The preferences export does not include
+personal dictionary entries.
+
+This is a **pre-release**, not the final stable version. See the release
+notes for known compatibility limitations.
+
 
 ## Current integration
 
@@ -175,7 +204,7 @@ Once enabled in Android's keyboard/input-method settings:
 3. review and apply the proposed corrections;
 4. switch back to the usual keyboard.
 
-The first-run setup guide, activation status screen and keyboard-return workflow are implemented. Compatibility improvements remain ongoing before public distribution.
+The first-run setup guide, activation status screen and keyboard-return workflow are implemented. Compatibility improvements continue based on release-candidate testing and reported issues.
 
 ## Privacy invariant
 
