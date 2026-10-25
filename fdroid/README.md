@@ -24,15 +24,19 @@ reproducible-build verification process.
 
 The upstream signing certificate is pinned in the recipe.
 
+## Local validation
+
+- `fdroid lint`: passed.
+- `fdroid scanner`: zero problems.
+- `fdroid build --test`: passed for versionCode 2.
+- The rebuilt APK was successfully verified against
+  the published developer-signed RC1 APK.
+
 ## Pending validation
 
-- Validate metadata with fdroidserver.
-- Run the F-Droid source and binary scanner.
-- Build in the official F-Droid environment.
-- Verify byte-for-byte reproducibility against the
-  published signed APK.
-- Review build-server compatibility and dependencies.
-- Review official submission requirements.
+- Build in the official F-Droid CI environment.
+- Verify the build-server Java installation procedure.
+- Complete the official inclusion review.
 
 The recipe must not be considered ready for inclusion
 until these checks have passed.
