@@ -1,0 +1,30 @@
+Categories:
+  - Writing
+License: GPL-3.0-only
+SourceCode: https://github.com/zefutoff/grammalecte-android
+IssueTracker: https://github.com/zefutoff/grammalecte-android/issues
+Changelog: https://github.com/zefutoff/grammalecte-android/releases
+
+AutoName: Grammalecte Android
+
+RepoType: git
+Repo: https://github.com/zefutoff/grammalecte-android.git
+
+Binaries: https://github.com/zefutoff/grammalecte-android/releases/download/v%v/grammalecte-android-%v.apk
+
+Builds:
+  - versionName: 1.0.0-rc1
+    versionCode: 2
+    commit: 4beb0c088745ea76c493e6e27ccc874f75713fdd
+    sudo:
+      - apt-get update
+      - apt-get install -y openjdk-17-jdk-headless
+    build: JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleRelease --no-daemon --no-build-cache --no-configuration-cache
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+
+AllowedAPKSigningKeys: 0d8ac9f2341257482c8380be5758169f889e606691787d13edbbb9649a2f3144
+
+AutoUpdateMode: None
+UpdateCheckMode: None
+CurrentVersion: 1.0.0-rc1
+CurrentVersionCode: 2
