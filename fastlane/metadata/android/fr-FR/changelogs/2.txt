@@ -1,0 +1,9 @@
+Première préversion publique de Grammalecte Android.
+
+Correction orthographique et grammaticale française entièrement hors ligne.
+
+Trois modes de correction : correcteur natif Android, correction du texte sélectionné et clavier Grammalecte (IME).
+
+Dictionnaires français, règles configurables et dictionnaire personnel.
+
+Aucune permission INTERNET. Certaines applications présentent encore des limitations de compatibilité.
