@@ -1,0 +1,9 @@
+First public release candidate of Grammalecte Android.
+
+Offline French spelling and grammar correction.
+
+Three correction modes: native Android spell checking, selected-text correction and Grammalecte IME.
+
+French dictionaries, configurable grammar rules and personal dictionary.
+
+No INTERNET permission. Some Android applications still have compatibility limitations.
