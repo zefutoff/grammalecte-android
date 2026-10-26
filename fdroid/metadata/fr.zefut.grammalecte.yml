@@ -1,16 +1,18 @@
 Categories:
   - Writing
 License: GPL-3.0-only
+AuthorName: Zefut
+AuthorWebSite: https://github.com/zefutoff
 SourceCode: https://github.com/zefutoff/grammalecte-android
 IssueTracker: https://github.com/zefutoff/grammalecte-android/issues
 Changelog: https://github.com/zefutoff/grammalecte-android/releases
 
-AutoName: Grammalecte Android
+AutoName: Grammalecte Android (non officiel)
 
 RepoType: git
 Repo: https://github.com/zefutoff/grammalecte-android.git
-
-Binaries: https://github.com/zefutoff/grammalecte-android/releases/download/v%v/grammalecte-android-%v.apk
+Binaries: 
+  https://github.com/zefutoff/grammalecte-android/releases/download/v%v/grammalecte-android-%v.apk
 
 Builds:
   - versionName: 1.0.0-rc1
@@ -20,12 +22,13 @@ Builds:
       - echo "deb https://deb.debian.org/debian bookworm main" > /etc/apt/sources.list.d/bookworm.list
       - apt-get update
       - apt-get install -y -t bookworm openjdk-17-jdk-headless
-    build: JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 gradlew-fdroid :app:assembleRelease --no-daemon --no-build-cache --no-configuration-cache
     output: app/build/outputs/apk/release/app-release-unsigned.apk
+    build: JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 gradlew-fdroid :app:assembleRelease
+      --no-daemon --no-build-cache --no-configuration-cache
 
 AllowedAPKSigningKeys: 0d8ac9f2341257482c8380be5758169f889e606691787d13edbbb9649a2f3144
 
-AutoUpdateMode: None
-UpdateCheckMode: None
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
 CurrentVersion: 1.0.0-rc1
 CurrentVersionCode: 2
