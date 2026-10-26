@@ -136,13 +136,27 @@ coverage, but does not establish compatibility with GrapheneOS.
 GrapheneOS-specific behavior remains under investigation in issue #34.
 
 For local instrumentation, use a dedicated emulator with other
-Android devices disconnected, then run both module suites:
+Android devices disconnected, then run:
 
-    ./gradlew --no-daemon --no-parallel :spellchecker:connectedDebugAndroidTest
-    ./gradlew --no-daemon --no-parallel :app:connectedDebugAndroidTest
+    make instrumented
 
-The `make instrumented` target runs both the `spellchecker` and
-`app` instrumentation suites sequentially, matching CI.
+This target runs the `spellchecker` and `app` instrumentation suites
+sequentially, matching CI.
+
+Before running tests, it requires exactly one connected Android device.
+For each module, it clears previous instrumentation XML reports,
+runs the Gradle task, then verifies the generated reports.
+
+The command fails when reports are missing, no tests were executed,
+or test failures or errors are reported.
+
+This extra verification is necessary because an Android test runner
+may fail to install the debug APK (for example, due to an existing
+release-signed installation) while Gradle still reports
+`BUILD SUCCESSFUL`.
+
+The report validator has dedicated Python unit tests included in
+`make check`.
 
 ## 6. Build and privacy checks
 
@@ -155,6 +169,7 @@ It currently runs:
 - ShellCheck and actionlint;
 - the F-Droid metadata validation;
 - the JavaScript bridge contract test;
+- the instrumentation-result validator unit tests;
 - ktlint;
 - JVM tests;
 - Android lint.
