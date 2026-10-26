@@ -15,6 +15,7 @@ check:
 	./tools/run-actionlint.sh
 	node tools/check-fdroid-metadata.mjs
 	node tools/test-js-bridge.mjs
+	python3 -m unittest discover -s tools -p 'test_instrumentation_results.py' -v
 	$(GRADLE) --no-daemon ktlintCheck :core:test :engine-grammalecte:test :spellchecker:test :app:lintDebug
 
 performance-check:
@@ -67,8 +68,13 @@ assemble:
 	./tools/check-apk-permissions.sh app/build/outputs/apk/debug/app-debug.apk
 
 instrumented:
+	python3 tools/instrumentation_results.py preflight
+	python3 tools/instrumentation_results.py prepare spellchecker
 	$(GRADLE) --no-daemon --no-parallel :spellchecker:connectedDebugAndroidTest
+	python3 tools/instrumentation_results.py verify spellchecker
+	python3 tools/instrumentation_results.py prepare app
 	$(GRADLE) --no-daemon --no-parallel :app:connectedDebugAndroidTest
+	python3 tools/instrumentation_results.py verify app
 
 refresh-verification-metadata:
 	$(GRADLE) --no-daemon --refresh-dependencies --write-verification-metadata sha256 \
