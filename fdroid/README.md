@@ -32,13 +32,25 @@ The upstream signing certificate is pinned in the recipe.
 - The rebuilt APK was successfully verified against
   the published developer-signed RC1 APK.
 
-## Pending validation
+## Official F-Droid submission
 
-- Build in the official F-Droid CI environment.
-- Verify the build-server Java installation procedure.
-- Complete the official inclusion review.
+The recipe has been submitted upstream:
 
-The recipe must not be considered ready for inclusion
-until these checks have passed.
+https://gitlab.com/fdroid/fdroiddata/-/merge_requests/54224
+
+The F-Droid GitLab CI pipeline passed, including the
+release build, APK checks, source scan, lint, metadata
+formatting and automatic update checks.
+
+The code quality report contains one minor finding
+for the intentional Android InputMethod service and
+six informational findings.
+
+Final inclusion remains subject to F-Droid maintainer
+review and acceptance.
+
+This repository retains a copy of the reviewed recipe.
+The authoritative version after inclusion will be the
+one maintained in fdroiddata.
 
 No published Git tag or release artifact is modified.
