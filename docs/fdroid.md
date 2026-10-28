@@ -1,7 +1,8 @@
-# F-Droid readiness
+# F-Droid inclusion status
 
-Grammalecte Android is being prepared for eventual distribution through
-F-Droid.
+Grammalecte Android has a signed release candidate and a submitted
+F-Droid inclusion request. Official inclusion remains subject to
+the upstream maintainers' review.
 
 ## Upstream store metadata
 
@@ -17,8 +18,10 @@ The current locales are:
 
 The metadata is validated as part of make check.
 
-Screenshots, release-specific changelogs and other store graphics will be
-added before the first stable public release.
+Both locales contain descriptions, changelogs, 512x512 PNG icons
+and phone screenshots. The English listing currently uses authentic
+screenshots of the French-language application interface.
+These assets are available in the source repository for future tags.
 
 ## Reproducible APK verification
 
@@ -93,15 +96,33 @@ The final F-Droid recipe can now define:
 - the expected APK signing certificate;
 - the Gradle release build procedure.
 
-The upstream signed APK should only be published after F-Droid successfully
-verifies it against the independently rebuilt APK.
+The developer-signed `v1.0.0-rc1` APK is already published on GitHub.
+F-Droid must independently rebuild and verify matching APK contents
+before distributing that developer-signed binary.
+
+## Upstream inclusion request
+
+The submitted F-Droid recipe is tracked in:
+
+https://gitlab.com/fdroid/fdroiddata/-/merge_requests/54224
+
+The submission uses:
+
+- application ID `fr.zefut.grammalecte`;
+- release candidate `1.0.0-rc1`, versionCode 2;
+- a pinned source commit and signing certificate;
+- reproducible unsigned APK compilation;
+- tag-based update checking.
+
+The inclusion pipeline passed its build, APK, lint, source,
+metadata formatting and update-check jobs.
 
 ## Remaining work
 
-Before an F-Droid submission:
+1. Address any feedback from the F-Droid maintainers.
+2. Wait for inclusion approval and repository publication.
+3. Verify the published APK and its signing certificate.
+4. Verify subsequent updates preserve Android signature compatibility.
+5. Keep future source tags, release artifacts and Fastlane metadata aligned.
 
-1. finalize the first stable version name and version code;
-2. publish a versioned upstream APK;
-3. add release screenshots and changelog metadata;
-4. prepare and validate the final F-Droid build recipe;
-5. complete the third-party license review.
+Passing CI alone does not imply acceptance into the official catalog.

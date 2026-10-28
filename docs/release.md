@@ -117,8 +117,10 @@ secrets.
 The workflow currently uploads the signed APK and its SHA-256 checksum as
 GitHub Actions artifacts. It does not create or publish a GitHub Release.
 
-Publication remains a separate step until the remaining Phase 5 release
-requirements are complete.
+The workflow does not automatically publish a GitHub Release.
+The first signed release candidate, `v1.0.0-rc1`, was published
+separately with its APK, CycloneDX SBOM and `SHA256SUMS`.
+Future releases must preserve the existing signing identity.
 
 ## Release checklist
 
@@ -127,7 +129,8 @@ requirements are complete.
 3. `make check` passes.
 4. `tools/check-vendor.sh` passes.
 5. Regenerating the pinned Grammalecte assets produces no Git diff.
-6. Android instrumentation tests pass.
+6. `make instrumented` passes on a dedicated Android device or emulator.
+   Its XML report validator must confirm that both suites actually ran.
 7. The release APK or AAB is built from the exact tagged commit.
 8. The packaged application is inspected for unexpected permissions.
 9. `tools/check-apk-permissions.sh` confirms that the final APK does not request `android.permission.INTERNET`.
@@ -189,14 +192,23 @@ Do not rebuild a published version from a later commit under the same version nu
 
 ## Before the first stable release
 
-The remaining Phase 5 work includes:
+The signed `v1.0.0-rc1` release has been published.
 
-- signed release pipeline;
-- SBOM and dependency inventory;
-- F-Droid metadata and reproducibility checks;
-- final Android package namespace decision;
-- final third-party license review;
-- first stable release.
+The signing workflow, SBOM, F-Droid recipe, signing certificate pinning,
+third-party license review and final application ID are in place.
 
-Broader physical-device validation across supported Android versions also
-remains useful before making broad compatibility claims.
+The remaining release work is:
+
+1. Complete the pre-stable acceptance checks on the intended release commit.
+2. Investigate the GrapheneOS native spell-checker failure (issue #34).
+3. Document the Samsung Messages `PROCESS_TEXT` limitation (issue #50).
+4. Review supported-device compatibility claims and release notes.
+5. Update `versionName` and increment `versionCode` beyond RC1's value of 2.
+6. Build, sign and verify the release APK from the exact versioned source.
+7. Publish the stable tag, APK, SBOM, checksums and localized changelogs.
+
+F-Droid inclusion is tracked in upstream merge request !54224:
+https://gitlab.com/fdroid/fdroiddata/-/merge_requests/54224
+
+A passing F-Droid CI pipeline does not itself constitute maintainer
+approval or publication in the official repository.
