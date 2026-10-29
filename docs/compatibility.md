@@ -130,10 +130,33 @@ with a physical Pixel 9 running GrapheneOS. The original report remains
 open pending device-specific investigation; `PROCESS_TEXT` and IME were
 not tested as part of this emulator comparison.
 
+### Pixel 9, GrapheneOS Android 17 (reported, 2026-10-26)
+
+A reporter retested the signed `v1.0.0-rc1` release on a
+physical Pixel 9 running GrapheneOS build `2026102101`.
+
+Reported results:
+
+- The in-app "Tester Grammalecte" diagnostic could not open
+  an Android spell-checker session.
+- No native `SuggestionSpan` corrections appeared.
+- The issue persisted despite selecting French in Android settings.
+
+These are external physical-device observations, not results
+independently reproduced by the project maintainers.
+
+The selected spell-checker component, subtype and installed
+package state are being investigated in issue #34.
+The reporter has been asked for read-only ADB diagnostics.
+
+No conclusion about all GrapheneOS devices or Android 17
+installations should be drawn from this report.
+
 ## Compatibility matrix
 
 | Device / Android | Application | Version (code) | Grammalecte build | SpellCheckerService | PROCESS_TEXT | IME / InputConnection | Notes |
 | --- | --- | --- | --- | :---: | :---: | :---: | --- |
+| Pixel 9 / GrapheneOS 17 | Grammalecte diagnostics `EditText` | Built-in | `v1.0.0-rc1` | ❌ | — | — | Reported on build `2026102101`: native session not opened, no `SuggestionSpan`; read-only ADB diagnosis pending (issue #34). |
 | GrapheneOS 17 emulator / API 37 | Grammalecte diagnostics `EditText` | Built-in | `22ce813` | ✅ | — | — | Local GrapheneOS `2026100600`; explicit `fr_FR` subtype; direct session correction, manual typing, `SuggestionSpan` inspection and native `magasin` replacement all worked. Targeted instrumentation: `BUILD SUCCESSFUL`; exact test count not independently confirmed by XML. Issue #34 not reproduced on emulator. |
 | GrapheneOS 17 emulator / API 37 | Grammalecte diagnostics `EditText` | Built-in | `fd2db61` | ✅ | — | — | Same emulator and explicit French subtype; two `SuggestionSpan`s observed after manual typing, native suggestion/replacement worked; spellchecker instrumentation XML: 2 tests, 0 failures, 0 errors. Initially prefilled `EditText` had no spans. |
 | SM-G998B / Android 15 | WhatsApp | 2.26.39.79 (263907900) | `735e893` (reported Git HEAD) | ✅ | ✅ | ✅ | Retest on 2026-10-14: native `magazin` suggestion and replacement, PROCESS_TEXT correction, IME replacement and late selection refresh were all reported working. Grammalecte 0.1.0-dev (1); explicit `fr_FR` spellchecker subtype (`-1266611582`). APK's exact source commit is not independently attested by package metadata. |
