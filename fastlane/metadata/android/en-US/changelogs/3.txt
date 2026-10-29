@@ -1,0 +1,7 @@
+First stable release of Grammalecte Android, based on RC1.
+
+Fully offline French spelling and grammar correction through Android's native spell checker, selected-text action and Grammalecte IME.
+
+No INTERNET permission.
+
+Known limitations: native spell-checker failure reported on a GrapheneOS 17 Pixel 9 (#34); Samsung Messages may append PROCESS_TEXT corrections instead of replacing text (#50). Use the IME in Samsung Messages.

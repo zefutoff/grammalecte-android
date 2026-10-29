@@ -1,0 +1,7 @@
+Première version stable de Grammalecte Android, fondée sur la RC1.
+
+Correction orthographique et grammaticale française hors ligne : correcteur Android, texte sélectionné et IME.
+
+Aucune permission INTERNET.
+
+Limites connues : correcteur natif indisponible sur un Pixel 9 GrapheneOS 17 signalé (#34) ; Samsung Messages peut ajouter la correction au lieu de remplacer la sélection (#50). Utiliser l'IME dans Samsung Messages.
