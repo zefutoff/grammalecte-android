@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.0] - DRAFT (not published)
+
+### Release preparation
+
+- Planned first stable release based on `1.0.0-rc1`.
+- No production Android application or Grammalecte engine changes
+  have been introduced since RC1 at the time of this draft.
+- Hardened instrumentation validation to reject missing test results.
+- Completed F-Droid metadata, release documentation and store assets.
+
+### Known limitations
+
+- GrapheneOS Android 17 native spell-checker issue on a physical
+  Pixel 9 remains under investigation (#34).
+- Samsung Messages can append PROCESS_TEXT results instead of
+  replacing the selection (#50); IME replacement is the tested fallback.
+
 ## [1.0.0-rc1]
 
 ### Added
