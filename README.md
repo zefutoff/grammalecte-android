@@ -8,14 +8,13 @@ A local, open-source French spelling and grammar checker for Android, powered by
 
 All correction runs on-device. The application does not request the Android `INTERNET` permission and does not use a cloud API or LLM.
 
-> **Project status:** the first public release candidate, **1.0.0-rc1**,
-> is available. The signed APK has passed reproducibility checks and
-> seven manual acceptance tests on a Samsung Galaxy S21 / Android 15.
-> Compatibility validation across other devices and applications is ongoing.
+> **Project status:** **1.0.0** is the first published stable release.
+> The signed APK passed reproducibility checks and official RC1-to-stable
+> upgrade acceptance on Android 8.0. Compatibility investigations continue.
 
 ## Download
 
-**[Download Grammalecte Android 1.0.0-rc1](https://github.com/zefutoff/grammalecte-android/releases/tag/v1.0.0-rc1)**
+**[Download Grammalecte Android 1.0.0](https://github.com/zefutoff/grammalecte-android/releases/tag/v1.0.0)**
 
 The release provides:
 
@@ -35,8 +34,8 @@ with a different certificate. Back up application data before uninstalling
 an existing development build. The preferences export does not include
 personal dictionary entries.
 
-This is a **pre-release**, not the final stable version. See the release
-notes for known compatibility limitations.
+This is the **first stable release**. See the release notes for known
+compatibility limitations, including issues #34 and #50.
 
 
 ## Current integration

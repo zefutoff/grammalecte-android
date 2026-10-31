@@ -1,7 +1,7 @@
 # F-Droid inclusion status
 
-Grammalecte Android has a signed release candidate and a submitted
-F-Droid inclusion request. Official inclusion remains subject to
+Grammalecte Android has published signed releases v1.0.0-rc1 and
+v1.0.0, alongside a submitted F-Droid inclusion request. Official inclusion remains subject to
 the upstream maintainers' review.
 
 ## Upstream store metadata
