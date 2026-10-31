@@ -41,9 +41,9 @@ comparison was obtained, so this report does not claim one.
 
 This validates a debug-to-debug upgrade only.
 
-Before stable publication, repeat the upgrade test using the
-published signed RC1 APK and the candidate APK signed with
-the official release certificate.
+The subsequent upgrade test using the published signed RC1
+APK and the officially signed stable candidate is documented
+in the following section.
 
 Stable release publication is not yet authorized.
 
