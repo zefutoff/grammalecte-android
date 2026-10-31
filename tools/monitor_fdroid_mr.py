@@ -69,10 +69,10 @@ def issue_body(state):
         f"- Source SHA: `{state['sha'] or 'unknown'}`\n"
         f"- Latest pipeline: **{state['pipeline_status'] or 'none'}** "
         f"(#{state['pipeline_id'] or 'n/a'})\n"
-        f"- Public comment count: {state['user_notes_count'] if state['user_notes_count'] is not None else 'unknown'}\\n"
-        f"- Last MR update: {state['updated_at'] or 'unknown'}\\n"
-        "\\nThis public-only monitor cannot identify comment authors or retrieve their "
-        "text. Open GitLab when the comment count or update timestamp changes.\\n\\n"
+        f"- Public comment count: {state['user_notes_count'] if state['user_notes_count'] is not None else 'unknown'}\n"
+        f"- Last MR update: {state['updated_at'] or 'unknown'}\n"
+        "\nThis public-only monitor cannot identify comment authors or retrieve their "
+        "text. Open GitLab when the comment count or update timestamp changes.\n\n"
         f"<!-- fdroid-mr-watch:{encode(state)} -->"
     )
 
