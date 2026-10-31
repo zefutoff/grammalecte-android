@@ -2,7 +2,6 @@
 """Report meaningful public GitLab MR changes in one GitHub tracking issue."""
 
 import base64
-import hashlib
 import json
 import os
 import re
@@ -28,38 +27,25 @@ def request(url, token=None, method="GET", payload=None):
 
 
 def snapshot():
+    # The public MR endpoint is accessible anonymously. GitLab may reject
+    # the discussions and pipelines endpoints with 401 even for public MRs.
+    # Use metadata returned by this single endpoint instead.
     mr, _ = request(API_URL)
-    notes = []
-    for page in range(1, 21):
-        discussions, next_page = request(f"{API_URL}/discussions?per_page=100&page={page}")
-        if not isinstance(discussions, list):
-            raise ValueError("Unexpected GitLab discussions response")
-        for thread in discussions:
-            for note in thread.get("notes", []):
-                if not note.get("system", False):
-                    notes.append({
-                        "id": note["id"],
-                        "author": note.get("author", {}).get("username", "unknown"),
-                        "updated": note.get("updated_at") or note.get("created_at"),
-                        "digest": hashlib.sha256(note.get("body", "").encode()).hexdigest(),
-                    })
-        if not next_page:
-            break
-    else:
-        raise RuntimeError("Too many discussion pages")
-    pipelines, _ = request(f"{API_URL}/pipelines?per_page=100")
-    if not isinstance(pipelines, list):
-        raise ValueError("Unexpected GitLab pipelines response")
-    latest = max(pipelines, key=lambda item: item.get("id", 0), default={})
+    if not isinstance(mr, dict) or "state" not in mr:
+        raise ValueError("Unexpected GitLab merge request response")
+    pipeline = mr.get("head_pipeline") or {}
     merge_status = mr.get("detailed_merge_status")
     if merge_status in ("unchecked", "checking", "approvals_syncing"):
         merge_status = None
     return {
-        "state": mr["state"], "draft": bool(mr.get("draft") or mr.get("work_in_progress")),
+        "state": mr["state"],
+        "draft": bool(mr.get("draft") or mr.get("work_in_progress")),
         "sha": mr.get("sha") or (mr.get("diff_refs") or {}).get("head_sha"),
-        "merge_status": merge_status, "pipeline_id": latest.get("id"),
-        "pipeline_status": latest.get("status"),
-        "notes": sorted(notes, key=lambda note: note["id"]),
+        "merge_status": merge_status,
+        "pipeline_id": pipeline.get("id"),
+        "pipeline_status": pipeline.get("status"),
+        "user_notes_count": mr.get("user_notes_count"),
+        "updated_at": mr.get("updated_at"),
     }
 
 
@@ -83,25 +69,23 @@ def issue_body(state):
         f"- Source SHA: `{state['sha'] or 'unknown'}`\n"
         f"- Latest pipeline: **{state['pipeline_status'] or 'none'}** "
         f"(#{state['pipeline_id'] or 'n/a'})\n"
-        f"- Public discussion notes: {len(state['notes'])}\n\n"
+        f"- Public comment count: {state['user_notes_count'] if state['user_notes_count'] is not None else 'unknown'}\n"
+        f"- Last MR update: {state['updated_at'] or 'unknown'}\n"
+        "\nThis public-only monitor cannot identify comment authors or retrieve their "
+        "text. Open GitLab when the comment count or update timestamp changes.\n\n"
         f"<!-- fdroid-mr-watch:{encode(state)} -->"
     )
 
 
 def changes(old, new):
     events = []
-    for field in ("state", "draft", "sha", "merge_status", "pipeline_id", "pipeline_status"):
+    fields = (
+        "state", "draft", "sha", "merge_status", "pipeline_id",
+        "pipeline_status", "user_notes_count", "updated_at",
+    )
+    for field in fields:
         if old.get(field) != new.get(field):
             events.append(f"- {field}: `{old.get(field)}` → `{new.get(field)}`")
-    before = {note["id"]: note for note in old.get("notes", [])}
-    after = {note["id"]: note for note in new.get("notes", [])}
-    for ident in sorted(after.keys() - before.keys()):
-        events.append(f"- New discussion note by @{after[ident]['author']} (id {ident})")
-    for ident in sorted(after.keys() & before.keys()):
-        if before[ident] != after[ident]:
-            events.append(f"- Updated discussion note by @{after[ident]['author']} (id {ident})")
-    for ident in sorted(before.keys() - after.keys()):
-        events.append(f"- Removed discussion note (id {ident})")
     return events
 
 
