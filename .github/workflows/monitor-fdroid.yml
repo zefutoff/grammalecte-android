@@ -1,0 +1,26 @@
+name: Monitor F-Droid inclusion MR
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: fdroid-inclusion-monitor
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Check GitLab MR and update GitHub tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/monitor_fdroid_mr.py
