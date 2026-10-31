@@ -6,13 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-## [1.0.0] - DRAFT (not published)
+## [1.0.0]
 
 ### Release preparation
 
-- Planned first stable release based on `1.0.0-rc1`.
+- First stable release based on `1.0.0-rc1`.
 - No production Android application or Grammalecte engine changes
-  have been introduced since RC1 at the time of this draft.
+  have been introduced since RC1.
 - Hardened instrumentation validation to reject missing test results.
 - Completed F-Droid metadata, release documentation and store assets.
 
