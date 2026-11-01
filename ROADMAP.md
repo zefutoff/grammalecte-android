@@ -139,4 +139,4 @@ from assumptions about Android or vendor implementations.
 - [x] F-Droid metadata and reproducibility checks
 - [x] Review Android package namespace before stable release
 - [x] Final third-party license review
-- [ ] First stable release
+- [x] First stable release

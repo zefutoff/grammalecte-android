@@ -190,25 +190,25 @@ A release tag should identify exactly the commit used to build the published APK
 
 Do not rebuild a published version from a later commit under the same version number.
 
-## Before the first stable release
+## First stable release: v1.0.0
 
-The signed `v1.0.0-rc1` release has been published.
+Published on 2026-10-31.
 
-The signing workflow, SBOM, F-Droid recipe, signing certificate pinning,
-third-party license review and final application ID are in place.
+- Version: 1.0.0 (versionCode 3)
+- Source commit: e1462fd3f2161d4a08c73acca18239e286a29ff0
+- Signed release workflow: 41215314326
+- Official APK SHA-256:
+  43538f909caaf4b91d56146b3176cf168c163c6d171a449d9dfeb1d62424aca7
+- Official RC1-to-stable upgrade acceptance: PASS
+- F-Droid-style reproducibility: PASS
+- CycloneDX SBOM and public checksums: verified
 
-The remaining release work is:
+Release:
+https://github.com/zefutoff/grammalecte-android/releases/tag/v1.0.0
 
-1. Complete the pre-stable acceptance checks on the intended release commit.
-2. Investigate the GrapheneOS native spell-checker failure (issue #34).
-3. Document the Samsung Messages `PROCESS_TEXT` limitation (issue #50).
-4. Review supported-device compatibility claims and release notes.
-5. Update `versionName` and increment `versionCode` beyond RC1's value of 2.
-6. Build, sign and verify the release APK from the exact versioned source.
-7. Publish the stable tag, APK, SBOM, checksums and localized changelogs.
+Known limitations remain documented in issues #34 and #50.
 
-F-Droid inclusion is tracked in upstream merge request !54224:
+Official F-Droid inclusion remains subject to upstream review:
 https://gitlab.com/fdroid/fdroiddata/-/merge_requests/54224
 
-A passing F-Droid CI pipeline does not itself constitute maintainer
-approval or publication in the official repository.
+Do not move the published tag or replace its signed APK.
