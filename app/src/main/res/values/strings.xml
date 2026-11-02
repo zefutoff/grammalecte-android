@@ -5,6 +5,11 @@
     <string name="process_text_label">Corriger avec Grammalecte</string>
     <string name="title">Grammalecte Android</string>
     <string name="intro">Correction française locale avec Grammalecte. Aucun texte n’est envoyé sur Internet.</string>
+    <string name="project_info_title">À propos du projet</string>
+    <string name="project_info_description">Portage Android non officiel du moteur Grammalecte, développé et maintenu par le responsable de ZFT’Informatique. Ce projet indépendant n’est ni affilié ni approuvé par Grammalecte ou Algoo.</string>
+    <string name="project_info_open_website">Site du projet</string>
+    <string name="project_info_open_failed">Aucun navigateur disponible pour ouvrir le site du projet.</string>
+    <string name="project_info_website_url">https://zefut.fr/projets/grammalecte-android/</string>
     <string name="engine_status_ready">Moteur Grammalecte embarqué : prêt.</string>
     <string name="engine_status_missing">Moteur Grammalecte non embarqué. Exécutez tools/vendor-grammalecte.sh avant de construire l’APK.</string>
     <string name="qs_tile_label">Grammalecte</string>

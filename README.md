@@ -287,6 +287,22 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development setup, project conventi
 - [`docs/fdroid.md`](docs/fdroid.md)
 - [`docs/adr/`](docs/adr/)
 
+## Project website and maintainer
+
+The French-language public project page is available at:
+
+**[Grammalecte Android — project page at ZFT'Informatique](https://zefut.fr/projets/grammalecte-android/)**
+
+This independent Android integration is developed and maintained by the
+person behind **ZFT'Informatique (ZFTI)**. The website explains the three
+integration modes, installation, privacy design and compatibility limitations
+for non-developer users. GitHub remains the source of truth for releases,
+source code, issues, security reports and contributions.
+
+This association with ZFTI does **not** imply any affiliation with or
+endorsement by upstream Grammalecte or Algoo. The application remains
+open source under GPL-3.0-only and does not request the INTERNET permission.
+
 ## Name and affiliation
 
 This is an **unofficial** Android integration of Grammalecte.

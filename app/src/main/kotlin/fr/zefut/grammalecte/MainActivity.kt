@@ -8,6 +8,7 @@ import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Icon
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.LocaleList
@@ -231,6 +232,35 @@ class MainActivity :
                     listOf(
                         "Ajouter la tuile" to {
                             requestQuickSettingsTile()
+                        },
+                    ),
+            ),
+            cardParams(spacing),
+        )
+
+        content.addView(
+            createCard(
+                title = getString(R.string.project_info_title),
+                description = getString(R.string.project_info_description),
+                statusView = null,
+                actions =
+                    listOf(
+                        getString(R.string.project_info_open_website) to {
+                            runCatching {
+                                startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse(getString(R.string.project_info_website_url)),
+                                    ),
+                                )
+                            }.onFailure {
+                                Toast
+                                    .makeText(
+                                        this@MainActivity,
+                                        R.string.project_info_open_failed,
+                                        Toast.LENGTH_LONG,
+                                    ).show()
+                            }
                         },
                     ),
             ),
