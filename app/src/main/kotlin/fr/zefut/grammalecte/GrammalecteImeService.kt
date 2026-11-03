@@ -1,6 +1,9 @@
 package fr.zefut.grammalecte
 
+import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.InsetDrawable
+import android.graphics.drawable.RippleDrawable
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
@@ -135,10 +138,10 @@ class GrammalecteImeService : InputMethodService() {
 
         header.addView(
             Button(this).apply {
-                text = "← Retour clavier"
+                text = "← Clavier"
+                contentDescription = "Revenir au clavier précédent"
                 isAllCaps = false
-                minHeight = (48 * density).toInt()
-                minimumHeight = (48 * density).toInt()
+                configureCompactActionButton()
 
                 setOnClickListener {
                     returnToPreviousInputMethod()
@@ -255,6 +258,7 @@ class GrammalecteImeService : InputMethodService() {
             Button(this).apply {
                 text = "Tout corriger"
                 isAllCaps = false
+                configureCompactActionButton()
                 visibility = View.GONE
 
                 setOnClickListener {
@@ -271,8 +275,11 @@ class GrammalecteImeService : InputMethodService() {
 
         applyAllAndReturnButton =
             Button(this).apply {
-                text = "Corriger tout et revenir"
+                text = "Corriger et revenir"
+                contentDescription =
+                    "Corriger tout et revenir au clavier précédent"
                 isAllCaps = false
+                configureCompactActionButton(primary = true)
                 visibility = View.GONE
 
                 setOnClickListener {
@@ -306,6 +313,7 @@ class GrammalecteImeService : InputMethodService() {
             Button(this).apply {
                 text = "Appliquer"
                 isAllCaps = false
+                configureCompactActionButton()
                 visibility = View.GONE
 
                 setOnClickListener {
@@ -324,6 +332,7 @@ class GrammalecteImeService : InputMethodService() {
             Button(this).apply {
                 text = "Appliquer et revenir"
                 isAllCaps = false
+                configureCompactActionButton(primary = true)
                 visibility = View.GONE
 
                 setOnClickListener {
@@ -690,13 +699,13 @@ class GrammalecteImeService : InputMethodService() {
             resources.displayMetrics.density
 
         val cardPadding =
-            (10 * density).toInt()
-
-        val cardSpacing =
             (8 * density).toInt()
 
-        val chipSpacing =
+        val cardSpacing =
             (6 * density).toInt()
+
+        val chipSpacing =
+            (4 * density).toInt()
 
         issues.forEach { issue ->
             if (
@@ -800,16 +809,8 @@ class GrammalecteImeService : InputMethodService() {
                                 this.text = suggestion
                                 isAllCaps = false
 
-                                minWidth = (48 * density).toInt()
-                                minimumWidth = (48 * density).toInt()
-                                minHeight = (48 * density).toInt()
-                                minimumHeight = (48 * density).toInt()
-
-                                setPadding(
-                                    (16 * density).toInt(),
-                                    (5 * density).toInt(),
-                                    (16 * density).toInt(),
-                                    (5 * density).toInt(),
+                                configureCompactActionButton(
+                                    suggestion = true,
                                 )
 
                                 setOnClickListener {
@@ -1175,6 +1176,64 @@ class GrammalecteImeService : InputMethodService() {
 
     private companion object {
         const val SELECTION_REFRESH_DELAY_MILLIS = 150L
+    }
+
+    private fun Button.configureCompactActionButton(
+        primary: Boolean = false,
+        suggestion: Boolean = false,
+    ) {
+        val density = resources.displayMetrics.density
+
+        val fillColor =
+            when {
+                primary -> getColor(R.color.brand_primary)
+                suggestion -> getColor(R.color.surface_background)
+                else -> getColor(R.color.surface_card)
+            }
+
+        textSize = 14f
+        includeFontPadding = false
+        maxLines = 2
+
+        minWidth = 0
+        minimumWidth = 0
+        minHeight = (48 * density).toInt()
+        minimumHeight = (48 * density).toInt()
+
+        background =
+            RippleDrawable(
+                ColorStateList.valueOf(
+                    themeColor(android.R.attr.colorControlHighlight),
+                ),
+                InsetDrawable(
+                    GradientDrawable().apply {
+                        cornerRadius = 12f * density
+                        setColor(fillColor)
+                    },
+                    0,
+                    (4 * density).toInt(),
+                    0,
+                    (4 * density).toInt(),
+                ),
+                null,
+            )
+
+        setTextColor(
+            getColor(
+                if (primary) {
+                    R.color.surface_background
+                } else {
+                    R.color.surface_text
+                },
+            ),
+        )
+
+        setPadding(
+            (10 * density).toInt(),
+            (4 * density).toInt(),
+            (10 * density).toInt(),
+            (4 * density).toInt(),
+        )
     }
 
     private fun actionButtonParams(stacked: Boolean): LinearLayout.LayoutParams =
