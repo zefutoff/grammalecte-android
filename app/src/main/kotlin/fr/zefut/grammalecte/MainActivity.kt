@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -15,6 +16,7 @@ import android.os.LocaleList
 import android.provider.Settings
 import android.text.InputType
 import android.text.style.SuggestionSpan
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -354,8 +356,21 @@ class MainActivity :
             matchWrapParams(),
         )
 
+        val isNight =
+            (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                Configuration.UI_MODE_NIGHT_YES
+
+        val diagnosticThemeRes =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                android.R.style.Theme_DeviceDefault_DayNight
+            } else if (isNight) {
+                android.R.style.Theme_DeviceDefault
+            } else {
+                android.R.style.Theme_DeviceDefault_Light
+            }
+
         systemEditText =
-            EditText(this).apply {
+            EditText(ContextThemeWrapper(this, diagnosticThemeRes)).apply {
                 textLocales = LocaleList(Locale.FRANCE)
                 hint = "Zone de test du correcteur Android"
                 textSize = 18f
