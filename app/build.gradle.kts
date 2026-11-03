@@ -35,6 +35,13 @@ android {
     }
 
     buildTypes {
+        create("dev") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            matchingFallbacks += listOf("debug")
+        }
+
         release {
             isMinifyEnabled = true
             vcsInfo.include = false

@@ -4,9 +4,26 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-APK="app/build/outputs/apk/debug/app-debug.apk"
-PACKAGE="fr.zefut.grammalecte"
-ACTIVITY=".MainActivity"
+VARIANT="${1:-dev}"
+
+case "$VARIANT" in
+    dev)
+        TASK="assembleDev"
+        APK="app/build/outputs/apk/dev/app-dev.apk"
+        PACKAGE="fr.zefut.grammalecte.dev"
+        ;;
+    debug)
+        TASK="assembleDebug"
+        APK="app/build/outputs/apk/debug/app-debug.apk"
+        PACKAGE="fr.zefut.grammalecte"
+        ;;
+    *)
+        echo "Usage: $0 [dev|debug]" >&2
+        exit 2
+        ;;
+esac
+
+ACTIVITY="fr.zefut.grammalecte.MainActivity"
 
 # Android SDK
 if ! command -v adb >/dev/null 2>&1; then
@@ -22,7 +39,7 @@ fi
 
 echo "=== Compilation ==="
 
-if ! ./gradlew :app:assembleDebug \
+if ! ./gradlew ":app:${TASK}" \
     --no-daemon \
     --no-configuration-cache
 then
