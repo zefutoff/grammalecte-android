@@ -656,7 +656,7 @@ class ImeInputConnectionEndToEndTest {
             "Grammalecte"
 
         const val CORRECT_AND_RETURN_LABEL =
-            "Corriger tout et revenir"
+            "Corriger et revenir"
 
         const val WAIT_ATTEMPTS = 60
         const val WAIT_DELAY_MILLIS = 250L
