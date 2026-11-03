@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Grammalecte Android DEV (non officiel)</string>
+    <string name="launcher_name">Grammalecte DEV</string>
+    <string name="spellchecker_label">Grammalecte DEV</string>
+    <string name="process_text_label">Corriger avec Grammalecte DEV</string>
+    <string name="qs_tile_label">Grammalecte DEV</string>
+</resources>
