@@ -1,13 +1,9 @@
 package fr.zefut.grammalecte
 
-import android.app.Activity
 import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Rect
-import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
@@ -18,31 +14,33 @@ import android.text.InputType
 import android.text.style.SuggestionSpan
 import android.view.ContextThemeWrapper
 import android.view.Gravity
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import android.view.textservice.SentenceSuggestionsInfo
 import android.view.textservice.SpellCheckerSession
 import android.view.textservice.SuggestionsInfo
 import android.view.textservice.TextInfo
 import android.view.textservice.TextServicesManager
-import android.widget.Button
 import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import java.util.Locale
 
 class MainActivity :
-    Activity(),
+    ComponentActivity(),
     SpellCheckerSession.SpellCheckerSessionListener {
     private lateinit var resultView: TextView
     private lateinit var systemEditText: EditText
-    private lateinit var imeStatusView: TextView
-    private lateinit var spellCheckerStatusView: TextView
-    private lateinit var diagnosticsContainer: LinearLayout
+    private var correctionStatus by mutableStateOf<CorrectionStatus?>(null)
+    private var showTestResult by mutableStateOf(false)
+    private var testPending by mutableStateOf(false)
+    private var testError by mutableStateOf<String?>(null)
+    private var testIssues by mutableStateOf<List<HomeCorrectionIssue>>(emptyList())
+    private var diagnosticsVisible by mutableStateOf(false)
     private var spellCheckerSession: SpellCheckerSession? = null
 
     private val testText = "Je sui aller au magazin hier."
@@ -50,500 +48,108 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val density = resources.displayMetrics.density
-        val padding = (20 * density).toInt()
-        val spacing = (12 * density).toInt()
-        val smallSpacing = (6 * density).toInt()
-
-        val content =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-
-                setPadding(
-                    padding,
-                    padding,
-                    padding,
-                    padding,
-                )
-
-                setBackgroundColor(
-                    getColor(R.color.surface_background),
-                )
-            }
-
-        content.addView(
-            TextView(this).apply {
-                text = getString(R.string.title)
-                markAsAccessibilityHeading()
-                textSize = 28f
-
-                setTypeface(
-                    typeface,
-                    Typeface.BOLD,
-                )
-
-                setTextColor(
-                    getColor(R.color.brand_primary),
-                )
-            },
-            matchWrapParams(),
-        )
-
-        content.addView(
-            TextView(this).apply {
-                text = getString(R.string.intro)
-
-                textSize = 15f
-
-                setTextColor(
-                    getColor(R.color.surface_text_secondary),
-                )
-
-                setPadding(
-                    0,
-                    smallSpacing,
-                    0,
-                    spacing,
-                )
-            },
-            matchWrapParams(),
-        )
-
-        content.addView(
-            sectionTitle(
-                "Configuration",
-            ),
-            matchWrapParams(),
-        )
-
-        content.addView(
-            createCard(
-                title = "État et activation",
-                description =
-                    "Vérifiez en un seul endroit l’état du correcteur Android " +
-                        "et du clavier Grammalecte.",
-                statusView = null,
-                actions =
-                    listOf(
-                        "Guide de démarrage" to {
-                            startActivity(
-                                Intent(
-                                    this@MainActivity,
-                                    SetupGuideActivity::class.java,
-                                ),
-                            )
-                        },
-                        "Voir l’état de la correction" to {
-                            startActivity(
-                                Intent(
-                                    this@MainActivity,
-                                    CorrectionStatusActivity::class.java,
-                                ),
-                            )
-                        },
-                    ),
-            ),
-            cardParams(spacing),
-        )
-
-        spellCheckerStatusView =
-            TextView(this).apply {
-                enablePoliteAccessibilityUpdates()
-                textSize = 14f
-                setTextColor(
-                    getColor(R.color.surface_text_secondary),
-                )
-            }
-
-        content.addView(
-            createCard(
-                title = "Correcteur Android",
-                description =
-                    "Intègre Grammalecte au correcteur orthographique " +
-                        "natif des applications compatibles.",
-                statusView = spellCheckerStatusView,
-                actions =
-                    listOf(
-                        "Configurer" to {
-                            openSpellCheckerSettings()
-                        },
-                    ),
-            ),
-            cardParams(spacing),
-        )
-
-        imeStatusView =
-            TextView(this).apply {
-                enablePoliteAccessibilityUpdates()
-                textSize = 14f
-                setTextColor(
-                    getColor(R.color.surface_text_secondary),
-                )
-            }
-
-        content.addView(
-            createCard(
-                title = "Correction rapide",
-                description =
-                    "Permet de corriger une sélection dans les applications " +
-                        "qui n’utilisent pas le correcteur Android.",
-                statusView = imeStatusView,
-                actions =
-                    listOf(
-                        "Gérer les méthodes de saisie" to {
-                            openInputMethodSettings()
-                        },
-                        "Choisir le clavier" to {
-                            showInputMethodPicker()
-                        },
-                    ),
-            ),
-            cardParams(spacing),
-        )
-
-        content.addView(
-            createCard(
-                title = "Réglages de correction",
-                description =
-                    "Choisissez le dictionnaire et les règles " +
-                        "Grammalecte utilisées lors des analyses.",
-                statusView = null,
-                actions =
-                    listOf(
-                        "Configurer" to {
-                            startActivity(
-                                Intent(
-                                    this@MainActivity,
-                                    RuleSettingsActivity::class.java,
-                                ),
-                            )
-                        },
-                    ),
-            ),
-            cardParams(spacing),
-        )
-
-        content.addView(
-            createCard(
-                title = "Accès rapide",
-                description =
-                    "Ajoutez Grammalecte aux réglages rapides pour ouvrir " +
-                        "le sélecteur de clavier depuis n’importe quelle application.",
-                statusView = null,
-                actions =
-                    listOf(
-                        "Ajouter la tuile" to {
-                            requestQuickSettingsTile()
-                        },
-                    ),
-            ),
-            cardParams(spacing),
-        )
-
-        content.addView(
-            createCard(
-                title = getString(R.string.project_info_title),
-                description = getString(R.string.project_info_description),
-                statusView = null,
-                actions =
-                    listOf(
-                        getString(R.string.project_info_open_website) to {
-                            runCatching {
-                                startActivity(
-                                    Intent(
-                                        Intent.ACTION_VIEW,
-                                        Uri.parse(getString(R.string.project_info_website_url)),
-                                    ),
-                                )
-                            }.onFailure {
-                                Toast
-                                    .makeText(
-                                        this@MainActivity,
-                                        R.string.project_info_open_failed,
-                                        Toast.LENGTH_LONG,
-                                    ).show()
-                            }
-                        },
-                    ),
-            ),
-            cardParams(spacing),
-        )
-
-        content.addView(
-            sectionTitle(
-                "Diagnostics",
-            ),
-            LinearLayout
-                .LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                ).apply {
-                    topMargin = spacing
-                },
-        )
-
-        diagnosticsContainer =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                visibility = View.GONE
-            }
-
-        val diagnosticsButton =
-            Button(this).apply {
-                text = "Afficher les diagnostics"
-                isAllCaps = false
-
-                setOnClickListener {
-                    val show =
-                        diagnosticsContainer.visibility != View.VISIBLE
-
-                    diagnosticsContainer.visibility =
-                        if (show) {
-                            View.VISIBLE
-                        } else {
-                            View.GONE
-                        }
-
-                    text =
-                        if (show) {
-                            "Masquer les diagnostics"
-                        } else {
-                            "Afficher les diagnostics"
-                        }
-                }
-            }
-
-        content.addView(
-            diagnosticsButton,
-            matchWrapParams(),
-        )
-
-        diagnosticsContainer.addView(
-            TextView(this).apply {
-                text =
-                    getString(
-                        if (grammalecteAssetsPresent()) {
-                            R.string.engine_status_ready
-                        } else {
-                            R.string.engine_status_missing
-                        },
-                    )
-
-                textSize = 14f
-                setTextColor(
-                    getColor(R.color.surface_text_secondary),
-                )
-
-                setPadding(
-                    0,
-                    smallSpacing,
-                    0,
-                    smallSpacing,
-                )
-            },
-            matchWrapParams(),
-        )
-
-        diagnosticsContainer.addView(
-            Button(this).apply {
-                text = "Tester Grammalecte"
-                isAllCaps = false
-
-                setOnClickListener {
-                    runSpellCheckerTest()
-                }
-            },
-            matchWrapParams(),
-        )
-
-        val isNight =
+        // Retain the real Android text field/theme for native suggestion testing.
+        val darkMode =
             (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
                 Configuration.UI_MODE_NIGHT_YES
-
-        val diagnosticThemeRes =
+        val diagnosticTheme =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 android.R.style.Theme_DeviceDefault_DayNight
-            } else if (isNight) {
+            } else if (darkMode) {
                 android.R.style.Theme_DeviceDefault
             } else {
                 android.R.style.Theme_DeviceDefault_Light
             }
-
         systemEditText =
-            EditText(ContextThemeWrapper(this, diagnosticThemeRes)).apply {
+            EditText(ContextThemeWrapper(this, diagnosticTheme)).apply {
                 textLocales = LocaleList(Locale.FRANCE)
                 hint = "Zone de test du correcteur Android"
                 textSize = 18f
                 minLines = 4
                 gravity = Gravity.TOP
-
                 inputType =
                     InputType.TYPE_CLASS_TEXT or
                     InputType.TYPE_TEXT_FLAG_MULTI_LINE or
                     InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
                     InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
-
                 setText(testText)
                 setSelection(text.length)
-
-                setPadding(
-                    0,
-                    spacing,
-                    0,
-                    spacing,
-                )
             }
-
-        diagnosticsContainer.addView(
-            systemEditText,
-            matchWrapParams(),
-        )
-
-        diagnosticsContainer.addView(
-            Button(this).apply {
-                text = "Tester dans un champ Android"
-                isAllCaps = false
-
-                setOnClickListener {
-                    systemEditText.requestFocus()
-                    systemEditText.setSelection(
-                        systemEditText.text.length,
-                    )
-
-                    getSystemService(
-                        InputMethodManager::class.java,
-                    ).showSoftInput(
-                        systemEditText,
-                        InputMethodManager.SHOW_IMPLICIT,
-                    )
-                }
-            },
-            matchWrapParams(),
-        )
-
-        diagnosticsContainer.addView(
-            Button(this).apply {
-                text = "Inspecter les corrections Android"
-                isAllCaps = false
-
-                setOnClickListener {
-                    inspectSuggestionSpans()
-                }
-            },
-            matchWrapParams(),
-        )
 
         resultView =
             TextView(this).apply {
                 text = "Test : $testText"
+                textSize = 14f
                 enablePoliteAccessibilityUpdates()
-                textSize = 15f
-
-                setTextColor(
-                    getColor(R.color.surface_text),
-                )
-
-                setPadding(
-                    0,
-                    spacing,
-                    0,
-                    0,
-                )
+                setTextColor(getColor(R.color.surface_text))
             }
 
-        diagnosticsContainer.addView(
-            resultView,
-            matchWrapParams(),
-        )
-
-        content.addView(
-            diagnosticsContainer,
-            matchWrapParams(),
-        )
-
-        val scrollView =
-            ScrollView(this).apply {
-                isFillViewport = true
-
-                addView(
-                    content,
-                    matchWrapParams(),
-                )
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    setOnApplyWindowInsetsListener { view, insets ->
-                        val topInset: Int
-                        val bottomInset: Int
-
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            val systemBars =
-                                insets.getInsets(
-                                    WindowInsets.Type.systemBars(),
-                                )
-
-                            val imeInsets =
-                                insets.getInsets(WindowInsets.Type.ime())
-
-                            topInset = systemBars.top
-                            bottomInset =
-                                maxOf(
-                                    systemBars.bottom,
-                                    imeInsets.bottom,
-                                )
-                        } else {
-                            @Suppress("DEPRECATION")
-                            topInset = insets.systemWindowInsetTop
-
-                            @Suppress("DEPRECATION")
-                            bottomInset = insets.systemWindowInsetBottom
-                        }
-
-                        view.setPadding(
-                            0,
-                            topInset,
-                            0,
-                            bottomInset,
-                        )
-
-                        insets
+        setContent {
+            GrammalecteDashboard(
+                status = correctionStatus,
+                showTestResult = showTestResult,
+                testPending = testPending,
+                testError = testError,
+                testIssues = testIssues,
+                diagnosticsVisible = diagnosticsVisible,
+                engineReady = grammalecteAssetsPresent(),
+                systemEditText = systemEditText,
+                resultView = resultView,
+                onTest = {
+                    showTestResult = true
+                    runSpellCheckerTest()
+                },
+                onDismissTest = { showTestResult = false },
+                onConfigure = { openSpellCheckerSettings() },
+                onGuide = {
+                    startActivity(Intent(this, SetupGuideActivity::class.java))
+                },
+                onChooseKeyboard = {
+                    if (correctionStatus?.ime == ImeStatus.DISABLED) {
+                        openInputMethodSettings()
+                    } else {
+                        showInputMethodPicker()
                     }
-                }
-            }
-
-        scrollView.viewTreeObserver.addOnGlobalLayoutListener {
-            val imeVisible =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    scrollView.rootWindowInsets?.isVisible(
-                        WindowInsets.Type.ime(),
-                    ) == true
-                } else {
-                    true
-                }
-
-            if (!systemEditText.hasFocus() || !imeVisible) {
-                return@addOnGlobalLayoutListener
-            }
-
-            val editorRect = Rect()
-            systemEditText.getDrawingRect(editorRect)
-            scrollView.offsetDescendantRectToMyCoords(
-                systemEditText,
-                editorRect,
+                },
+                onManageKeyboards = { openInputMethodSettings() },
+                onDictionary = {
+                    startActivity(Intent(this, PersonalDictionaryActivity::class.java))
+                },
+                onRules = {
+                    startActivity(Intent(this, RuleSettingsActivity::class.java))
+                },
+                onStatus = {
+                    startActivity(Intent(this, CorrectionStatusActivity::class.java))
+                },
+                onDiagnostics = { diagnosticsVisible = !diagnosticsVisible },
+                onTestInField = {
+                    systemEditText.requestFocus()
+                    systemEditText.setSelection(systemEditText.text.length)
+                    getSystemService(InputMethodManager::class.java)
+                        .showSoftInput(systemEditText, InputMethodManager.SHOW_IMPLICIT)
+                },
+                onInspect = { inspectSuggestionSpans() },
+                onQuickTile = { requestQuickSettingsTile() },
+                aboutDescription = getString(R.string.project_info_description),
+                onProjectWebsite = {
+                    runCatching {
+                        startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(getString(R.string.project_info_website_url)),
+                            ),
+                        )
+                    }.onFailure {
+                        Toast
+                            .makeText(
+                                this,
+                                R.string.project_info_open_failed,
+                                Toast.LENGTH_LONG,
+                            ).show()
+                    }
+                },
             )
-
-            val visibleBottom =
-                scrollView.scrollY +
-                    scrollView.height -
-                    scrollView.paddingBottom
-
-            val delta = editorRect.bottom + spacing - visibleBottom
-
-            if (delta > 0) {
-                scrollView.scrollBy(0, delta)
-            }
         }
-
-        setContentView(scrollView)
 
         showSetupGuideIfNeeded()
     }
@@ -567,6 +173,9 @@ class MainActivity :
     }
 
     private fun runSpellCheckerTest() {
+        testPending = true
+        testError = null
+        testIssues = emptyList()
         spellCheckerSession?.close()
         spellCheckerSession = null
 
@@ -583,6 +192,8 @@ class MainActivity :
             )
 
         if (session == null) {
+            testPending = false
+            testError = "Android n’a pas pu ouvrir le correcteur. Vérifiez son activation."
             resultView.text =
                 "Android n’a pas pu créer de session de correction orthographique."
             return
@@ -598,10 +209,13 @@ class MainActivity :
 
     override fun onGetSentenceSuggestions(results: Array<SentenceSuggestionsInfo>?) {
         if (results.isNullOrEmpty()) {
+            testPending = false
+            testError = "La session est ouverte, mais Android n’a retourné aucun résultat."
             resultView.text = "Session ouverte, mais aucun résultat reçu."
             return
         }
 
+        val visibleIssues = mutableListOf<HomeCorrectionIssue>()
         val output = StringBuilder()
         output.append("Texte :\n")
         output.append(testText)
@@ -629,6 +243,7 @@ class MainActivity :
                         }
                     }
 
+                visibleIssues.add(HomeCorrectionIssue(fragment, suggestions))
                 output.append("\n")
                 output.append(issueCount)
                 output.append(". « ")
@@ -657,6 +272,8 @@ class MainActivity :
         }
 
         resultView.text = output.toString()
+        testIssues = visibleIssues
+        testPending = false
     }
 
     override fun onGetSuggestions(results: Array<SuggestionsInfo>?) {
@@ -726,60 +343,13 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
-        updateSpellCheckerStatus()
-        updateImeStatus()
+        correctionStatus = CorrectionStatusReader(this).read()
     }
 
     override fun onDestroy() {
         spellCheckerSession?.close()
         spellCheckerSession = null
         super.onDestroy()
-    }
-
-    private fun updateSpellCheckerStatus() {
-        val status =
-            CorrectionStatusReader(this)
-                .read()
-                .spellChecker
-
-        spellCheckerStatusView.text =
-            when (status) {
-                SpellCheckerStatus.SELECTED ->
-                    "Activé et sélectionné comme correcteur Android."
-
-                SpellCheckerStatus.FRENCH_SESSION_UNAVAILABLE ->
-                    "Grammalecte est sélectionné, mais la session française " +
-                        "est indisponible. Dans les réglages Android du " +
-                        "correcteur, choisissez Français plutôt qu’Automatique."
-
-                SpellCheckerStatus.NOT_SELECTED ->
-                    "Disponible, mais non sélectionné comme correcteur Android."
-
-                SpellCheckerStatus.DISABLED ->
-                    "La correction orthographique Android est désactivée."
-
-                SpellCheckerStatus.UNAVAILABLE ->
-                    "Aucun correcteur Android actif n’a pu être détecté."
-            }
-    }
-
-    private fun updateImeStatus() {
-        val status =
-            CorrectionStatusReader(this)
-                .read()
-                .ime
-
-        imeStatusView.text =
-            when (status) {
-                ImeStatus.SELECTED ->
-                    "Activé et actuellement sélectionné."
-
-                ImeStatus.ENABLED ->
-                    "Activé, mais un autre clavier est actuellement sélectionné."
-
-                ImeStatus.DISABLED ->
-                    "Non activé dans les méthodes de saisie Android."
-            }
     }
 
     private fun openInputMethodSettings() {
@@ -878,140 +448,4 @@ class MainActivity :
             assets.open("grammalecte/fr/gc_engine.js").close()
             true
         }.getOrDefault(false)
-
-    private fun sectionTitle(text: String): TextView =
-        TextView(this).apply {
-            this.text = text
-            markAsAccessibilityHeading()
-            textSize = 18f
-
-            setTypeface(
-                typeface,
-                Typeface.BOLD,
-            )
-
-            setTextColor(
-                getColor(R.color.surface_text),
-            )
-
-            setPadding(
-                0,
-                8,
-                0,
-                8,
-            )
-        }
-
-    private fun createCard(
-        title: String,
-        description: String,
-        statusView: TextView?,
-        actions: List<Pair<String, () -> Unit>>,
-    ): LinearLayout {
-        val density =
-            resources.displayMetrics.density
-
-        val padding =
-            (14 * density).toInt()
-
-        val spacing =
-            (8 * density).toInt()
-
-        return LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-
-            setPadding(
-                padding,
-                padding,
-                padding,
-                padding,
-            )
-
-            background =
-                GradientDrawable().apply {
-                    shape =
-                        GradientDrawable.RECTANGLE
-
-                    cornerRadius =
-                        14f * density
-
-                    setColor(
-                        getColor(R.color.surface_card),
-                    )
-                }
-
-            addView(
-                TextView(this@MainActivity).apply {
-                    text = title
-                    markAsAccessibilityHeading()
-                    textSize = 17f
-
-                    setTypeface(
-                        typeface,
-                        Typeface.BOLD,
-                    )
-
-                    setTextColor(
-                        getColor(R.color.surface_text),
-                    )
-                },
-                matchWrapParams(),
-            )
-
-            addView(
-                TextView(this@MainActivity).apply {
-                    text = description
-                    textSize = 14f
-
-                    setTextColor(
-                        getColor(R.color.surface_text_secondary),
-                    )
-
-                    setPadding(
-                        0,
-                        spacing,
-                        0,
-                        spacing,
-                    )
-                },
-                matchWrapParams(),
-            )
-
-            statusView?.let {
-                addView(
-                    it,
-                    matchWrapParams(),
-                )
-            }
-
-            actions.forEach { (label, action) ->
-                addView(
-                    Button(this@MainActivity).apply {
-                        text = label
-                        isAllCaps = false
-
-                        setOnClickListener {
-                            action()
-                        }
-                    },
-                    matchWrapParams(),
-                )
-            }
-        }
-    }
-
-    private fun cardParams(bottomMargin: Int): LinearLayout.LayoutParams =
-        LinearLayout
-            .LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                this.bottomMargin = bottomMargin
-            }
-
-    private fun matchWrapParams(): ViewGroup.LayoutParams =
-        LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-        )
 }

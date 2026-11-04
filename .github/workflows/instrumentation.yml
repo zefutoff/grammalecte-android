@@ -60,7 +60,7 @@ jobs:
         run: |
           ./gradlew --no-daemon \
             :spellchecker:assembleDebugAndroidTest \
-            :app:assembleDebugAndroidTest
+            :app:assembleDevAndroidTest
 
       - name: Install compatible AVD tooling for Android 17
         if: matrix.api-level == '37.0'
@@ -95,8 +95,8 @@ jobs:
         with:
           name: android-instrumentation-api-${{ matrix.api-level }}
           path: |
-            app/build/reports/androidTests/connected/debug/
-            app/build/outputs/androidTest-results/connected/debug/
+            app/build/reports/androidTests/connected/dev/
+            app/build/outputs/androidTest-results/connected/dev/
             spellchecker/build/reports/androidTests/connected/debug/
             spellchecker/build/outputs/androidTest-results/connected/debug/
           if-no-files-found: ignore

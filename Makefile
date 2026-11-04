@@ -73,7 +73,7 @@ instrumented:
 	$(GRADLE) --no-daemon --no-parallel :spellchecker:connectedDebugAndroidTest
 	python3 tools/instrumentation_results.py verify spellchecker
 	python3 tools/instrumentation_results.py prepare app
-	$(GRADLE) --no-daemon --no-parallel :app:connectedDebugAndroidTest
+	$(GRADLE) --no-daemon --no-parallel :app:connectedDevAndroidTest
 	python3 tools/instrumentation_results.py verify app
 
 refresh-verification-metadata:
@@ -85,7 +85,7 @@ refresh-verification-metadata:
 		:app:lintDebug \
 		:app:assembleDebug \
 		:spellchecker:assembleDebugAndroidTest \
-		:app:assembleDebugAndroidTest \
+		:app:assembleDevAndroidTest \
 		cyclonedxBom
 
 clean:
