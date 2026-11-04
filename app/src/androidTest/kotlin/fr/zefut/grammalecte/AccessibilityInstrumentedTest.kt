@@ -98,7 +98,7 @@ class AccessibilityInstrumentedTest {
                 scenario.onActivity { activity ->
                     assertScreenHeading(
                         activity,
-                        "Bien démarrer avec Grammalecte",
+                        "Configurer Grammalecte",
                     )
 
                     assertTrue(

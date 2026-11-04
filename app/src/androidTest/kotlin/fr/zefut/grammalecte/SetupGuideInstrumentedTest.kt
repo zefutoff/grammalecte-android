@@ -121,6 +121,53 @@ class SetupGuideInstrumentedTest {
         }
     }
 
+    @Test
+    fun setupGuideShowsOneStepAtATimeAndAllowsBackNavigation() {
+        ActivityScenario.launch(SetupGuideActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                val root = activity.window.decorView
+                assertTrue(
+                    "Correcteur Android should be visible first",
+                    findButton(root, "Réglages du correcteur")?.isShown == true,
+                )
+                assertFalse(
+                    "Optional IME should not appear on step 1",
+                    findButton(root, "Choisir le clavier")?.isShown == true,
+                )
+
+                val firstNext =
+                    findButton(root, "Passer")
+                        ?: findButton(root, "Suivant")
+                requireNotNull(firstNext).performClick()
+
+                assertFalse(
+                    "Spell checker settings should be hidden on step 2",
+                    findButton(root, "Réglages du correcteur")?.isShown == true,
+                )
+                assertFalse(
+                    "IME settings should be hidden on step 2",
+                    findButton(root, "Gérer les claviers")?.isShown == true,
+                )
+
+                requireNotNull(findButton(root, "Suivant")).performClick()
+                assertTrue(
+                    "IME activation should appear only on step 3",
+                    findButton(root, "Gérer les claviers")?.isShown == true,
+                )
+                assertTrue(
+                    "IME picker should appear on step 3",
+                    findButton(root, "Choisir le clavier")?.isShown == true,
+                )
+
+                requireNotNull(findButton(root, "Précédent")).performClick()
+                assertFalse(
+                    "IME settings should be hidden after going back",
+                    findButton(root, "Gérer les claviers")?.isShown == true,
+                )
+            }
+        }
+    }
+
     private fun waitForResumedActivity(expected: Class<out Activity>): Boolean {
         repeat(WAIT_ATTEMPTS) {
             if (isActivityResumed(expected)) {

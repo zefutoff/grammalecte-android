@@ -3,11 +3,13 @@ package fr.zefut.grammalecte
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
@@ -19,208 +21,197 @@ import android.widget.TextView
 class SetupGuideActivity : Activity() {
     private lateinit var spellCheckerStatusView: TextView
     private lateinit var imeStatusView: TextView
+    private lateinit var progressView: TextView
+    private lateinit var previousButton: Button
+    private lateinit var nextButton: Button
+    private lateinit var leaveButton: Button
+    private lateinit var stepCards: List<LinearLayout>
+    private lateinit var offlineNote: TextView
+
+    private var stepIndex = 0
+    private var awaitingSpellCheckerSettings = false
+    private var spellCheckerReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val density =
-            resources.displayMetrics.density
+        stepIndex =
+            (savedInstanceState?.getInt(STATE_STEP_INDEX) ?: 0)
+                .coerceIn(0, STEP_COUNT - 1)
+        awaitingSpellCheckerSettings =
+            savedInstanceState?.getBoolean(STATE_WAITING_FOR_SETTINGS) ?: false
 
-        val padding =
-            (20 * density).toInt()
-
-        val spacing =
-            (12 * density).toInt()
-
-        val smallSpacing =
-            (6 * density).toInt()
+        val density = resources.displayMetrics.density
+        val padding = (20 * density).toInt()
+        val spacing = (12 * density).toInt()
+        val smallSpacing = (6 * density).toInt()
 
         val content =
             LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
-
-                setPadding(
-                    padding,
-                    padding,
-                    padding,
-                    padding,
-                )
-
-                setBackgroundColor(
-                    getColor(R.color.surface_background),
-                )
+                setPadding(padding, padding, padding, padding)
+                setBackgroundColor(getColor(R.color.surface_background))
             }
 
         content.addView(
             TextView(this).apply {
-                text = "Bien démarrer avec Grammalecte"
+                text = "Configurer Grammalecte"
                 markAsAccessibilityHeading()
                 textSize = 26f
-
-                setTypeface(
-                    typeface,
-                    Typeface.BOLD,
-                )
-
-                setTextColor(
-                    getColor(R.color.surface_text),
-                )
+                setTypeface(typeface, Typeface.BOLD)
+                setTextColor(getColor(R.color.surface_text))
             },
             matchWrapParams(),
         )
 
-        content.addView(
+        progressView =
             TextView(this).apply {
-                text =
-                    "Grammalecte peut intervenir de trois façons. " +
-                    "Vous n’avez pas besoin d’activer les trois modes."
+                enablePoliteAccessibilityUpdates()
+                textSize = 16f
+                setTypeface(typeface, Typeface.BOLD)
+                setTextColor(getColor(R.color.brand_primary))
+                setPadding(0, 0, 0, spacing)
+            }
+        content.addView(progressView, matchWrapParams())
 
-                textSize = 15f
-
-                setTextColor(
-                    getColor(R.color.surface_text_secondary),
-                )
-
-                setPadding(
-                    0,
-                    smallSpacing,
-                    0,
-                    smallSpacing,
-                )
-            },
-            matchWrapParams(),
-        )
-
-        content.addView(
-            TextView(this).apply {
-                text =
-                    "Pour commencer, activez de préférence le correcteur Android. " +
-                    "Les deux autres modes servent de complément lorsque " +
-                    "l’application utilisée ne prend pas correctement en charge " +
-                    "la correction native."
-
-                textSize = 14f
-
-                setTextColor(
-                    getColor(R.color.surface_text_secondary),
-                )
-
-                setPadding(
-                    0,
-                    0,
-                    0,
-                    spacing,
-                )
-            },
-            matchWrapParams(),
-        )
-
-        spellCheckerStatusView =
-            statusTextView()
-
-        content.addView(
+        spellCheckerStatusView = statusTextView()
+        val spellCheckerCard =
             createGuideCard(
-                number = "1",
                 title = "Correcteur Android",
                 description =
-                    "Mode recommandé. Grammalecte devient le correcteur " +
-                        "orthographique Android dans les applications compatibles.",
+                    "Recommandé. Dans les réglages, activez la correction " +
+                        "puis choisissez Grammalecte et Français.",
                 statusView = spellCheckerStatusView,
                 actions =
                     listOf(
-                        "Configurer le correcteur Android" to {
+                        "Réglages du correcteur" to {
                             openSpellCheckerSettings()
                         },
                     ),
-            ),
-            cardParams(spacing),
-        )
+            )
 
-        content.addView(
+        val selectionStatusView =
+            statusTextView().apply {
+                text = "Prêt — aucun réglage nécessaire."
+                setTextColor(getColor(R.color.setup_status_ready))
+            }
+        val selectionCard =
             createGuideCard(
-                number = "2",
                 title = "Corriger une sélection",
                 description =
-                    "Aucune activation nécessaire. Sélectionnez du texte dans " +
-                        "une application compatible, ouvrez le menu de sélection, " +
-                        "puis choisissez « Corriger avec Grammalecte ».",
-                statusView =
-                    TextView(this).apply {
-                        text = "État : disponible sans activation."
-                        textSize = 15f
-
-                        setTypeface(
-                            typeface,
-                            Typeface.BOLD,
-                        )
-
-                        setTextColor(
-                            getColor(R.color.surface_text),
-                        )
-                    },
+                    "Sélectionnez du texte, puis choisissez " +
+                        "« Corriger avec Grammalecte » dans le menu.",
+                statusView = selectionStatusView,
                 actions = emptyList(),
-            ),
-            cardParams(spacing),
-        )
+            )
 
-        imeStatusView =
-            statusTextView()
-
-        content.addView(
+        imeStatusView = statusTextView()
+        val imeCard =
             createGuideCard(
-                number = "3",
-                title = "Clavier Grammalecte",
+                title = "Clavier Grammalecte · facultatif",
                 description =
-                    "Mode de repli pour corriger directement une sélection " +
-                        "dans les applications qui ne gèrent pas correctement " +
-                        "le correcteur Android ou le retour de texte corrigé.",
+                    "Pour corriger une sélection lorsque la correction " +
+                        "native n’est pas disponible.",
                 statusView = imeStatusView,
                 actions =
                     listOf(
-                        "Gérer les méthodes de saisie" to {
+                        "Gérer les claviers" to {
                             openInputMethodSettings()
                         },
                         "Choisir le clavier" to {
                             showInputMethodPicker()
                         },
                     ),
-            ),
-            cardParams(spacing),
-        )
+            )
 
-        content.addView(
+        stepCards = listOf(spellCheckerCard, selectionCard, imeCard)
+        stepCards.forEach { card ->
+            content.addView(card, cardParams(spacing))
+        }
+
+        offlineNote =
             TextView(this).apply {
-                text =
-                    "Tout le traitement est effectué localement sur l’appareil. " +
-                    "Grammalecte Android ne nécessite pas de connexion Internet."
+                text = "Corrections locales, sans connexion Internet."
+                textSize = 13f
+                setTextColor(getColor(R.color.surface_text_secondary))
+                setPadding(0, smallSpacing, 0, spacing)
+            }
+        content.addView(offlineNote, matchWrapParams())
 
-                textSize = 14f
+        val navigation =
+            LinearLayout(this).apply {
+                orientation =
+                    if (resources.configuration.fontScale >= 1.5f) {
+                        LinearLayout.VERTICAL
+                    } else {
+                        LinearLayout.HORIZONTAL
+                    }
+            }
 
-                setTextColor(
-                    getColor(R.color.surface_text_secondary),
-                )
-
-                setPadding(
-                    0,
-                    smallSpacing,
-                    0,
-                    spacing,
-                )
-            },
-            matchWrapParams(),
-        )
-
-        content.addView(
+        previousButton =
             Button(this).apply {
-                text = "Continuer vers l’application"
+                text = "Précédent"
                 isAllCaps = false
-
                 setOnClickListener {
-                    finish()
+                    if (stepIndex > 0) {
+                        stepIndex--
+                        showStep()
+                    }
                 }
-            },
-            matchWrapParams(),
+            }
+
+        nextButton =
+            Button(this).apply {
+                isAllCaps = false
+                backgroundTintList =
+                    ColorStateList.valueOf(getColor(R.color.brand_primary))
+                setTextColor(getColor(R.color.surface_background))
+                setOnClickListener {
+                    if (stepIndex == STEP_COUNT - 1) {
+                        finish()
+                    } else {
+                        stepIndex++
+                        showStep()
+                    }
+                }
+            }
+
+        val navigationParams =
+            if (navigation.orientation == LinearLayout.VERTICAL) {
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                )
+            } else {
+                LinearLayout.LayoutParams(
+                    0,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    1f,
+                )
+            }
+
+        navigation.addView(previousButton, navigationParams)
+        navigation.addView(
+            nextButton,
+            LinearLayout.LayoutParams(
+                navigationParams.width,
+                navigationParams.height,
+                navigationParams.weight,
+            ),
         )
+        content.addView(navigation, matchWrapParams())
+
+        leaveButton =
+            Button(this).apply {
+                text = "Plus tard"
+                isAllCaps = false
+                textSize = 14f
+                backgroundTintList =
+                    ColorStateList.valueOf(getColor(R.color.surface_background))
+                setTextColor(getColor(R.color.surface_text_secondary))
+                setOnClickListener { finish() }
+            }
+        content.addView(leaveButton, matchWrapParams())
 
         val scrollView =
             ScrollView(this).apply {
@@ -265,64 +256,132 @@ class SetupGuideActivity : Activity() {
             }
 
         setContentView(scrollView)
+        showStep()
     }
 
     override fun onResume() {
         super.onResume()
-        updateStatus()
+
+        if (!::spellCheckerStatusView.isInitialized) {
+            return
+        }
+
+        val status = updateStatus()
+        if (awaitingSpellCheckerSettings) {
+            awaitingSpellCheckerSettings = false
+            if (
+                stepIndex == 0 &&
+                status.spellChecker == SpellCheckerStatus.SELECTED
+            ) {
+                stepIndex = 1
+            }
+        }
+        showStep()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-
-        if (
-            hasFocus &&
-            this::spellCheckerStatusView.isInitialized &&
-            this::imeStatusView.isInitialized
-        ) {
+        if (hasFocus && ::spellCheckerStatusView.isInitialized) {
             updateStatus()
+            showStep()
         }
     }
 
-    private fun updateStatus() {
-        val status =
-            CorrectionStatusReader(this)
-                .read()
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(STATE_STEP_INDEX, stepIndex)
+        outState.putBoolean(
+            STATE_WAITING_FOR_SETTINGS,
+            awaitingSpellCheckerSettings,
+        )
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun showStep() {
+        if (!::stepCards.isInitialized) {
+            return
+        }
+
+        progressView.text = "Étape ${stepIndex + 1}/$STEP_COUNT"
+        stepCards.forEachIndexed { index, card ->
+            card.visibility = if (index == stepIndex) View.VISIBLE else View.GONE
+        }
+        offlineNote.visibility =
+            if (stepIndex == STEP_COUNT - 1) View.VISIBLE else View.GONE
+        previousButton.visibility =
+            if (stepIndex == 0) View.GONE else View.VISIBLE
+        nextButton.text =
+            when {
+                stepIndex == STEP_COUNT - 1 -> "Terminer"
+                stepIndex == 0 && !spellCheckerReady -> "Passer"
+                else -> "Suivant"
+            }
+        leaveButton.visibility =
+            if (stepIndex == STEP_COUNT - 1) View.GONE else View.VISIBLE
+    }
+
+    private fun updateStatus(): CorrectionStatus {
+        val status = CorrectionStatusReader(this).read()
+        spellCheckerReady = status.spellChecker == SpellCheckerStatus.SELECTED
 
         spellCheckerStatusView.text =
             when (status.spellChecker) {
                 SpellCheckerStatus.SELECTED ->
-                    "État : activé et sélectionné comme correcteur Android."
+                    "Activé — prêt à corriger."
 
                 SpellCheckerStatus.FRENCH_SESSION_UNAVAILABLE ->
-                    "Grammalecte est sélectionné, mais la session française " +
-                        "est indisponible. Dans les réglages Android du " +
-                        "correcteur, choisissez Français plutôt qu’Automatique."
+                    "À compléter — choisissez Français."
 
                 SpellCheckerStatus.NOT_SELECTED ->
-                    "État : disponible, mais non sélectionné."
+                    "À activer — choisissez Grammalecte."
 
                 SpellCheckerStatus.DISABLED ->
-                    "État : correction orthographique Android désactivée."
+                    "À activer — correction Android désactivée."
 
                 SpellCheckerStatus.UNAVAILABLE ->
-                    "État : aucun correcteur Android actif détecté."
+                    "Aucun correcteur Android actif détecté."
             }
+        spellCheckerStatusView.setTextColor(
+            getColor(
+                if (spellCheckerReady) {
+                    R.color.setup_status_ready
+                } else {
+                    R.color.setup_status_attention
+                },
+            ),
+        )
 
         imeStatusView.text =
             when (status.ime) {
                 ImeStatus.SELECTED ->
-                    "État : activé et actuellement sélectionné."
+                    "Activé — clavier Grammalecte sélectionné."
 
                 ImeStatus.ENABLED ->
-                    "État : activé, mais un autre clavier est sélectionné."
+                    "Activé — un autre clavier est utilisé."
 
                 ImeStatus.DISABLED ->
-                    "État : non activé dans les méthodes de saisie."
+                    "Non activé — facultatif."
             }
+        imeStatusView.setTextColor(
+            getColor(
+                if (status.ime == ImeStatus.DISABLED) {
+                    R.color.surface_text_secondary
+                } else {
+                    R.color.setup_status_ready
+                },
+            ),
+        )
+
+        return status
+    }
+
+    private companion object {
+        const val STEP_COUNT = 3
+        const val STATE_STEP_INDEX = "onboarding_step"
+        const val STATE_WAITING_FOR_SETTINGS = "onboarding_waiting_settings"
     }
 
     private fun openSpellCheckerSettings() {
+        awaitingSpellCheckerSettings = true
         val directIntent =
             Intent(Intent.ACTION_MAIN).apply {
                 component =
@@ -398,7 +457,6 @@ class SetupGuideActivity : Activity() {
         }
 
     private fun createGuideCard(
-        number: String,
         title: String,
         description: String,
         statusView: TextView,
@@ -430,7 +488,7 @@ class SetupGuideActivity : Activity() {
 
             addView(
                 TextView(this@SetupGuideActivity).apply {
-                    text = "$number. $title"
+                    text = title
                     markAsAccessibilityHeading()
                     textSize = 18f
 

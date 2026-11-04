@@ -7,4 +7,6 @@
     <color name="brand_primary">#FF4338CA</color>
     <color name="launcher_background">#FF4338CA</color>
     <color name="launcher_check">#FF22C55E</color>
+    <color name="setup_status_ready">#FF146C2E</color>
+    <color name="setup_status_attention">#FF855100</color>
 </resources>
