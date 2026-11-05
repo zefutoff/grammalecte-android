@@ -79,6 +79,7 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
+          disk-size: ${{ matrix.api-level == '37.0' && '4G' || '' }}
           target: ${{ matrix.api-level == '37.0' && 'google_apis' || 'default' }}
           emulator-build: ${{ matrix.api-level == '37.0' && '15507667' || '' }}
           disable-spellchecker: false
