@@ -73,8 +73,8 @@ function componentsNamed(name) {
     );
 }
 
-function requireSingleComponent(name) {
-    const matches = componentsNamed(name);
+function requireSingleComponent(name, predicate = () => true) {
+    const matches = componentsNamed(name).filter(predicate);
 
     if (matches.length !== 1) {
         fail(
@@ -89,7 +89,10 @@ function requireSingleComponent(name) {
 }
 
 const app = requireSingleComponent("app");
-const core = requireSingleComponent("core");
+const core = requireSingleComponent(
+    "core",
+    (component) => component.group === "grammalecte-android",
+);
 const engine = requireSingleComponent("engine-grammalecte");
 const spellchecker = requireSingleComponent("spellchecker");
 const grammalecte = requireSingleComponent("grammalecte");

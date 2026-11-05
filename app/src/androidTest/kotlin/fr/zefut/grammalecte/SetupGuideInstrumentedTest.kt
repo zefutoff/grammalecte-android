@@ -6,19 +6,24 @@ import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class SetupGuideInstrumentedTest {
+    @get:Rule val composeRule = createEmptyComposeRule()
+
     @Test
     fun firstRunGuideIsShownOnceAndRemainsManuallyAvailable() {
         val instrumentation =
@@ -80,22 +85,7 @@ class SetupGuideInstrumentedTest {
                         ),
                     )
 
-                    scenario.onActivity { activity ->
-                        val guideButton =
-                            findButton(
-                                activity.window.decorView,
-                                GUIDE_BUTTON_LABEL,
-                            )
-
-                        assertNotNull(
-                            "Expected permanent setup guide action",
-                            guideButton,
-                        )
-
-                        requireNotNull(
-                            guideButton,
-                        ).performClick()
-                    }
+                    composeRule.onNodeWithText(GUIDE_BUTTON_LABEL).performClick()
 
                     assertTrue(
                         "Expected manual setup guide opening",

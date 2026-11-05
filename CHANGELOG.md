@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Modernized the main dashboard with Jetpack Compose and Material 3,
+  including light/dark themes and responsive layout.
+- Preserved the existing correction, setup and settings workflows.
+- Moved application instrumentation to the isolated DEV build variant,
+  allowing tests to run without replacing the signed application.
+- Updated the runtime SBOM validator and third-party notices for
+  AndroidX and Jetpack Compose dependencies.
+
+
 ## [1.0.0]
 
 ### Release preparation

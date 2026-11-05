@@ -13,3 +13,7 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+# Jetpack Compose: allow PascalCase names for @Composable functions.
+[*.{kt,kts}]
+ktlint_function_naming_ignore_when_annotated_with = Composable

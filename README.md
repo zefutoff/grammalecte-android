@@ -164,7 +164,7 @@ For development on a connected Android device:
 ./tools/run-android.sh
 ```
 
-The script builds the debug APK, installs it with ADB and launches the application.
+The script builds and installs the isolated DEV variant (`fr.zefut.grammalecte.dev`) by default, allowing it to coexist with the signed release. Pass `debug` explicitly to target the normal debug variant; it cannot replace an installed APK signed with a different certificate.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the complete contributor workflow.
 

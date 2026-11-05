@@ -7,17 +7,26 @@ import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class AccessibilityInstrumentedTest {
+    @get:Rule val composeRule = createEmptyComposeRule()
+
     @Test
     fun accessibilityHelpersApplyExpectedSemantics() {
         val context =
@@ -67,20 +76,17 @@ class AccessibilityInstrumentedTest {
         try {
             ActivityScenario
                 .launch(MainActivity::class.java)
-                .use { scenario ->
-                    scenario.onActivity { activity ->
-                        assertScreenHeading(
-                            activity,
-                            activity.getString(R.string.title),
-                        )
-
-                        assertTrue(
-                            "Expected dynamic accessibility status regions",
-                            countPoliteLiveRegions(
-                                activity.window.decorView,
-                            ) >= 3,
-                        )
-                    }
+                .use {
+                    composeRule.onNodeWithTag("main-heading").assert(
+                        SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading),
+                    )
+                    composeRule.onNodeWithTag("main-status").assert(
+                        SemanticsMatcher.expectValue(
+                            SemanticsProperties.LiveRegion,
+                            LiveRegionMode.Polite,
+                        ),
+                    )
+                    composeRule.onNodeWithTag("keyboard-status").assertExists()
                 }
         } finally {
             preferences
@@ -207,7 +213,7 @@ class AccessibilityInstrumentedTest {
                 scenario.onActivity { activity ->
                     assertScreenHeading(
                         activity,
-                        "Corriger avec Grammalecte",
+                        activity.getString(R.string.process_text_label),
                     )
 
                     assertTrue(

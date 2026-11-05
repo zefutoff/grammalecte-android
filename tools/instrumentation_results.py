@@ -15,7 +15,8 @@ def results_dir(module: str) -> Path:
     return (
         PROJECT_ROOT
         / module
-        / "build/outputs/androidTest-results/connected/debug"
+        / "build/outputs/androidTest-results/connected"
+        / ("dev" if module == "app" else "debug")
     )
 
 
