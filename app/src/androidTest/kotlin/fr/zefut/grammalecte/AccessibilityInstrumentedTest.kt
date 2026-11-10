@@ -98,23 +98,23 @@ class AccessibilityInstrumentedTest {
 
     @Test
     fun setupGuideExposesAccessibilitySemantics() {
-        ActivityScenario
-            .launch(SetupGuideActivity::class.java)
-            .use { scenario ->
-                scenario.onActivity { activity ->
-                    assertScreenHeading(
-                        activity,
-                        "Configurer Grammalecte",
-                    )
-
-                    assertTrue(
-                        "Expected setup status live regions",
-                        countPoliteLiveRegions(
-                            activity.window.decorView,
-                        ) >= 2,
-                    )
-                }
-            }
+        ActivityScenario.launch(SetupGuideActivity::class.java).use {
+            composeRule.onNodeWithText("Configurer Grammalecte").assert(
+                SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading),
+            )
+            composeRule.onNodeWithTag("setup-progress").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
+            )
+            composeRule.onNodeWithTag("setup-status").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
+            )
+        }
     }
 
     @Test
