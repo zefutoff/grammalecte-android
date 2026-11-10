@@ -158,9 +158,10 @@ License text:
 - License: Apache-2.0
 - Purpose: Transitive Kotlin serialization runtime dependency
 
-License text:
+License and upstream NOTICE files:
 
     third_party/licenses/apache-2.0/LICENSE.txt
+    third_party/licenses/kotlinx-serialization/NOTICE.txt
 
 ## Additional Apache-2.0 runtime dependencies
 
