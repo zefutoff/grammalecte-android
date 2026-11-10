@@ -172,9 +172,13 @@ private fun StatusSection(
             ) {
                 Icon(
                     imageVector =
-                        if (keyboard) Icons.Outlined.Keyboard
-                        else if (active) Icons.Outlined.CheckCircle
-                        else Icons.Outlined.Info,
+                        if (keyboard) {
+                            Icons.Outlined.Keyboard
+                        } else if (active) {
+                            Icons.Outlined.CheckCircle
+                        } else {
+                            Icons.Outlined.Info
+                        },
                     contentDescription = null,
                     tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
