@@ -124,6 +124,65 @@ License text:
 
     third_party/licenses/jetbrains-annotations/LICENSE.txt
 
+## AndroidX and Jetpack Compose
+
+- Project: AndroidX / Jetpack Compose / Material 3
+- Upstream: https://android.googlesource.com/platform/frameworks/support/
+- Maven groups: `androidx.*`
+- Compose BOM: `androidx.compose:compose-bom:2026.06.01`
+- Compose UI, runtime, foundation and animation: 1.11.4
+- Material 3: 1.4.0
+- Material Icons Extended: 1.7.8
+- Activity Compose: 1.13.0
+- Lifecycle Compose: 2.9.4
+- License: Apache-2.0
+- Purpose: Android UI components, theming, navigation support,
+  lifecycle handling, accessibility and supporting Android libraries
+
+This inventory includes transitive AndroidX runtime dependencies.
+Their exact resolved coordinates and versions are recorded in the
+CycloneDX SBOM. The Compose compiler plugin is build-only and is not
+part of the release runtime inventory.
+
+License text:
+
+    third_party/licenses/apache-2.0/LICENSE.txt
+
+## Kotlin Serialization
+
+- Project: kotlinx.serialization
+- Upstream: https://github.com/Kotlin/kotlinx.serialization
+- Resolved artifacts: `kotlinx-serialization-core`,
+  `kotlinx-serialization-core-jvm` and `kotlinx-serialization-bom`
+- Version: 1.7.3
+- License: Apache-2.0
+- Purpose: Transitive Kotlin serialization runtime dependency
+
+License and upstream NOTICE files:
+
+    third_party/licenses/apache-2.0/LICENSE.txt
+    third_party/licenses/kotlinx-serialization/NOTICE.txt
+
+## Additional Apache-2.0 runtime dependencies
+
+### Guava ListenableFuture
+
+- Project: Google Guava
+- Upstream: https://github.com/google/guava
+- Maven artifact: `com.google.guava:listenablefuture:1.0`
+- License: Apache-2.0
+
+### JSpecify
+
+- Project: JSpecify
+- Upstream: https://github.com/jspecify/jspecify
+- Maven artifact: `org.jspecify:jspecify:1.0.0`
+- License: Apache-2.0
+
+Shared Apache-2.0 license text:
+
+    third_party/licenses/apache-2.0/LICENSE.txt
+
 ## Maintenance
 
 Review this document whenever:

@@ -39,7 +39,7 @@ class VisualIdentityManifestTest {
         )
 
         assertEquals(
-            "Grammalecte Android (non officiel)",
+            context.getString(R.string.app_name),
             application.loadLabel(packageManager).toString(),
         )
 
@@ -53,7 +53,7 @@ class VisualIdentityManifestTest {
             )
 
         assertEquals(
-            "Grammalecte",
+            context.getString(R.string.launcher_name),
             mainActivity.loadLabel(packageManager).toString(),
         )
 
