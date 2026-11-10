@@ -1,28 +1,27 @@
 # Grammalecte Android - Project State
 
-> **Latest verified checkpoint:** 2026-11-09 (Europe/Paris).
+> **Latest verified checkpoint:** 2026-11-10 (Europe/Paris).
 > **Repository:** https://github.com/zefutoff/grammalecte-android
-> **Reference `main` commit:** `743dc7ba63d12f28c80a5b84cb712b2153332c1b` (PR #99 merge, 2026-11-09).
+> **Reference `main` commit:** `c62f1b5e373c0bc7759e081da4a8b3cf315ae935` (PR #96 squash merge, 2026-11-10).
 > **Historical context:** The sections below the current checkpoint preserve the original 2026-11-07 audit. Dates, PR states, CI results and counts in that historical audit are not current.
 > **Change policy:** Verify live GitHub state before operations; this documentation records evidence, not approval to merge, close issues, release builds or change CI.
 
-## Current operational checkpoint — 2026-11-09
+## Current operational checkpoint — 2026-11-10
 
-The following table supersedes the historical status snapshot below. Only evidence from GitHub and previously documented project acceptance is considered; no local build or physical-device tests were performed for this checkpoint.
+This checkpoint supersedes the dated 2026-11-09 operational snapshot. Historical sections below remain unchanged for traceability; their former open-PR states and counts are not current.
 
-| Area | Verified state | Next action / merge gate |
+| Area | Verified state | Next action / gate |
 | --- | --- | --- |
-| **`main` / dependencies** | [PR #97](https://github.com/zefutoff/grammalecte-android/pull/97) merged 2026-11-08 at `2635443d`: setup-java 6.2.0 and CodeQL 4.39.3. [PR #99](https://github.com/zefutoff/grammalecte-android/pull/99) merged 2026-11-09 at `743dc7ba`: AGP **9.5.1** for application/library plus regenerated strict SHA-256 checksums in `gradle/verification-metadata.xml`. | Keep the dependency verification gate active; do not repeat already passed PR-head checks without new evidence. |
-| **#99 acceptance evidence** | [CI](https://github.com/zefutoff/grammalecte-android/actions/runs/42518251972), [CodeQL](https://github.com/zefutoff/grammalecte-android/actions/runs/42518252004) and [Android instrumentation](https://github.com/zefutoff/grammalecte-android/actions/runs/42518251998) **passed** on PR head `77306fe`, including API 26, 35 and 37.0. The dedicated checksum refresh succeeded under Gradle 9.6.1. | PR #99 is complete and merged; verify separate post-merge `main` quality jobs before asserting a green `main` head. |
-| **CI execution** | Actions are running again. After #99 merge, `main` [CI](https://github.com/zefutoff/grammalecte-android/actions/runs/42685413623) and [CodeQL](https://github.com/zefutoff/grammalecte-android/actions/runs/42685413229) started at `743dc7ba`; **both were in progress at this checkpoint**. This does not establish a final result. | Check final outcomes and investigate any actual test failure; the earlier blocked/unstarted Actions diagnosis is historical, not the present #99 result. |
-| **UI #89 / draft PR #96** | [PR #96](https://github.com/zefutoff/grammalecte-android/pull/96) remains **open, draft, unmerged**, head `b218562a`. Its latest-head [CI](https://github.com/zefutoff/grammalecte-android/actions/runs/42086089632), [CodeQL](https://github.com/zefutoff/grammalecte-android/actions/runs/42086089642) and [instrumentation](https://github.com/zefutoff/grammalecte-android/actions/runs/42086089659) now show success (API 26/35/37), after reruns. Since `main` has advanced with #97/#99, integration must be rechecked. | Review compatibility with new `main`, new dependencies/provenance and notices, and missing light/dark screenshots, font scale and accessibility evidence. Keep #89 open for secondary screens; do not merge #96 based solely on green workflows. |
-| **F-Droid #85** | [Issue #85](https://github.com/zefutoff/grammalecte-android/issues/85) is still open. MR !54224 was last reported **closed, not merged**; upstream closure rationale remains unverified. F-Droid monitoring workflow executed again on 2026-11-09 despite the closed MR. | Do not treat a green monitor as inclusion. Respect the documented plan to revisit/reopen submission in January; review whether monitoring the closed MR is still useful. |
-| **Other issues** | Open issues are **#34, #50, #85, #89**. GrapheneOS physical #34 is unresolved despite emulator success; Samsung Messages #50 remains a host-specific limitation with IME fallback. | Preserve their evidence and avoid speculative closure or rewriting completed tests. |
-| **Published release** | Latest published GitHub release remains signed `v1.0.0` (2026-10-31). PRs #92–#95, #97 and #99 have been merged after it; they are **not** shipped in that APK. | Release only with a new version, signed assets and normal release acceptance; no release implied by this checkpoint. |
+| **`main` / UI #89** | [PR #96](https://github.com/zefutoff/grammalecte-android/pull/96) **merged** via squash at `c62f1b5e` on 2026-11-10. The Material 3 **home dashboard** is now on `main`; secondary screens are not covered. | Keep [issue #89](https://github.com/zefutoff/grammalecte-android/issues/89) open and plan secondary-screen work separately. |
+| **PR #96 validation** | PR head `70c9f9068f5a3174b421f92415757f58cce9247f` passed CI, CodeQL and Android instrumentation. Prior physical-device home-screen acceptance was reported as passed. Maintainer's local `make unsigned-release` succeeded (119 tasks), and the final APK permissions check found no `INTERNET` permission. | Check the **post-merge `main`** quality runs separately; PR-head green checks are not post-merge evidence. |
+| **Runtime / licensing** | Audit reported 110 Maven coordinates, 109 Apache-2.0 POM license declarations and one undeclared Guava ListenableFuture POM. Existing third-party notices include QuickJS-KT (Apache-2.0), QuickJS and c-vector (MIT). Local Release APK inventory showed `libquickjs.so` and `libandroidx.graphics.path.so` for arm64-v8a, armeabi-v7a, x86 and x86_64. | No proven license defect. Before **publication**, verify binary provenance and how recipients obtain applicable licenses, notices and source; POM metadata alone is not legal sign-off. |
+| **Dependencies** | [PR #97](https://github.com/zefutoff/grammalecte-android/pull/97) and [PR #99](https://github.com/zefutoff/grammalecte-android/pull/99) were merged before #96; AGP is 9.5.1 with strict dependency checksums. | Preserve verification gates. |
+| **Other open work** | Issues #34 (GrapheneOS reporter follow-up), #50 (Samsung Messages host limitation), #85 (F-Droid submission) and #89 (remaining UI) remain the tracked open issues from the last verified register; no closure is implied here. F-Droid MR !54224 was reported closed, not merged; January revisit planned. | Check live issue/MR state before acting; do not reopen F-Droid prematurely. |
+| **Published release** | Latest previously verified published version: signed `v1.0.0` (2026-10-31). The #96 merge is **not** a new published release. | New version, signed assets and full release acceptance required for publication. |
 
-**Project invariants unchanged:** fully offline correction without `INTERNET` permission, no Accessibility Service replacement, pinned Grammalecte/QuickJS boundary, stable production app identity/signing certificate, separate `.dev` package. A green CI run is not a physical-device validation or release approval.
+**Project invariants:** offline correction with no `android.permission.INTERNET`, no Accessibility Service replacement, pinned Grammalecte/QuickJS boundary, stable production identity/signing, separate `.dev` package. Distinguish merged code, device acceptance and published releases.
 
-**Current priorities:** finish the post-merge `main` CI check; assess #96 against updated `main` and its remaining visual/dependency acceptance criteria; preserve #34/#50 evidence; revisit F-Droid in January as planned. The historical 2026-11-07 snapshot below is retained for traceability, not for operational decisions.
+**Next priorities:** verify post-merge `main` checks; continue issue #89 secondary screens; preserve #34/#50 evidence; revisit F-Droid in January; complete distribution licensing review before release.
 
 ---
 
