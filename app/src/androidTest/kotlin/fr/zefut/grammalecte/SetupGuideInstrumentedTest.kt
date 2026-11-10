@@ -3,10 +3,9 @@ package fr.zefut.grammalecte
 import android.app.Activity
 import android.content.Context
 import android.os.SystemClock
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
@@ -113,48 +112,26 @@ class SetupGuideInstrumentedTest {
 
     @Test
     fun setupGuideShowsOneStepAtATimeAndAllowsBackNavigation() {
-        ActivityScenario.launch(SetupGuideActivity::class.java).use { scenario ->
-            scenario.onActivity { activity ->
-                val root = activity.window.decorView
-                assertTrue(
-                    "Correcteur Android should be visible first",
-                    findButton(root, "Réglages du correcteur")?.isShown == true,
-                )
-                assertFalse(
-                    "Optional IME should not appear on step 1",
-                    findButton(root, "Choisir le clavier")?.isShown == true,
-                )
+        ActivityScenario.launch(SetupGuideActivity::class.java).use {
+            composeRule.onNodeWithText("Réglages du correcteur").assertExists()
+            composeRule.onNodeWithText("Choisir le clavier").assertDoesNotExist()
 
-                val firstNext =
-                    findButton(root, "Passer")
-                        ?: findButton(root, "Suivant")
-                requireNotNull(firstNext).performClick()
+            val nextLabel =
+                if (composeRule.onAllNodesWithText("Passer").fetchSemanticsNodes().isNotEmpty()) {
+                    "Passer"
+                } else {
+                    "Suivant"
+                }
+            composeRule.onNodeWithText(nextLabel).performClick()
+            composeRule.onNodeWithText("Réglages du correcteur").assertDoesNotExist()
+            composeRule.onNodeWithText("Gérer les claviers").assertDoesNotExist()
 
-                assertFalse(
-                    "Spell checker settings should be hidden on step 2",
-                    findButton(root, "Réglages du correcteur")?.isShown == true,
-                )
-                assertFalse(
-                    "IME settings should be hidden on step 2",
-                    findButton(root, "Gérer les claviers")?.isShown == true,
-                )
+            composeRule.onNodeWithText("Suivant").performClick()
+            composeRule.onNodeWithText("Gérer les claviers").assertExists()
+            composeRule.onNodeWithText("Choisir le clavier").assertExists()
 
-                requireNotNull(findButton(root, "Suivant")).performClick()
-                assertTrue(
-                    "IME activation should appear only on step 3",
-                    findButton(root, "Gérer les claviers")?.isShown == true,
-                )
-                assertTrue(
-                    "IME picker should appear on step 3",
-                    findButton(root, "Choisir le clavier")?.isShown == true,
-                )
-
-                requireNotNull(findButton(root, "Précédent")).performClick()
-                assertFalse(
-                    "IME settings should be hidden after going back",
-                    findButton(root, "Gérer les claviers")?.isShown == true,
-                )
-            }
+            composeRule.onNodeWithText("Précédent").performClick()
+            composeRule.onNodeWithText("Gérer les claviers").assertDoesNotExist()
         }
     }
 
@@ -205,33 +182,6 @@ class SetupGuideInstrumentedTest {
                 .firstOrNull()
                 ?.finish()
         }
-    }
-
-    private fun findButton(
-        view: View,
-        label: String,
-    ): Button? {
-        if (
-            view is Button &&
-            view.text.toString() == label
-        ) {
-            return view
-        }
-
-        if (view !is ViewGroup) {
-            return null
-        }
-
-        for (index in 0 until view.childCount) {
-            findButton(
-                view.getChildAt(index),
-                label,
-            )?.let {
-                return it
-            }
-        }
-
-        return null
     }
 
     private companion object {
