@@ -119,23 +119,23 @@ class AccessibilityInstrumentedTest {
 
     @Test
     fun correctionStatusExposesAccessibilitySemantics() {
-        ActivityScenario
-            .launch(CorrectionStatusActivity::class.java)
-            .use { scenario ->
-                scenario.onActivity { activity ->
-                    assertScreenHeading(
-                        activity,
-                        "État de la correction",
-                    )
-
-                    assertTrue(
-                        "Expected correction status live regions",
-                        countPoliteLiveRegions(
-                            activity.window.decorView,
-                        ) >= 2,
-                    )
-                }
-            }
+        ActivityScenario.launch(CorrectionStatusActivity::class.java).use {
+            composeRule.onNodeWithTag("status-heading").assert(
+                SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading),
+            )
+            composeRule.onNodeWithTag("status-spell-checker").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
+            )
+            composeRule.onNodeWithTag("status-keyboard").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
+            )
+        }
     }
 
     @Test

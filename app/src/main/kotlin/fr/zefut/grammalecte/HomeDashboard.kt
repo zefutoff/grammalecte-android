@@ -72,7 +72,7 @@ internal data class HomeCorrectionIssue(
     val suggestions: List<String>,
 )
 
-private val lightPalette =
+internal val lightPalette =
     lightColorScheme(
         primary = Color(0xFF5342B6),
         onPrimary = Color.White,
@@ -87,7 +87,7 @@ private val lightPalette =
         outlineVariant = Color(0xFFDAD8E5),
     )
 
-private val darkPalette =
+internal val darkPalette =
     darkColorScheme(
         primary = Color(0xFFC9BCFF),
         onPrimary = Color(0xFF32216C),
