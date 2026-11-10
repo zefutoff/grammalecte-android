@@ -2,7 +2,7 @@
 
 > **Latest verified checkpoint:** 2026-11-10 (Europe/Paris).
 > **Repository:** https://github.com/zefutoff/grammalecte-android
-> **Reference `main` commit:** `c62f1b5e373c0bc7759e081da4a8b3cf315ae935` (PR #96 squash merge, 2026-11-10).
+> **Reference `main` commit:** `72625ed678bf3b20c64665c0dbf9fe7de1ed1b7d` (PR #104 squash merge, 2026-11-10).
 > **Historical context:** The sections below the current checkpoint preserve the original 2026-11-07 audit. Dates, PR states, CI results and counts in that historical audit are not current.
 > **Change policy:** Verify live GitHub state before operations; this documentation records evidence, not approval to merge, close issues, release builds or change CI.
 
@@ -12,7 +12,8 @@ This checkpoint supersedes the dated 2026-11-09 operational snapshot. Historical
 
 | Area | Verified state | Next action / gate |
 | --- | --- | --- |
-| **`main` / UI #89** | [PR #96](https://github.com/zefutoff/grammalecte-android/pull/96) **merged** via squash at `c62f1b5e` on 2026-11-10. The Material 3 **home dashboard** is now on `main`; secondary screens are not covered. | Keep [issue #89](https://github.com/zefutoff/grammalecte-android/issues/89) open and plan secondary-screen work separately. |
+| **`main` / UI #89** | [PR #96](https://github.com/zefutoff/grammalecte-android/pull/96) **merged** via squash at `c62f1b5e` on 2026-11-10. The Material 3 **home dashboard** is now on `main`; other secondary screens remain to be modernized. | Keep [issue #89](https://github.com/zefutoff/grammalecte-android/issues/89) open and plan secondary-screen work separately. |
+| **Correction status UI #103 / PR #104** | [PR #104](https://github.com/zefutoff/grammalecte-android/pull/104) **merged** via squash at `72625ed6` on 2026-11-10. Material 3 status screen accepted on a physical DEV device: light/dark themes, Android settings/IME actions, status refresh, maximum font/display scaling, scrolling and back navigation. PR head `77b0544` passed CI, CodeQL and Android instrumentation; CI logs confirm Debug and unsigned Release APKs omit `android.permission.INTERNET`. | Close [issue #103](https://github.com/zefutoff/grammalecte-android/issues/103) after acceptance. Keep #89 open for remaining screens; verify post-merge `main` CI separately. |
 | **PR #96 validation** | PR head `70c9f9068f5a3174b421f92415757f58cce9247f` passed CI, CodeQL and Android instrumentation. Prior physical-device home-screen acceptance was reported as passed. Maintainer's local `make unsigned-release` succeeded (119 tasks), and the final APK permissions check found no `INTERNET` permission. | Check the **post-merge `main`** quality runs separately; PR-head green checks are not post-merge evidence. |
 | **Runtime / licensing** | Audit reported 110 Maven coordinates, 109 Apache-2.0 POM license declarations and one undeclared Guava ListenableFuture POM. Existing third-party notices include QuickJS-KT (Apache-2.0), QuickJS and c-vector (MIT). Local Release APK inventory showed `libquickjs.so` and `libandroidx.graphics.path.so` for arm64-v8a, armeabi-v7a, x86 and x86_64. | No proven license defect. Before **publication**, verify binary provenance and how recipients obtain applicable licenses, notices and source; POM metadata alone is not legal sign-off. |
 | **Dependencies** | [PR #97](https://github.com/zefutoff/grammalecte-android/pull/97) and [PR #99](https://github.com/zefutoff/grammalecte-android/pull/99) were merged before #96; AGP is 9.5.1 with strict dependency checksums. | Preserve verification gates. |
@@ -21,7 +22,7 @@ This checkpoint supersedes the dated 2026-11-09 operational snapshot. Historical
 
 **Project invariants:** offline correction with no `android.permission.INTERNET`, no Accessibility Service replacement, pinned Grammalecte/QuickJS boundary, stable production identity/signing, separate `.dev` package. Distinguish merged code, device acceptance and published releases.
 
-**Next priorities:** verify post-merge `main` checks; continue issue #89 secondary screens; preserve #34/#50 evidence; revisit F-Droid in January; complete distribution licensing review before release.
+**Next priorities:** verify post-merge `main` checks; continue issue #89 with onboarding and settings screens; preserve #34/#50 evidence; revisit F-Droid in January; complete distribution licensing review before release.
 
 ---
 
