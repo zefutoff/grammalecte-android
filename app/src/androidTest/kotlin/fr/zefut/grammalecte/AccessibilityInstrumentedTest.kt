@@ -13,6 +13,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -98,23 +99,23 @@ class AccessibilityInstrumentedTest {
 
     @Test
     fun setupGuideExposesAccessibilitySemantics() {
-        ActivityScenario
-            .launch(SetupGuideActivity::class.java)
-            .use { scenario ->
-                scenario.onActivity { activity ->
-                    assertScreenHeading(
-                        activity,
-                        "Configurer Grammalecte",
-                    )
-
-                    assertTrue(
-                        "Expected setup status live regions",
-                        countPoliteLiveRegions(
-                            activity.window.decorView,
-                        ) >= 2,
-                    )
-                }
-            }
+        ActivityScenario.launch(SetupGuideActivity::class.java).use {
+            composeRule.onNodeWithText("Configurer Grammalecte").assert(
+                SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading),
+            )
+            composeRule.onNodeWithTag("setup-progress").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
+            )
+            composeRule.onNodeWithTag("setup-status").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
+            )
+        }
     }
 
     @Test
