@@ -90,7 +90,7 @@ kotlin {
 
 dependencies {
     // Stable Compose 1.11 train: keep compileSdk 36 and Android 8 minimum.
-    val composeBom = platform("androidx.compose:compose-bom:2026.06.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.activity:activity-compose:1.13.0")
