@@ -31,17 +31,21 @@ The expected artifact is:
 The initial validation produced identical unsigned APKs from two independent
 worktrees.
 
-The release build currently uses:
+The current source-tree release build configuration (after PR #108) uses:
 
 - Gradle 9.6.1;
 - Android Gradle Plugin 9.5.1;
 - Kotlin 2.4.21;
 - JDK 17;
-- compileSdk 36;
+- compileSdk 37;
 - targetSdk 36;
 - minSdk 26;
+- Compose BOM 2026.09.00;
+- QuickJS-KT 1.0.18;
 - Grammalecte 2.3.0;
 - Grammalecte commit 47af2080202e647110e5199ebd5d4b51d2bd51db.
+
+These values describe unshipped source-tree changes. The already-published signed `v1.0.0` APK was built from its earlier release tag; updating build documentation is not a new release.
 
 Gradle dependency verification is enabled through
 `gradle/verification-metadata.xml`.
