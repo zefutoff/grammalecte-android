@@ -1,14 +1,14 @@
 # Grammalecte Android - Project State
 
-> **Latest verified checkpoint:** 2026-11-10 (Europe/Paris).
+> **Latest verified checkpoint:** 2026-11-15 (Europe/Paris).
 > **Repository:** https://github.com/zefutoff/grammalecte-android
-> **Reference `main` commit:** `72625ed678bf3b20c64665c0dbf9fe7de1ed1b7d` (PR #104 squash merge, 2026-11-10).
+> **Reference `main` commit:** `29579a1c7b8d8c56513ef1ae6b9f1c26b3592d4d` (PR #108 squash merge, 2026-11-15).
 > **Historical context:** The sections below the current checkpoint preserve the original 2026-11-07 audit. Dates, PR states, CI results and counts in that historical audit are not current.
 > **Change policy:** Verify live GitHub state before operations; this documentation records evidence, not approval to merge, close issues, release builds or change CI.
 
-## Current operational checkpoint — 2026-11-10
+## Current operational checkpoint — 2026-11-15
 
-This checkpoint supersedes the dated 2026-11-09 operational snapshot. Historical sections below remain unchanged for traceability; their former open-PR states and counts are not current.
+This checkpoint incorporates PR #108 over the 2026-11-10 operational snapshot. Historical sections below remain unchanged for traceability; their former open-PR states and counts are not current.
 
 | Area | Verified state | Next action / gate |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ This checkpoint supersedes the dated 2026-11-09 operational snapshot. Historical
 | **Correction status UI #103 / PR #104** | [PR #104](https://github.com/zefutoff/grammalecte-android/pull/104) **merged** via squash at `72625ed6` on 2026-11-10. Material 3 status screen accepted on a physical DEV device: light/dark themes, Android settings/IME actions, status refresh, maximum font/display scaling, scrolling and back navigation. PR head `77b0544` passed CI, CodeQL and Android instrumentation; CI logs confirm Debug and unsigned Release APKs omit `android.permission.INTERNET`. | Close [issue #103](https://github.com/zefutoff/grammalecte-android/issues/103) after acceptance. Keep #89 open for remaining screens; verify post-merge `main` CI separately. |
 | **PR #96 validation** | PR head `70c9f9068f5a3174b421f92415757f58cce9247f` passed CI, CodeQL and Android instrumentation. Prior physical-device home-screen acceptance was reported as passed. Maintainer's local `make unsigned-release` succeeded (119 tasks), and the final APK permissions check found no `INTERNET` permission. | Check the **post-merge `main`** quality runs separately; PR-head green checks are not post-merge evidence. |
 | **Runtime / licensing** | Audit reported 110 Maven coordinates, 109 Apache-2.0 POM license declarations and one undeclared Guava ListenableFuture POM. Existing third-party notices include QuickJS-KT (Apache-2.0), QuickJS and c-vector (MIT). Local Release APK inventory showed `libquickjs.so` and `libandroidx.graphics.path.so` for arm64-v8a, armeabi-v7a, x86 and x86_64. | No proven license defect. Before **publication**, verify binary provenance and how recipients obtain applicable licenses, notices and source; POM metadata alone is not legal sign-off. |
-| **Dependencies** | [PR #97](https://github.com/zefutoff/grammalecte-android/pull/97) and [PR #99](https://github.com/zefutoff/grammalecte-android/pull/99) were merged before #96; AGP is 9.5.1 with strict dependency checksums. | Preserve verification gates. |
+| **Dependencies / PR #108** | [PR #108](https://github.com/zefutoff/grammalecte-android/pull/108) **squash-merged** at `29579a1c` on 2026-11-15. Compose BOM `2026.06.01` → `2026.09.00`, QuickJS-KT `1.0.15` → `1.0.18`, and `compileSdk` 36 → 37 in the three Android modules; `minSdk` 26 and `targetSdk` 36 unchanged. Strict Gradle artifact checksums retained and deprecated IME show flags corrected for API 37. PR head `16a78b6` passed CI (including unsigned Release privacy check), CodeQL, vendored engine smoke, and API 26/35/37 Android instrumentation. | Verify post-merge `main` CI separately. QuickJS runtime migration has PR/emulator acceptance, not a new physical-device or published-release validation. |
 | **Other open work** | Issues #34 (GrapheneOS reporter follow-up), #50 (Samsung Messages host limitation), #85 (F-Droid submission) and #89 (remaining UI) remain the tracked open issues from the last verified register; no closure is implied here. F-Droid MR !54224 was reported closed, not merged; January revisit planned. | Check live issue/MR state before acting; do not reopen F-Droid prematurely. |
 | **Published release** | Latest previously verified published version: signed `v1.0.0` (2026-10-31). The #96 merge is **not** a new published release. | New version, signed assets and full release acceptance required for publication. |
 
