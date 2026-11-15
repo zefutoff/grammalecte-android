@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "fr.grammalecteandroid.engine"
-    compileSdk = 36
+    compileSdk = 37
 
     androidResources {
         ignoreAssetsPatterns.addAll(

@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "fr.zefut.grammalecte"
-    compileSdk = 36
+    compileSdk = 37
     testBuildType = "dev"
 
     buildFeatures {
@@ -89,7 +89,7 @@ kotlin {
 }
 
 dependencies {
-    // Stable Compose 1.11 train: keep compileSdk 36 and Android 8 minimum.
+    // Compose 1.12 requires compileSdk 37; keep targetSdk 36 and Android 8 minimum.
     val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
