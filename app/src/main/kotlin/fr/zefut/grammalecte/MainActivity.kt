@@ -126,7 +126,7 @@ class MainActivity :
                     systemEditText.requestFocus()
                     systemEditText.setSelection(systemEditText.text.length)
                     getSystemService(InputMethodManager::class.java)
-                        .showSoftInput(systemEditText, InputMethodManager.SHOW_IMPLICIT)
+                        .showSoftInput(systemEditText, 0)
                 },
                 onInspect = { inspectSuggestionSpans() },
                 onQuickTile = { requestQuickSettingsTile() },
