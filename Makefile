@@ -9,12 +9,6 @@ vendor:
 	./tools/vendor-grammalecte.sh
 
 check:
-	@echo '=== PR108_VERIFICATION_REFRESH_BEGIN ==='
-	@set +e; $(MAKE) refresh-verification-metadata; \
-	  echo '=== PR108_VERIFICATION_DIFF_BEGIN ==='; \
-	  git diff --unified=0 -- gradle/verification-metadata.xml; \
-	  echo '=== PR108_VERIFICATION_DIFF_END ==='; \
-	  exit 1
 	./tools/check-android-package-id.sh
 	./tools/check-no-network-permission.sh
 	shellcheck tools/*.sh
