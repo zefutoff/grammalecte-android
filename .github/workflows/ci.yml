@@ -37,6 +37,16 @@ jobs:
         with:
           cache-provider: basic
 
+      # Temporary diagnostic step: regenerate checksums on a clean CI runner.
+      - name: Diagnose missing Gradle verification checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          make refresh-verification-metadata
+          echo 'BEGIN_VERIFICATION_METADATA_DIFF'
+          git diff --no-ext-diff -- gradle/verification-metadata.xml
+          echo 'END_VERIFICATION_METADATA_DIFF'
+
       - name: Run project checks
         run: make check
 
