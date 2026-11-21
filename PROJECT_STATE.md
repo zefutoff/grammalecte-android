@@ -1,10 +1,23 @@
 # Grammalecte Android - Project State
 
-> **Latest verified checkpoint:** 2026-11-15 (Europe/Paris).
+> **Latest verified checkpoint:** 2026-11-21 (Europe/Paris).
 > **Repository:** https://github.com/zefutoff/grammalecte-android
-> **Reference `main` commit:** `29579a1c7b8d8c56513ef1ae6b9f1c26b3592d4d` (PR #108 squash merge, 2026-11-15).
-> **Historical context:** The sections below the current checkpoint preserve the original 2026-11-07 audit. Dates, PR states, CI results and counts in that historical audit are not current.
+> **Reference `main` commit:** `82feff91ca5a96e2ab848e695dafbc26c1ebc00c` (PR #111 squash merge after #110, 2026-11-21).
+> **Historical context:** The 2026-11-15 checkpoint and 2026-11-07 audit below are retained for traceability; they are not live status.
 > **Change policy:** Verify live GitHub state before operations; this documentation records evidence, not approval to merge, close issues, release builds or change CI.
+
+## Current operational checkpoint — 2026-11-21
+
+**GitHub verified:** `main` advanced from `d84e99ed5f24b0a7ad33ea732c26884984a41281` to `58d4e441ce6e5462a8f104e6d1ef55b011beb1d2` (PR #110) and then `82feff91ca5a96e2ab848e695dafbc26c1ebc00c` (PR #111). Both PRs are **merged**, not merely approved.
+
+| Area | Verified state | Next action / gate |
+| --- | --- | --- |
+| **Dependencies / PR #110** | [PR #110](https://github.com/zefutoff/grammalecte-android/pull/110) **squash-merged** at [`58d4e441`](https://github.com/zefutoff/grammalecte-android/commit/58d4e441ce6e5462a8f104e6d1ef55b011beb1d2). Android Gradle Plugin `9.5.1` → `9.5.2` and CycloneDX Gradle plugin `3.5.1` → `3.6.1`; the corresponding artifact SHA-256 entries were committed to `gradle/verification-metadata.xml`. Strict dependency verification remains enabled. PR-head CI (including unsigned Release and APK privacy checks), CodeQL, and Android instrumentation API 26/35/37 all passed after rerunning two transient artifact-verification failures. | Do not infer a new signed release or physical-device acceptance from build-system test success. |
+| **GitHub Actions / PR #111** | [PR #111](https://github.com/zefutoff/grammalecte-android/pull/111) **squash-merged** at [`82feff91`](https://github.com/zefutoff/grammalecte-android/commit/82feff91ca5a96e2ab848e695dafbc26c1ebc00c). `actions/setup-java` updated `6.2.0` → `6.3.0` at an immutable commit in five workflows, with `problem-matcher: true` preserving Java diagnostics annotations. PR-head CI, CodeQL, vendored engine smoke, and Android instrumentation API 26/35/37 all passed. | Review post-merge `main` Actions separately from PR-head successes. |
+| **Post-merge quality** | `main` head `82feff91` triggered [CI run 44949957457](https://github.com/zefutoff/grammalecte-android/actions/runs/44949957457) and [CodeQL run 44949957519](https://github.com/zefutoff/grammalecte-android/actions/runs/44949957519). The earlier run pair on `58d4e441` was cancelled by concurrency after the second merge; cancellation is not a code failure. | **Verify final conclusions** on the combined `82feff91` commit before declaring post-merge success. Android instrumentation does not automatically run on every `main` push; both PR heads passed the API matrix. |
+| **Product / distribution** | These merges update build tooling and GitHub Actions, not the published APK. Existing offline/no-`INTERNET`, release identity, signing and DEV-package invariants remain required; no release was created in this work. The 2026-11-15 product checkpoint below remains the last detailed device/feature acceptance record. | Continue #106/#107 and remaining #89 UI work, retain #34/#50 tracking, revisit #85 F-Droid in January, and keep physical-device/reproducibility/licensing gates for any future publication. |
+
+---
 
 ## Current operational checkpoint — 2026-11-15
 
