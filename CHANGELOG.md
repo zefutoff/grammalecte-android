@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   allowing tests to run without replacing the signed application.
 - Updated the runtime SBOM validator and third-party notices for
   AndroidX and Jetpack Compose dependencies.
+- Upgraded the Compose BOM to 2026.09.00 (Compose 1.12.1) and QuickJS-KT
+  to 1.0.18; raised compileSdk to 37 while preserving targetSdk 36 and
+  minSdk 26. Confirmed CI, CodeQL and Android 26/35/37 instrumentation.
 
 
 ## [1.0.0]

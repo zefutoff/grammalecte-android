@@ -298,7 +298,8 @@ Because the application can operate as an input method, preserving this offline-
 ## Compatibility target
 
 - minimum Android API: 26;
-- compile SDK: 36;
+- compile SDK: 37;
+- target SDK: 36;
 - French correction engine: Grammalecte 2.3.0;
 - grammar-specific Android result attributes where supported by the platform;
 - compatibility fallbacks for applications that bypass native spell checking.

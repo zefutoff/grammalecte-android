@@ -139,7 +139,7 @@ class ImeInputConnectionEndToEndTest {
                                     InputMethodManager::class.java,
                                 ).showSoftInput(
                                     activity.editor,
-                                    InputMethodManager.SHOW_IMPLICIT,
+                                    0,
                                 )
                         }
                     }
@@ -179,7 +179,7 @@ class ImeInputConnectionEndToEndTest {
 
                                 inputMethodManager.showSoftInput(
                                     activity.editor,
-                                    InputMethodManager.SHOW_IMPLICIT,
+                                    0,
                                 )
                             },
                             IME_RECONNECT_DELAY_MILLIS,
@@ -287,7 +287,7 @@ class ImeInputConnectionEndToEndTest {
                             inputMethodManager.restartInput(passwordEditor)
                             inputMethodManager.showSoftInput(
                                 passwordEditor,
-                                InputMethodManager.SHOW_IMPLICIT,
+                                0,
                             )
 
                             switchedEditor = passwordEditor

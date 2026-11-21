@@ -31,10 +31,10 @@ Upstream Grammalecte license files are preserved under:
 
 - Project: quickjs-kt
 - Upstream: https://github.com/dokar3/quickjs-kt
-- Maven artifact: `io.github.dokar3:quickjs-kt:1.0.15`
-- Android artifact: `io.github.dokar3:quickjs-kt-android:1.0.15`
-- Version: 1.0.15
-- Upstream revision reviewed: `a081755bcdb18ee6afa7ffee25b8fa976f06d31f`
+- Maven artifact: `io.github.dokar3:quickjs-kt:1.0.18`
+- Android artifact: `io.github.dokar3:quickjs-kt-android:1.0.18`
+- Version: 1.0.18
+- Upstream tag revision reviewed: `673a6df92081f53adfb45567d8f38de310ca097a`
 - License: Apache-2.0
 - Purpose: Kotlin/Android binding used to execute the embedded Grammalecte JavaScript engine
 
@@ -48,7 +48,7 @@ QuickJS-KT embeds the QuickJS native engine.
 
 - Project: QuickJS
 - Upstream: https://github.com/bellard/quickjs
-- Commit used by QuickJS-KT 1.0.15:
+- Commit used by QuickJS-KT 1.0.18:
   `04be246001599f5995fa2f2d8c91a0f198d3f34c`
 - License: MIT
 - Copyright: Fabrice Bellard and Charlie Gordon
@@ -63,7 +63,7 @@ QuickJS-KT uses c-vector in its JNI/native binding layer.
 
 - Project: c-vector
 - Upstream: https://github.com/eteran/c-vector
-- Commit used by QuickJS-KT 1.0.15:
+- Commit used by QuickJS-KT 1.0.18:
   `774773d4cb1e66dd736e90e7f482d4f22af464c6`
 - License: MIT
 - Copyright: Evan Teran
@@ -71,6 +71,8 @@ QuickJS-KT uses c-vector in its JNI/native binding layer.
 License text:
 
     third_party/licenses/c-vector/LICENSE
+
+The native QuickJS and c-vector submodule commits are unchanged between the upstream `v1.0.15` and `v1.0.18` tags. They were checked against both upstream Git trees.
 
 ## Kotlin standard library
 
@@ -129,8 +131,8 @@ License text:
 - Project: AndroidX / Jetpack Compose / Material 3
 - Upstream: https://android.googlesource.com/platform/frameworks/support/
 - Maven groups: `androidx.*`
-- Compose BOM: `androidx.compose:compose-bom:2026.06.01`
-- Compose UI, runtime, foundation and animation: 1.11.4
+- Compose BOM: `androidx.compose:compose-bom:2026.09.00`
+- Compose UI, runtime, foundation and animation: 1.12.1
 - Material 3: 1.4.0
 - Material Icons Extended: 1.7.8
 - Activity Compose: 1.13.0
