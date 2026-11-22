@@ -1,10 +1,22 @@
 # Grammalecte Android - Project State
 
-> **Latest verified checkpoint:** 2026-11-21 (Europe/Paris).
+> **Latest verified checkpoint:** 2026-11-22 (Europe/Paris).
 > **Repository:** https://github.com/zefutoff/grammalecte-android
-> **Reference `main` commit:** `82feff91ca5a96e2ab848e695dafbc26c1ebc00c` (PR #111 squash merge after #110, 2026-11-21).
+> **Reference `main` commit:** `70331efd12a51dd36eca77b408197cb075590f71` (PR #107 squash merge, 2026-11-22).
 > **Historical context:** The 2026-11-15 checkpoint and 2026-11-07 audit below are retained for traceability; they are not live status.
 > **Change policy:** Verify live GitHub state before operations; this documentation records evidence, not approval to merge, close issues, release builds or change CI.
+
+## Current operational checkpoint — 2026-11-22
+
+| Area | Verified state | Next action / gate |
+| --- | --- | --- |
+| **Setup guide Material 3 / PR #107 / issue #106** | [PR #107](https://github.com/zefutoff/grammalecte-android/pull/107) **squash-merged** into `main` at `70331efd` on 2026-11-22, after final maintainer approval. [Issue #106](https://github.com/zefutoff/grammalecte-android/issues/106) is **closed**. The integrated PR head `36ab877` passed CI, CodeQL and Android instrumentation API 26/35/37; CI confirmed Debug and unsigned Release APKs have no `android.permission.INTERNET`. Maintainer reported targeted physical DEV-device acceptance on 2026-11-22, supplementing full functional/visual acceptance reported on 2026-11-18. The setup guide itself uses Compose Material 3; no parallel legacy setup screen remains. | **Post-merge** `main` CI and CodeQL push runs `45076430906` and `45076430928` were **in progress** at the time of this checkpoint. Confirm outcomes; do not label post-merge checks green prematurely. |
+| **Remaining UI / issue #89** | [Issue #89](https://github.com/zefutoff/grammalecte-android/issues/89) stays open. `RuleSettingsActivity`, `PersonalDictionaryActivity`, and `ProcessTextActivity` still use Android Views and are active screens, **not** obsolete duplicate implementations. The home dashboard, correction-status screen, and setup guide have already been migrated to Compose. | Plan distinct, minimal Material 3 modernization PRs for remaining screens, preserving existing functionality, accessibility and offline constraints. |
+| **Release status** | The PR #107 merge is a **code merge**, not a signed APK release. | Do not imply a new published version or release acceptance. |
+
+The 2026-11-21 and older checkpoints below are historical and preserve their originally verified statements.
+
+---
 
 ## Current operational checkpoint — 2026-11-21
 
