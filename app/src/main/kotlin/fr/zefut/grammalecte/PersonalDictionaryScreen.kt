@@ -60,7 +60,10 @@ internal fun PersonalDictionaryScreen(
                         "Dictionnaire personnel",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.semantics { heading() }.testTag("dictionary-heading"),
+                        modifier =
+                            Modifier
+                                .semantics { heading() }
+                                .testTag("dictionary-heading"),
                     )
                 }
                 item {
