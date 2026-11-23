@@ -62,6 +62,6 @@ class PersonalDictionaryScreenInstrumentedTest {
         composeRule.onNodeWithTag("dictionary-input").assertIsNotEnabled()
         composeRule.onNodeWithText("Ajouter").assertIsNotEnabled()
         composeRule.onNodeWithText("Supprimer").assertIsNotEnabled()
-        composeRule.onNodeWithTag("dictionary-status").assertTextContains("Chargement")
+        composeRule.onNodeWithTag("dictionary-status").assertTextContains("Chargement…")
     }
 }
