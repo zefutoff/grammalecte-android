@@ -2,6 +2,7 @@ package fr.zefut.grammalecte
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,7 +53,7 @@ internal fun PersonalDictionaryScreen(
                         .statusBarsPadding()
                         .navigationBarsPadding()
                         .testTag("personal-dictionary"),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp),
+                contentPadding = PaddingValues(20.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item {
