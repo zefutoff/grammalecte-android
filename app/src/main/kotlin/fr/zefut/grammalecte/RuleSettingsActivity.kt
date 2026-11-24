@@ -148,9 +148,10 @@ class RuleSettingsActivity : ComponentActivity() {
             message = "Enregistrement…",
             task = { currentEngine().setRuleOption(id = optionId, enabled = enabled) },
         ) {
-            options = options.map { option ->
-                if (option.id == optionId) option.copy(enabled = enabled) else option
-            }
+            options =
+                options.map { option ->
+                    if (option.id == optionId) option.copy(enabled = enabled) else option
+                }
             status = "Réglage enregistré."
         }
     }
