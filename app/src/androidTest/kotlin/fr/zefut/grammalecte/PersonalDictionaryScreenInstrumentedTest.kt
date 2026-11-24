@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -21,6 +22,7 @@ class PersonalDictionaryScreenInstrumentedTest {
     fun addAndRemoveActionsAreWired() {
         var entered = ""
         var added = 0
+        var back = 0
         var removed = ""
 
         composeRule.setContent {
@@ -28,20 +30,44 @@ class PersonalDictionaryScreenInstrumentedTest {
                 input = entered,
                 words = listOf("grammalecte"),
                 status = "1 mot",
+                statusIsError = false,
                 busy = false,
                 onInputChange = { entered = it },
                 onAdd = { added++ },
                 onRemove = { removed = it },
-                onBack = {},
+                onBack = { back++ },
             )
         }
 
         composeRule.onNodeWithText("Ajouter").assertIsEnabled().performClick()
         composeRule.onNodeWithText("Supprimer").assertIsEnabled().performClick()
+        composeRule.onNodeWithContentDescription("Retour").performClick()
         composeRule.runOnIdle {
             assertEquals(1, added)
+            assertEquals(1, back)
             assertEquals("grammalecte", removed)
         }
+    }
+
+    @Test
+    fun duplicateFeedbackIsAccessible() {
+        composeRule.setContent {
+            PersonalDictionaryScreen(
+                input = "",
+                words = listOf("grammalecte"),
+                status = "Ce mot est déjà dans le dictionnaire.",
+                statusIsError = true,
+                busy = false,
+                onInputChange = {},
+                onAdd = {},
+                onRemove = {},
+                onBack = {},
+            )
+        }
+
+        composeRule
+            .onNodeWithTag("dictionary-status")
+            .assertTextContains("Ce mot est déjà dans le dictionnaire.")
     }
 
     @Test
@@ -51,6 +77,7 @@ class PersonalDictionaryScreenInstrumentedTest {
                 input = "",
                 words = listOf("grammalecte"),
                 status = "Chargement…",
+                statusIsError = false,
                 busy = true,
                 onInputChange = {},
                 onAdd = {},
