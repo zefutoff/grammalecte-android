@@ -207,7 +207,7 @@ class RuleSettingsActivity : ComponentActivity() {
         startActivityForResult(intent, REQUEST_IMPORT_PREFERENCES)
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
