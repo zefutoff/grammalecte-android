@@ -29,6 +29,7 @@ class RuleSettingsActivity : ComponentActivity() {
     private var statusIsError by mutableStateOf(false)
     private var busy by mutableStateOf(true)
     private var loaded by mutableStateOf(false)
+    private var pendingDocumentResult: Pair<Int, Uri>? = null
 
     @Volatile
     private var destroyed = false
@@ -82,6 +83,10 @@ class RuleSettingsActivity : ComponentActivity() {
                         options = updatedOptions
                         loaded = true
                         showOptionCount()
+                        pendingDocumentResult?.let { pending ->
+                            pendingDocumentResult = null
+                            processDocumentResult(pending.first, pending.second)
+                        }
                     }.onFailure { showError(it) }
             }
         }
@@ -210,6 +215,21 @@ class RuleSettingsActivity : ComponentActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode != RESULT_OK) return
         val uri = data?.data ?: return
+        if (requestCode != REQUEST_EXPORT_PREFERENCES && requestCode != REQUEST_IMPORT_PREFERENCES) {
+            return
+        }
+        if (!loaded || busy) {
+            // The activity may be recreated while Android's document picker is open.
+            pendingDocumentResult = requestCode to uri
+        } else {
+            processDocumentResult(requestCode, uri)
+        }
+    }
+
+    private fun processDocumentResult(
+        requestCode: Int,
+        uri: Uri,
+    ) {
         when (requestCode) {
             REQUEST_EXPORT_PREFERENCES -> exportPreferencesTo(uri)
             REQUEST_IMPORT_PREFERENCES -> importPreferencesFrom(uri)
