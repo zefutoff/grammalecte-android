@@ -134,10 +134,12 @@ internal fun PersonalDictionaryScreen(
                                             MaterialTheme.colorScheme.background
                                         },
                                     shape = RoundedCornerShape(12.dp),
-                                ).padding(
+                                )
+                                .padding(
                                     horizontal = if (statusIsError) 12.dp else 0.dp,
                                     vertical = if (statusIsError) 10.dp else 0.dp,
-                                ).semantics { liveRegion = LiveRegionMode.Polite }
+                                )
+                                .semantics { liveRegion = LiveRegionMode.Polite }
                                 .testTag("dictionary-status"),
                     )
                 }
