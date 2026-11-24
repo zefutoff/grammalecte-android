@@ -21,6 +21,7 @@ class PersonalDictionaryActivity : ComponentActivity() {
     private var input by mutableStateOf("")
     private var words by mutableStateOf<List<String>>(emptyList())
     private var status by mutableStateOf("Chargement…")
+    private var statusIsError by mutableStateOf(false)
     private var busy by mutableStateOf(true)
     private var engine: GrammalecteQuickJsEngine? = null
 
@@ -35,8 +36,12 @@ class PersonalDictionaryActivity : ComponentActivity() {
                 input = input,
                 words = words,
                 status = status,
+                statusIsError = statusIsError,
                 busy = busy,
-                onInputChange = { input = it },
+                onInputChange = {
+                    input = it
+                    if (statusIsError) renderWords(words)
+                },
                 onAdd = { addWord() },
                 onRemove = { removeWord(it) },
                 onBack = { finish() },
@@ -53,6 +58,7 @@ class PersonalDictionaryActivity : ComponentActivity() {
     private fun loadWords() {
         busy = true
         status = "Chargement…"
+        statusIsError = false
         executor.execute {
             val result = runCatching { currentEngine().personalDictionaryWords() }
             mainHandler.post {
@@ -70,20 +76,24 @@ class PersonalDictionaryActivity : ComponentActivity() {
         val word = input.trim()
         when {
             word.isEmpty() -> {
+                statusIsError = true
                 status = "Saisissez un mot."
                 return
             }
             word.length > 64 -> {
+                statusIsError = true
                 status = "Le mot ne doit pas dépasser 64 caractères."
                 return
             }
             word.any(Char::isWhitespace) -> {
+                statusIsError = true
                 status = "Ajoutez un seul mot à la fois."
                 return
             }
         }
 
         busy = true
+        statusIsError = false
         status = "Ajout en cours…"
         executor.execute {
             val result =
@@ -100,6 +110,7 @@ class PersonalDictionaryActivity : ComponentActivity() {
                         renderWords(updatedWords)
                         busy = false
                         status = if (added) "Mot ajouté." else "Ce mot est déjà dans le dictionnaire."
+                        statusIsError = !added
                     }.onFailure { showError(it) }
             }
         }
@@ -107,6 +118,7 @@ class PersonalDictionaryActivity : ComponentActivity() {
 
     private fun removeWord(word: String) {
         busy = true
+        statusIsError = false
         status = "Suppression en cours…"
         executor.execute {
             val result =
@@ -129,6 +141,7 @@ class PersonalDictionaryActivity : ComponentActivity() {
 
     private fun renderWords(updatedWords: List<String>) {
         words = updatedWords
+        statusIsError = false
         status =
             if (updatedWords.isEmpty()) {
                 "Aucun mot enregistré."
@@ -148,6 +161,7 @@ class PersonalDictionaryActivity : ComponentActivity() {
             }
 
     private fun showError(error: Throwable) {
+        statusIsError = true
         status = "Erreur : " + (error.message ?: error.javaClass.simpleName)
         busy = false
     }
