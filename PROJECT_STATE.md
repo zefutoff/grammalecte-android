@@ -1,10 +1,23 @@
 # Grammalecte Android - Project State
 
-> **Latest verified checkpoint:** 2026-11-22 (Europe/Paris).
+> **Latest verified checkpoint:** 2026-11-24 (Europe/Paris).
 > **Repository:** https://github.com/zefutoff/grammalecte-android
-> **Reference `main` commit:** `70331efd12a51dd36eca77b408197cb075590f71` (PR #107 squash merge, 2026-11-22).
-> **Historical context:** The 2026-11-15 checkpoint and 2026-11-07 audit below are retained for traceability; they are not live status.
+> **Reference `main` commit:** `f338166d008dd9753d1896b5ad69563cd9115fc9` (PR #118 squash merge after PR #114, 2026-11-24).
+> **Historical context:** The 2026-11-22, 2026-11-21, 2026-11-15 and 2026-11-07 checkpoints below are retained for traceability; their former status statements are not current.
 > **Change policy:** Verify live GitHub state before operations; this documentation records evidence, not approval to merge, close issues, release builds or change CI.
+
+## Current operational checkpoint — 2026-11-24
+
+| Area | Verified state | Next action / gate |
+| --- | --- | --- |
+| **Personal dictionary UI / PR #118 / issue #115** | [PR #118](https://github.com/zefutoff/grammalecte-android/pull/118) **squash-merged** into `main` at [`f338166d`](https://github.com/zefutoff/grammalecte-android/commit/f338166d008dd9753d1896b5ad69563cd9115fc9) on 2026-11-24; [issue #115](https://github.com/zefutoff/grammalecte-android/issues/115) **closed**. The active personal dictionary screen now uses Compose Material 3. The final PR head `8c9c31c` passed [CI](https://github.com/zefutoff/grammalecte-android/actions/runs/45471604378), [CodeQL](https://github.com/zefutoff/grammalecte-android/actions/runs/45471604358), and [Android instrumentation API 26/35/37](https://github.com/zefutoff/grammalecte-android/actions/runs/45471604825). CI confirmed Debug and unsigned Release APKs have no `android.permission.INTERNET`. Physical DEV-device acceptance on 2026-11-24 covered dictionary operations and design, then back-arrow consistency and visible error/duplicate feedback in light and dark themes. | Post-merge `main` CI and CodeQL push runs `45489254692` and `45489254784` are **in progress** at this checkpoint; verify their final conclusions separately. No signed release implied. |
+| **Prior documentation / PR #114** | [PR #114](https://github.com/zefutoff/grammalecte-android/pull/114) **already squash-merged** at `aa3d65a` before PR #118; its documentation about setup-guide acceptance and legacy UI remains historical. | This checkpoint supersedes former pending #114/#118 statements; no second merge of #114 is necessary. |
+| **Remaining modernization / issue #89** | [Issue #89](https://github.com/zefutoff/grammalecte-android/issues/89) stays **open**. Home dashboard, correction status, setup guide and now personal dictionary are Compose Material 3. Active `RuleSettingsActivity` and `ProcessTextActivity` still use Android Views; their separate issues [#116](https://github.com/zefutoff/grammalecte-android/issues/116) and [#117](https://github.com/zefutoff/grammalecte-android/issues/117) remain to be implemented and validated. Optional existing-word editing in the dictionary is deferred to [#120](https://github.com/zefutoff/grammalecte-android/issues/120). | Continue with #116 then #117 in separate PRs, retaining offline and accessibility invariants; keep #89 open until remaining work is validated. |
+| **Publication** | Code merged and device-tested in DEV, but **no new signed app release has been published** as part of #118. | Treat future signed release and distribution as separate gates. |
+
+The 2026-11-22 and older checkpoints below are historical and preserve their originally verified statements.
+
+---
 
 ## Current operational checkpoint — 2026-11-22
 
