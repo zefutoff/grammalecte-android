@@ -1,5 +1,6 @@
 package fr.zefut.grammalecte
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,15 +15,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -38,6 +44,7 @@ internal fun PersonalDictionaryScreen(
     input: String,
     words: List<String>,
     status: String,
+    statusIsError: Boolean,
     busy: Boolean,
     onInputChange: (String) -> Unit,
     onAdd: () -> Unit,
@@ -57,21 +64,27 @@ internal fun PersonalDictionaryScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item {
-                    Text(
-                        "Dictionnaire personnel",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier =
-                            Modifier
-                                .semantics { heading() }
-                                .testTag("dictionary-heading"),
-                    )
-                }
-                item {
-                    OutlinedButton(
-                        onClick = onBack,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                    ) { Text("← Retour") }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = "Retour",
+                            )
+                        }
+                        Text(
+                            "Dictionnaire personnel",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .semantics { heading() }
+                                    .testTag("dictionary-heading"),
+                        )
+                    }
                 }
                 item {
                     Text(
@@ -103,10 +116,28 @@ internal fun PersonalDictionaryScreen(
                     Text(
                         status,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = if (statusIsError) FontWeight.Medium else FontWeight.Normal,
+                        color =
+                            if (statusIsError) {
+                                MaterialTheme.colorScheme.onErrorContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                         modifier =
                             Modifier
-                                .semantics { liveRegion = LiveRegionMode.Polite }
+                                .fillMaxWidth()
+                                .background(
+                                    color =
+                                        if (statusIsError) {
+                                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.65f)
+                                        } else {
+                                            MaterialTheme.colorScheme.background
+                                        },
+                                    shape = RoundedCornerShape(12.dp),
+                                ).padding(
+                                    horizontal = if (statusIsError) 12.dp else 0.dp,
+                                    vertical = if (statusIsError) 10.dp else 0.dp,
+                                ).semantics { liveRegion = LiveRegionMode.Polite }
                                 .testTag("dictionary-status"),
                     )
                 }
