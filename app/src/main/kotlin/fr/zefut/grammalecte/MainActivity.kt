@@ -181,6 +181,13 @@ class MainActivity :
 
         resultView.text = "Test en cours…\n\n$testText"
 
+        keyboardSuppressionMessage()?.let { message ->
+            testPending = false
+            testError = message
+            resultView.text = message
+            return
+        }
+
         val manager = getSystemService(TextServicesManager::class.java)
 
         val session =
@@ -210,8 +217,9 @@ class MainActivity :
     override fun onGetSentenceSuggestions(results: Array<SentenceSuggestionsInfo>?) {
         if (results.isNullOrEmpty()) {
             testPending = false
-            testError = "La session est ouverte, mais Android n’a retourné aucun résultat."
-            resultView.text = "Session ouverte, mais aucun résultat reçu."
+            val suppressionMessage = keyboardSuppressionMessage()
+            testError = suppressionMessage ?: "La session est ouverte, mais Android n’a retourné aucun résultat."
+            resultView.text = suppressionMessage ?: "Session ouverte, mais aucun résultat reçu."
             return
         }
 
@@ -302,7 +310,7 @@ class MainActivity :
             )
 
         if (spans.isEmpty()) {
-            resultView.text = "Aucun SuggestionSpan présent dans le champ."
+            resultView.text = keyboardSuppressionMessage() ?: "Aucun SuggestionSpan présent dans le champ."
             return
         }
 
@@ -340,6 +348,18 @@ class MainActivity :
 
         resultView.text = output.toString()
     }
+
+    // Android reports suppression for the bound IME, not just the configured keyboard.
+    // A negative result without an active input connection is not proof of compatibility.
+    private fun keyboardSuppressionMessage(): String? =
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            getSystemService(InputMethodManager::class.java)?.isInputMethodSuppressingSpellChecker == true
+        ) {
+            getString(R.string.spell_checker_suppressed_by_keyboard)
+        } else {
+            null
+        }
 
     override fun onResume() {
         super.onResume()

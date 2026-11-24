@@ -152,6 +152,35 @@ The reporter has been asked for read-only ADB diagnostics.
 No conclusion about all GrapheneOS devices or Android 17
 installations should be drawn from this report.
 
+### Pixel 9, GrapheneOS follow-up (reported, 2026-11-24)
+
+The reporter's new screenshots show the production application ID
+(`fr.zefut.grammalecte`), user 0, an ARM64 native-library directory,
+a ready embedded-assets indicator, an empty sentence-suggestions callback
+and no `SuggestionSpan`. The exact installed app version and current OS
+build were not established by the screenshots.
+
+Android 12+ exposes
+[`InputMethodManager.isInputMethodSuppressingSpellChecker()`](https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#isInputMethodSuppressingSpellChecker()).
+An input method declaring `android:suppressesSpellChecker="true"` can
+cause Android to return an empty suggestions array without invoking the
+spell-checker service, as demonstrated by
+[Android's CTS test](https://android.googlesource.com/platform/cts/+/6f2f0c5bd85c8dcf374af108a6fb1766014a1e5f/tests/inputmethod/src/android/view/inputmethod/cts/SpellCheckerTest.kt).
+This is a concrete hypothesis, not a confirmed cause of issue #34.
+
+The in-app test and empty-span inspection now report a positive
+suppression signal instead of suggesting the service itself failed.
+The check is made when the user runs a diagnostic, since the framework
+reports the bound input method's state; it is not a persistent
+configuration flag. On API 26–30 or when no suppression is detected,
+the existing generic diagnostics remain in place.
+
+To verify on a device, focus the native diagnostic field, manually type
+the synthetic spelling fixture, then test and inspect corrections with
+the usual keyboard and a different keyboard. Record the keyboard names,
+app version, OS build and the two results, without sharing personal text.
+Issue #34 remains open until its cause and device behavior are established.
+
 ## Compatibility matrix
 
 | Device / Android | Application | Version (code) | Grammalecte build | SpellCheckerService | PROCESS_TEXT | IME / InputConnection | Notes |
