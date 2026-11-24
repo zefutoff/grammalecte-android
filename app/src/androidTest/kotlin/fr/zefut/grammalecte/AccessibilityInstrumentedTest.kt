@@ -1,11 +1,9 @@
 package fr.zefut.grammalecte
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -20,7 +18,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -188,111 +185,22 @@ class AccessibilityInstrumentedTest {
             ).apply {
                 action = Intent.ACTION_PROCESS_TEXT
                 type = "text/plain"
-
-                putExtra(
-                    Intent.EXTRA_PROCESS_TEXT,
-                    "Je sui aller au magazin.",
-                )
-
-                putExtra(
-                    Intent.EXTRA_PROCESS_TEXT_READONLY,
-                    false,
-                )
+                putExtra(Intent.EXTRA_PROCESS_TEXT, "Je sui aller au magazin.")
+                putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false)
             }
 
-        ActivityScenario
-            .launch<ProcessTextActivity>(
-                intent,
-            ).use { scenario ->
-                scenario.onActivity { activity ->
-                    assertScreenHeading(
-                        activity,
-                        activity.getString(R.string.process_text_label),
-                    )
-
-                    assertTrue(
-                        "Expected process text live region",
-                        countPoliteLiveRegions(
-                            activity.window.decorView,
-                        ) >= 1,
-                    )
-                }
-            }
-    }
-
-    private fun assertScreenHeading(
-        activity: Activity,
-        text: String,
-    ) {
-        val heading =
-            findTextView(
-                activity.window.decorView,
-                text,
+        ActivityScenario.launch<ProcessTextActivity>(intent).use {
+            composeRule.onNodeWithTag("process-text-heading").assert(
+                SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading),
             )
-
-        assertNotNull(
-            "Expected heading: $text",
-            heading,
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            assertTrue(
-                "Expected accessibility heading: $text",
-                requireNotNull(heading)
-                    .isAccessibilityHeading,
+            composeRule.onNodeWithTag("process-text-status").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
             )
+            composeRule.onNodeWithTag("process-text-editor").assertExists()
         }
-    }
-
-    private fun findTextView(
-        view: View,
-        text: String,
-    ): TextView? {
-        if (
-            view is TextView &&
-            view.text.toString() == text
-        ) {
-            return view
-        }
-
-        if (view !is ViewGroup) {
-            return null
-        }
-
-        for (index in 0 until view.childCount) {
-            findTextView(
-                view.getChildAt(index),
-                text,
-            )?.let {
-                return it
-            }
-        }
-
-        return null
-    }
-
-    private fun countPoliteLiveRegions(view: View): Int {
-        var count =
-            if (
-                view is TextView &&
-                view.accessibilityLiveRegion ==
-                View.ACCESSIBILITY_LIVE_REGION_POLITE
-            ) {
-                1
-            } else {
-                0
-            }
-
-        if (view is ViewGroup) {
-            for (index in 0 until view.childCount) {
-                count +=
-                    countPoliteLiveRegions(
-                        view.getChildAt(index),
-                    )
-            }
-        }
-
-        return count
     }
 
     private companion object {
