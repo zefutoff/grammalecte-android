@@ -165,7 +165,7 @@ Android 12+ exposes
 An input method declaring `android:suppressesSpellChecker="true"` can
 cause Android to return an empty suggestions array without invoking the
 spell-checker service, as demonstrated by
-[Android's CTS test](https://android.googlesource.com/platform/cts/+/6f2f0c5bd85c8dcf374af108a6fb1766014a1e5f/tests/inputmethod/src/android/view/inputmethod/cts/SpellCheckerTest.kt).
+[Android's CTS test](https://android.googlesource.com/platform/cts/+/9227b7202d3eb41fdea5ec9adc60fc8bcf4cdae3/tests/inputmethod/src/android/view/inputmethod/cts/SpellCheckerTest.kt).
 This is a concrete hypothesis, not a confirmed cause of issue #34.
 
 The in-app test and empty-span inspection now report a positive

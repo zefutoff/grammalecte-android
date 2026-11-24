@@ -5,7 +5,9 @@ import android.content.Context
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.view.inputmethod.InputMethodManager
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -48,11 +50,11 @@ class SpellCheckerSuppressionInstrumentedTest {
                 .mapNotNull(ComponentName::unflattenFromString)
                 .any { it == component }
         val preferences = context.getSharedPreferences("setup_guide", Context.MODE_PRIVATE)
-        val guideWasShown = preferences.getBoolean("shown", false)
-        val hadGuidePreference = preferences.contains("shown")
+        val guideWasShown = preferences.getBoolean("setup_guide_shown_v1", false)
+        val hadGuidePreference = preferences.contains("setup_guide_shown_v1")
 
         try {
-            preferences.edit().putBoolean("shown", true).commit()
+            preferences.edit().putBoolean("setup_guide_shown_v1", true).commit()
             shell("settings put secure show_ime_with_hard_keyboard 1")
             shell("ime enable $componentId")
             shell("ime set $componentId")
@@ -81,14 +83,14 @@ class SpellCheckerSuppressionInstrumentedTest {
                 onView(withText(message)).check(matches(withText(message)))
 
                 composeRule.onNodeWithText("Tester Grammalecte").performScrollTo().performClick()
-                composeRule.onNodeWithText(message).assertExists()
+                composeRule.onNodeWithTag("spell-check-test-error").assertTextEquals(message)
 
                 // The framework can also report an empty array after a session
                 // was already created. Keep the same actionable diagnosis.
                 scenario.onActivity { activity ->
                     activity.onGetSentenceSuggestions(emptyArray())
                 }
-                composeRule.onNodeWithText(message).assertExists()
+                composeRule.onNodeWithTag("spell-check-test-error").assertTextEquals(message)
             }
         } finally {
             try {
@@ -108,9 +110,9 @@ class SpellCheckerSuppressionInstrumentedTest {
                     .edit()
                     .apply {
                         if (hadGuidePreference) {
-                            putBoolean("shown", guideWasShown)
+                            putBoolean("setup_guide_shown_v1", guideWasShown)
                         } else {
-                            remove("shown")
+                            remove("setup_guide_shown_v1")
                         }
                     }.commit()
             }
