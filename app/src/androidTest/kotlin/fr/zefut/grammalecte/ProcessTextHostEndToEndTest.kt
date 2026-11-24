@@ -2,20 +2,24 @@ package fr.zefut.grammalecte
 
 import android.app.Activity
 import android.os.SystemClock
-import android.view.View
-import android.widget.Button
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
-import androidx.test.runner.lifecycle.Stage
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ProcessTextHostEndToEndTest {
+    @get:Rule val composeRule = createEmptyComposeRule()
+
     @Test
     fun replaceModeUpdatesOriginalSelectionExactlyOnce() {
         assertHostResult(
@@ -108,70 +112,25 @@ class ProcessTextHostEndToEndTest {
     }
 
     private fun waitForSuggestion(): Boolean {
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
-
         repeat(80) {
-            var found = false
-
-            instrumentation.runOnMainSync {
-                found = findCorrectionButtonOnMainThread("magasin") != null
-            }
-
-            if (found) {
+            try {
+                composeRule.onNodeWithTag("process-text-screen").performScrollToNode(
+                    hasText("magasin"),
+                )
                 return true
+            } catch (_: AssertionError) {
+                SystemClock.sleep(250)
             }
-
-            SystemClock.sleep(250)
         }
 
         return false
     }
 
     private fun clickCorrectionButton(label: String) {
-        var clicked = false
-
-        InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            val button =
-                requireNotNull(findCorrectionButtonOnMainThread(label)) {
-                    "Expected PROCESS_TEXT button: $label"
-                }
-
-            clicked = button.performClick()
-        }
-
-        assertTrue(
-            "Failed to click PROCESS_TEXT button: $label",
-            clicked,
+        composeRule.onNodeWithTag("process-text-screen").performScrollToNode(
+            hasText(label),
         )
-    }
-
-    private fun findCorrectionButtonOnMainThread(label: String): Button? {
-        // Android accessibility queries can return disconnected nodes while
-        // switching activities. Both activities belong to this test process,
-        // so inspect the resumed correction activity directly instead.
-        val activities =
-            ActivityLifecycleMonitorRegistry
-                .getInstance()
-                .getActivitiesInStage(Stage.RESUMED)
-
-        val activity =
-            activities
-                .filterIsInstance<ProcessTextActivity>()
-                .firstOrNull()
-                ?: return null
-
-        val views = ArrayList<View>()
-        activity.window.decorView.findViewsWithText(
-            views,
-            label,
-            View.FIND_VIEWS_WITH_TEXT,
-        )
-
-        return views
-            .filterIsInstance<Button>()
-            .firstOrNull {
-                it.text.toString() == label
-            }
+        composeRule.onNodeWithText(label).performClick()
     }
 
     private fun waitForCallback(scenario: ActivityScenario<ProcessTextHostTestActivity>): Boolean {
