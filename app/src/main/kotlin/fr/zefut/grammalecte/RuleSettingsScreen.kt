@@ -221,7 +221,7 @@ internal fun RuleSettingsScreen(
                         OutlinedButton(
                             onClick = onResetRules,
                             enabled = enabled && options.isNotEmpty(),
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("rules-reset-rules"),
                         ) { Text("Réinitialiser les règles") }
                     }
                 }
@@ -292,14 +292,14 @@ internal fun RuleSettingsScreen(
                     OutlinedButton(
                         onClick = onExport,
                         enabled = enabled,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("rules-export"),
                     ) { Text("Exporter les réglages") }
                 }
                 item {
                     OutlinedButton(
                         onClick = onImport,
                         enabled = enabled,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("rules-import"),
                     ) { Text("Importer des réglages") }
                 }
                 item {
@@ -314,7 +314,7 @@ internal fun RuleSettingsScreen(
                     OutlinedButton(
                         onClick = { confirmFullReset = true },
                         enabled = enabled,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("rules-reset-all"),
                     ) { Text("Réinitialiser tous les réglages") }
                 }
             }
