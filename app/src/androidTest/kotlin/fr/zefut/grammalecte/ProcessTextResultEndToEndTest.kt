@@ -90,34 +90,34 @@ class ProcessTextResultEndToEndTest {
 
         ActivityScenario
             .launch<ProcessTextActivity>(
-            processTextIntent(text = originalText, readOnly = false),
-        ).use {
-            assertTrue("Expected initial suggestion", waitForButton("magasin"))
+                processTextIntent(text = originalText, readOnly = false),
+            ).use {
+                assertTrue("Expected initial suggestion", waitForButton("magasin"))
 
-            replaceEditorText(editedText)
-            composeRule.onNodeWithText("magasin").assertDoesNotExist()
-            composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
+                replaceEditorText(editedText)
+                composeRule.onNodeWithText("magasin").assertDoesNotExist()
+                composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
 
-            // Restoring the original string must not restore an earlier analysis revision.
-            replaceEditorText(originalText)
-            composeRule.onNodeWithText("magasin").assertDoesNotExist()
-            composeRule.onNodeWithTag("process-text-editor").assert(hasText(originalText))
-        }
+                // Restoring the original string must not restore an earlier analysis revision.
+                replaceEditorText(originalText)
+                composeRule.onNodeWithText("magasin").assertDoesNotExist()
+                composeRule.onNodeWithTag("process-text-editor").assert(hasText(originalText))
+            }
     }
 
     @Test
     fun editingTextImmediatelyRemovesVisibleSuggestions() {
         ActivityScenario
             .launch<ProcessTextActivity>(
-            processTextIntent(text = "Je vais au magazin.", readOnly = false),
-        ).use {
-            assertTrue("Expected initial suggestion", waitForButton("magasin"))
+                processTextIntent(text = "Je vais au magazin.", readOnly = false),
+            ).use {
+                assertTrue("Expected initial suggestion", waitForButton("magasin"))
 
-            replaceEditorText("Je vais au cabinet.")
+                replaceEditorText("Je vais au cabinet.")
 
-            composeRule.onNodeWithTag("process-text-editor").assert(hasText("Je vais au cabinet."))
-            composeRule.onNodeWithText("magasin").assertDoesNotExist()
-        }
+                composeRule.onNodeWithTag("process-text-editor").assert(hasText("Je vais au cabinet."))
+                composeRule.onNodeWithText("magasin").assertDoesNotExist()
+            }
     }
 
     @Test
@@ -126,23 +126,23 @@ class ProcessTextResultEndToEndTest {
 
         ActivityScenario
             .launch<ProcessTextActivity>(
-            processTextIntent(text = "Je vais au magazin.", readOnly = false),
-        ).use {
-            assertTrue("Expected initial suggestion", waitForButton("magasin"))
+                processTextIntent(text = "Je vais au magazin.", readOnly = false),
+            ).use {
+                assertTrue("Expected initial suggestion", waitForButton("magasin"))
 
-            composeRule.onNodeWithTag("process-text-screen").performScrollToNode(
-                hasTestTag("process-text-analyze"),
-            )
-            composeRule.onNodeWithTag("process-text-analyze").performClick()
-            replaceEditorText(editedText)
+                composeRule.onNodeWithTag("process-text-screen").performScrollToNode(
+                    hasTestTag("process-text-analyze"),
+                )
+                composeRule.onNodeWithTag("process-text-analyze").performClick()
+                replaceEditorText(editedText)
 
-            composeRule.onNodeWithText("magasin").assertDoesNotExist()
+                composeRule.onNodeWithText("magasin").assertDoesNotExist()
 
-            SystemClock.sleep(3000L)
+                SystemClock.sleep(3000L)
 
-            composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
-            composeRule.onNodeWithText("magasin").assertDoesNotExist()
-        }
+                composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
+                composeRule.onNodeWithText("magasin").assertDoesNotExist()
+            }
     }
 
     @Test
@@ -168,12 +168,12 @@ class ProcessTextResultEndToEndTest {
 
         ActivityScenario
             .launch<ProcessTextActivity>(
-            processTextIntent(text = "Je vais au magazin.", readOnly = false),
-        ).use { scenario ->
-            replaceEditorText(editedText)
-            scenario.recreate()
-            composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
-        }
+                processTextIntent(text = "Je vais au magazin.", readOnly = false),
+            ).use { scenario ->
+                replaceEditorText(editedText)
+                scenario.recreate()
+                composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
+            }
     }
 
     private fun assertClipboardContains(expected: String) {
