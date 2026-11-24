@@ -3,20 +3,28 @@ package fr.zefut.grammalecte
 import android.content.ClipboardManager
 import android.content.Intent
 import android.os.SystemClock
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ProcessTextResultEndToEndTest {
+    @get:Rule val composeRule = createEmptyComposeRule()
+
     @Test
     fun editableSelectionReturnsCorrectedTextToCallingActivity() {
         val scenario =
@@ -30,11 +38,11 @@ class ProcessTextResultEndToEndTest {
         scenario.use {
             assertTrue(
                 "Expected real Grammalecte suggestion for magazin",
-                waitForButton(scenario, "magasin"),
+                waitForButton("magasin"),
             )
 
-            clickButton(scenario, "magasin")
-            clickButton(scenario, "Remplacer le texte sélectionné")
+            clickButton("magasin")
+            clickButton("Remplacer le texte sélectionné")
 
             val result = scenario.result
 
@@ -59,11 +67,11 @@ class ProcessTextResultEndToEndTest {
         scenario.use {
             assertTrue(
                 "Expected real Grammalecte suggestion for magazin",
-                waitForButton(scenario, "magasin"),
+                waitForButton("magasin"),
             )
 
-            clickButton(scenario, "magasin")
-            clickButton(scenario, "Copier et revenir")
+            clickButton("magasin")
+            clickButton("Copier et revenir")
 
             assertEquals(
                 android.app.Activity.RESULT_CANCELED,
@@ -75,89 +83,38 @@ class ProcessTextResultEndToEndTest {
     }
 
     @Test
-    fun staleSuggestionDoesNotOverwriteEditedTextAtSameOffsets() {
+    fun editedTextCannotBeOverwrittenByStaleSuggestionsAtSameOffsets() {
         val originalText = "Je vais au magazin."
         val editedText = "Je vais au cabinet."
-
         assertEquals(originalText.length, editedText.length)
 
-        val scenario =
-            ActivityScenario.launch<ProcessTextActivity>(
-                processTextIntent(
-                    text = originalText,
-                    readOnly = false,
-                ),
-            )
+        ActivityScenario.launch<ProcessTextActivity>(
+            processTextIntent(text = originalText, readOnly = false),
+        ).use {
+            assertTrue("Expected initial suggestion", waitForButton("magasin"))
 
-        scenario.use {
-            assertTrue(
-                "Expected initial Grammalecte suggestion",
-                waitForButton(scenario, "magasin"),
-            )
+            composeRule.onNodeWithTag("process-text-editor").performTextReplacement(editedText)
+            composeRule.onNodeWithText("magasin").assertDoesNotExist()
+            composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
 
-            scenario.onActivity { activity ->
-                val root = activity.window.decorView
-                val staleButton =
-                    requireNotNull(findButton(root, "magasin"))
-                val editor =
-                    requireNotNull(findEditor(root))
-
-                editor.setText(editedText)
-
-                assertTrue(staleButton.performClick())
-
-                assertEquals(
-                    "Stale suggestion must not overwrite user edits",
-                    editedText,
-                    editor.text.toString(),
-                )
-
-                // Even restoring the original text must not reactivate
-                // a suggestion from the previous analysis revision.
-                editor.setText(originalText)
-
-                assertTrue(staleButton.performClick())
-
-                assertEquals(
-                    "Restoring text must not reactivate a stale suggestion",
-                    originalText,
-                    editor.text.toString(),
-                )
-            }
+            // Restoring the original string must not restore an earlier analysis revision.
+            composeRule.onNodeWithTag("process-text-editor").performTextReplacement(originalText)
+            composeRule.onNodeWithText("magasin").assertDoesNotExist()
+            composeRule.onNodeWithTag("process-text-editor").assert(hasText(originalText))
         }
     }
 
     @Test
     fun editingTextImmediatelyRemovesVisibleSuggestions() {
-        val scenario =
-            ActivityScenario.launch<ProcessTextActivity>(
-                processTextIntent(
-                    text = "Je vais au magazin.",
-                    readOnly = false,
-                ),
-            )
+        ActivityScenario.launch<ProcessTextActivity>(
+            processTextIntent(text = "Je vais au magazin.", readOnly = false),
+        ).use {
+            assertTrue("Expected initial suggestion", waitForButton("magasin"))
 
-        scenario.use {
-            assertTrue(
-                "Expected the initial spelling suggestion",
-                waitForButton(scenario, "magasin"),
-            )
+            composeRule.onNodeWithTag("process-text-editor").performTextReplacement("Je vais au cabinet.")
 
-            scenario.onActivity { activity ->
-                val root = activity.window.decorView
-                val editor = requireNotNull(findEditor(root))
-
-                editor.setText("Je vais au cabinet.")
-
-                assertEquals(
-                    "Je vais au cabinet.",
-                    editor.text.toString(),
-                )
-                assertTrue(
-                    "Old suggestion remained visible after editing",
-                    findButton(root, "magasin") == null,
-                )
-            }
+            composeRule.onNodeWithTag("process-text-editor").assert(hasText("Je vais au cabinet."))
+            composeRule.onNodeWithText("magasin").assertDoesNotExist()
         }
     }
 
@@ -165,52 +122,23 @@ class ProcessTextResultEndToEndTest {
     fun pendingAnalysisDoesNotRestoreSuggestionsAfterEditing() {
         val editedText = "Je vais au cabinet."
 
-        val scenario =
-            ActivityScenario.launch<ProcessTextActivity>(
-                processTextIntent(
-                    text = "Je vais au magazin.",
-                    readOnly = false,
-                ),
+        ActivityScenario.launch<ProcessTextActivity>(
+            processTextIntent(text = "Je vais au magazin.", readOnly = false),
+        ).use {
+            assertTrue("Expected initial suggestion", waitForButton("magasin"))
+
+            composeRule.onNodeWithTag("process-text-screen").performScrollToNode(
+                hasTestTag("process-text-analyze"),
             )
+            composeRule.onNodeWithTag("process-text-analyze").performClick()
+            composeRule.onNodeWithTag("process-text-editor").performTextReplacement(editedText)
 
-        scenario.use {
-            assertTrue(
-                "Expected the initial spelling suggestion",
-                waitForButton(scenario, "magasin"),
-            )
+            composeRule.onNodeWithText("magasin").assertDoesNotExist()
 
-            scenario.onActivity { activity ->
-                val root = activity.window.decorView
-                val editor = requireNotNull(findEditor(root))
-                val analyzeButton =
-                    requireNotNull(findButton(root, "Analyser"))
-
-                // Start analysis and edit before the main thread can
-                // process its asynchronous completion callback.
-                assertTrue(analyzeButton.performClick())
-                editor.setText(editedText)
-
-                assertTrue(
-                    findButton(root, "magasin") == null,
-                )
-            }
-
-            // Allow the background analysis time to complete.
             SystemClock.sleep(3000L)
 
-            scenario.onActivity { activity ->
-                val root = activity.window.decorView
-                val editor = requireNotNull(findEditor(root))
-
-                assertEquals(
-                    editedText,
-                    editor.text.toString(),
-                )
-                assertTrue(
-                    "Obsolete analysis restored an old suggestion",
-                    findButton(root, "magasin") == null,
-                )
-            }
+            composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
+            composeRule.onNodeWithText("magasin").assertDoesNotExist()
         }
     }
 
@@ -219,56 +147,41 @@ class ProcessTextResultEndToEndTest {
         val text = "Je vais au magasin."
         val scenario =
             ActivityScenario.launchActivityForResult<ProcessTextActivity>(
-                processTextIntent(
-                    text = text,
-                    readOnly = true,
-                ),
+                processTextIntent(text = text, readOnly = true),
             )
 
         scenario.use {
-            clickButton(scenario, "Copier et revenir")
+            composeRule.onNodeWithText("Remplacer le texte sélectionné").assertDoesNotExist()
+            clickButton("Copier et revenir")
 
-            val result = scenario.result
-
-            assertEquals(android.app.Activity.RESULT_CANCELED, result.resultCode)
-
+            assertEquals(android.app.Activity.RESULT_CANCELED, scenario.result.resultCode)
             assertClipboardContains(text)
         }
     }
 
-    private fun findEditor(root: View): EditText? {
-        if (root is EditText) {
-            return root
-        }
+    @Test
+    fun manualEditSurvivesActivityRecreation() {
+        val editedText = "Un texte saisi par le lecteur."
 
-        if (root is ViewGroup) {
-            for (index in 0 until root.childCount) {
-                findEditor(root.getChildAt(index))?.let {
-                    return it
-                }
-            }
+        ActivityScenario.launch<ProcessTextActivity>(
+            processTextIntent(text = "Je vais au magazin.", readOnly = false),
+        ).use { scenario ->
+            composeRule.onNodeWithTag("process-text-editor").performTextReplacement(editedText)
+            scenario.recreate()
+            composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
         }
-
-        return null
     }
 
     private fun assertClipboardContains(expected: String) {
-        // Android restricts clipboard reads when the app is not in the
-        // foreground. Reopen our own test editor after PROCESS_TEXT returns.
+        // Clipboard reads can be restricted after PROCESS_TEXT returns: open our test editor.
         ActivityScenario.launch(ImeIntegrationTestActivity::class.java).use { foreground ->
             foreground.onActivity { activity ->
-                val clipboard =
-                    activity.getSystemService(ClipboardManager::class.java)
-
+                val clipboard = activity.getSystemService(ClipboardManager::class.java)
                 val clip =
                     requireNotNull(clipboard.primaryClip) {
                         "Expected corrected text on clipboard when host is in foreground"
                     }
-
-                assertEquals(
-                    expected,
-                    clip.getItemAt(0).text?.toString(),
-                )
+                assertEquals(expected, clip.getItemAt(0).text?.toString())
             }
         }
     }
@@ -277,9 +190,7 @@ class ProcessTextResultEndToEndTest {
         text: String,
         readOnly: Boolean,
     ): Intent =
-        Intent(
-            Intent.ACTION_PROCESS_TEXT,
-        ).apply {
+        Intent(Intent.ACTION_PROCESS_TEXT).apply {
             setClass(
                 InstrumentationRegistry.getInstrumentation().targetContext,
                 ProcessTextActivity::class.java,
@@ -289,61 +200,24 @@ class ProcessTextResultEndToEndTest {
             putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, readOnly)
         }
 
-    private fun waitForButton(
-        scenario: ActivityScenario<ProcessTextActivity>,
-        label: String,
-    ): Boolean {
-        repeat(60) {
-            var found = false
-
-            scenario.onActivity { activity ->
-                found = findButton(activity.window.decorView, label) != null
-            }
-
-            if (found) {
+    private fun waitForButton(label: String): Boolean {
+        repeat(80) {
+            try {
+                composeRule.onNodeWithTag("process-text-screen").performScrollToNode(
+                    hasText(label),
+                )
                 return true
+            } catch (_: AssertionError) {
+                SystemClock.sleep(250)
             }
-
-            SystemClock.sleep(250)
         }
-
         return false
     }
 
-    private fun clickButton(
-        scenario: ActivityScenario<ProcessTextActivity>,
-        label: String,
-    ) {
-        scenario.onActivity { activity ->
-            val button =
-                requireNotNull(
-                    findButton(activity.window.decorView, label),
-                ) {
-                    "Expected PROCESS_TEXT button: $label"
-                }
-
-            assertTrue(
-                "Unable to click PROCESS_TEXT button: $label",
-                button.performClick(),
-            )
-        }
-    }
-
-    private fun findButton(
-        root: View,
-        label: String,
-    ): Button? {
-        val views = ArrayList<View>()
-        root.findViewsWithText(
-            views,
-            label,
-            View.FIND_VIEWS_WITH_TEXT,
+    private fun clickButton(label: String) {
+        composeRule.onNodeWithTag("process-text-screen").performScrollToNode(
+            hasText(label),
         )
-
-        return views
-            .filterIsInstance<Button>()
-            .firstOrNull {
-                it.text.toString() == label
-            }
+        composeRule.onNodeWithText(label).performClick()
     }
 }
