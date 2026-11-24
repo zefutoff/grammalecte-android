@@ -1,0 +1,94 @@
+package fr.zefut.grammalecte
+
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Assert.assertEquals
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class PersonalDictionaryScreenInstrumentedTest {
+    @get:Rule val composeRule = createAndroidComposeRule<ComposeUiTestHostActivity>()
+
+    @Test
+    fun addAndRemoveActionsAreWired() {
+        var entered = ""
+        var added = 0
+        var back = 0
+        var removed = ""
+
+        composeRule.setContent {
+            PersonalDictionaryScreen(
+                input = entered,
+                words = listOf("grammalecte"),
+                status = "1 mot",
+                statusIsError = false,
+                busy = false,
+                onInputChange = { entered = it },
+                onAdd = { added++ },
+                onRemove = { removed = it },
+                onBack = { back++ },
+            )
+        }
+
+        composeRule.onNodeWithText("Ajouter").assertIsEnabled().performClick()
+        composeRule.onNodeWithText("Supprimer").assertIsEnabled().performClick()
+        composeRule.onNodeWithContentDescription("Retour").performClick()
+        composeRule.runOnIdle {
+            assertEquals(1, added)
+            assertEquals(1, back)
+            assertEquals("grammalecte", removed)
+        }
+    }
+
+    @Test
+    fun duplicateFeedbackIsAccessible() {
+        composeRule.setContent {
+            PersonalDictionaryScreen(
+                input = "",
+                words = listOf("grammalecte"),
+                status = "Ce mot est déjà dans le dictionnaire.",
+                statusIsError = true,
+                busy = false,
+                onInputChange = {},
+                onAdd = {},
+                onRemove = {},
+                onBack = {},
+            )
+        }
+
+        composeRule
+            .onNodeWithTag("dictionary-status")
+            .assertTextContains("Ce mot est déjà dans le dictionnaire.")
+    }
+
+    @Test
+    fun busyStateDisablesEditingAndActions() {
+        composeRule.setContent {
+            PersonalDictionaryScreen(
+                input = "",
+                words = listOf("grammalecte"),
+                status = "Chargement…",
+                statusIsError = false,
+                busy = true,
+                onInputChange = {},
+                onAdd = {},
+                onRemove = {},
+                onBack = {},
+            )
+        }
+
+        composeRule.onNodeWithTag("dictionary-input").assertIsNotEnabled()
+        composeRule.onNodeWithText("Ajouter").assertIsNotEnabled()
+        composeRule.onNodeWithText("Supprimer").assertIsNotEnabled()
+        composeRule.onNodeWithTag("dictionary-status").assertTextContains("Chargement…")
+    }
+}

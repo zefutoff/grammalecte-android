@@ -162,23 +162,17 @@ class AccessibilityInstrumentedTest {
 
     @Test
     fun personalDictionaryExposesAccessibilitySemantics() {
-        ActivityScenario
-            .launch(PersonalDictionaryActivity::class.java)
-            .use { scenario ->
-                scenario.onActivity { activity ->
-                    assertScreenHeading(
-                        activity,
-                        "Dictionnaire personnel",
-                    )
-
-                    assertTrue(
-                        "Expected personal dictionary live region",
-                        countPoliteLiveRegions(
-                            activity.window.decorView,
-                        ) >= 1,
-                    )
-                }
-            }
+        ActivityScenario.launch(PersonalDictionaryActivity::class.java).use {
+            composeRule.onNodeWithTag("dictionary-heading").assert(
+                SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading),
+            )
+            composeRule.onNodeWithTag("dictionary-status").assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
+            )
+        }
     }
 
     @Test
