@@ -88,7 +88,8 @@ class ProcessTextResultEndToEndTest {
         val editedText = "Je vais au cabinet."
         assertEquals(originalText.length, editedText.length)
 
-        ActivityScenario.launch<ProcessTextActivity>(
+        ActivityScenario
+            .launch<ProcessTextActivity>(
             processTextIntent(text = originalText, readOnly = false),
         ).use {
             assertTrue("Expected initial suggestion", waitForButton("magasin"))
@@ -106,7 +107,8 @@ class ProcessTextResultEndToEndTest {
 
     @Test
     fun editingTextImmediatelyRemovesVisibleSuggestions() {
-        ActivityScenario.launch<ProcessTextActivity>(
+        ActivityScenario
+            .launch<ProcessTextActivity>(
             processTextIntent(text = "Je vais au magazin.", readOnly = false),
         ).use {
             assertTrue("Expected initial suggestion", waitForButton("magasin"))
@@ -122,7 +124,8 @@ class ProcessTextResultEndToEndTest {
     fun pendingAnalysisDoesNotRestoreSuggestionsAfterEditing() {
         val editedText = "Je vais au cabinet."
 
-        ActivityScenario.launch<ProcessTextActivity>(
+        ActivityScenario
+            .launch<ProcessTextActivity>(
             processTextIntent(text = "Je vais au magazin.", readOnly = false),
         ).use {
             assertTrue("Expected initial suggestion", waitForButton("magasin"))
@@ -163,7 +166,8 @@ class ProcessTextResultEndToEndTest {
     fun manualEditSurvivesActivityRecreation() {
         val editedText = "Un texte saisi par le lecteur."
 
-        ActivityScenario.launch<ProcessTextActivity>(
+        ActivityScenario
+            .launch<ProcessTextActivity>(
             processTextIntent(text = "Je vais au magazin.", readOnly = false),
         ).use { scenario ->
             replaceEditorText(editedText)
