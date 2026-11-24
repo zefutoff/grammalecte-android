@@ -93,12 +93,12 @@ class ProcessTextResultEndToEndTest {
         ).use {
             assertTrue("Expected initial suggestion", waitForButton("magasin"))
 
-            composeRule.onNodeWithTag("process-text-editor").performTextReplacement(editedText)
+            replaceEditorText(editedText)
             composeRule.onNodeWithText("magasin").assertDoesNotExist()
             composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
 
             // Restoring the original string must not restore an earlier analysis revision.
-            composeRule.onNodeWithTag("process-text-editor").performTextReplacement(originalText)
+            replaceEditorText(originalText)
             composeRule.onNodeWithText("magasin").assertDoesNotExist()
             composeRule.onNodeWithTag("process-text-editor").assert(hasText(originalText))
         }
@@ -111,7 +111,7 @@ class ProcessTextResultEndToEndTest {
         ).use {
             assertTrue("Expected initial suggestion", waitForButton("magasin"))
 
-            composeRule.onNodeWithTag("process-text-editor").performTextReplacement("Je vais au cabinet.")
+            replaceEditorText("Je vais au cabinet.")
 
             composeRule.onNodeWithTag("process-text-editor").assert(hasText("Je vais au cabinet."))
             composeRule.onNodeWithText("magasin").assertDoesNotExist()
@@ -131,7 +131,7 @@ class ProcessTextResultEndToEndTest {
                 hasTestTag("process-text-analyze"),
             )
             composeRule.onNodeWithTag("process-text-analyze").performClick()
-            composeRule.onNodeWithTag("process-text-editor").performTextReplacement(editedText)
+            replaceEditorText(editedText)
 
             composeRule.onNodeWithText("magasin").assertDoesNotExist()
 
@@ -166,7 +166,7 @@ class ProcessTextResultEndToEndTest {
         ActivityScenario.launch<ProcessTextActivity>(
             processTextIntent(text = "Je vais au magazin.", readOnly = false),
         ).use { scenario ->
-            composeRule.onNodeWithTag("process-text-editor").performTextReplacement(editedText)
+            replaceEditorText(editedText)
             scenario.recreate()
             composeRule.onNodeWithTag("process-text-editor").assert(hasText(editedText))
         }
@@ -199,6 +199,13 @@ class ProcessTextResultEndToEndTest {
             putExtra(Intent.EXTRA_PROCESS_TEXT, text)
             putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, readOnly)
         }
+
+    private fun replaceEditorText(value: String) {
+        composeRule.onNodeWithTag("process-text-screen").performScrollToNode(
+            hasTestTag("process-text-editor"),
+        )
+        composeRule.onNodeWithTag("process-text-editor").performTextReplacement(value)
+    }
 
     private fun waitForButton(label: String): Boolean {
         repeat(80) {
