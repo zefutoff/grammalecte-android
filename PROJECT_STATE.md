@@ -1,18 +1,18 @@
 # Grammalecte Android - Project State
 
-> **Latest verified checkpoint:** 2026-11-24 (Europe/Paris).
+> **Latest verified checkpoint:** 2026-11-27 (Europe/Paris).
 > **Repository:** https://github.com/zefutoff/grammalecte-android
-> **Reference `main` commit:** `31260ca9b3aa20eac3411b0e00057de9b48ddf13` (PR #122 squash merge, 2026-11-24).
-> **Historical context:** Earlier 2026-11-24 (dictionary), 2026-11-22, 2026-11-21, 2026-11-15 and 2026-11-07 checkpoints below are retained for traceability; their former status statements are not current.
+> **Reference `main` commit:** `7e90179f578e21cf1032c38a530400c7b45c6d22` (PR #125 squash merge, 2026-11-27).
+> **Historical context:** Earlier 2026-11-24 (rule settings and dictionary), 2026-11-22, 2026-11-21, 2026-11-15 and 2026-11-07 checkpoints below are retained for traceability; their former status statements are not current.
 > **Change policy:** Verify live GitHub state before operations; this documentation records evidence, not approval to merge, close issues, release builds or change CI.
 
 ## Issue #34 checkpoint — 2026-11-27 (FUTO Keyboard identified)
 
 The reporter [confirmed on the physical Pixel 9](https://github.com/zefutoff/grammalecte-android/issues/34#issuecomment-7218591383) that **FUTO Keyboard** was suppressing native system spelling suggestions: switching to the **AOSP keyboard** immediately restored them on GrapheneOS Android 17. This is a keyboard-dependent compatibility finding, not a confirmed Grammalecte engine defect or a GrapheneOS-wide failure. FUTO's [upstream issue #1334](https://github.com/futo-org/android-keyboard/issues/1334) says the Android system spellchecker is disabled by default starting with FUTO `0.1.26` due to multilingual underline behavior; the reporter [also contributed there](https://github.com/futo-org/android-keyboard/issues/1334#issuecomment-7218703935). The exact framework mechanism on this device has not been traced independently.
 
-**State:** [issue #34](https://github.com/zefutoff/grammalecte-android/issues/34) is still **open**; the newly identified cause supports proposing closure after acknowledgment, but no issue closure, change to Grammalecte engine, or physical FUTO workaround implementation is validated. The earlier failed `v1.0.0-rc1` direct-session test remains a historical observation. The AOSP-keyboard success is reported by the external tester, not independently reproduced on their device.
+**State:** [issue #34](https://github.com/zefutoff/grammalecte-android/issues/34) was verified **closed as completed** on 2026-11-27. [PR #125](https://github.com/zefutoff/grammalecte-android/pull/125) was squash-merged at `7e90179f` after CI and CodeQL passed on its head; post-merge push checks were not independently confirmed. The closure records the keyboard-dependent cause and the AOSP workaround, not a FUTO fix or universal GrapheneOS compatibility. The earlier failed `v1.0.0-rc1` session remains historical evidence. The reporter's physical-device result was not independently reproduced on their Pixel 9.
 
-**Next action:** retain the FUTO compatibility limitation in `docs/compatibility.md`, avoid speculative code changes, and decide explicitly whether to close #34 as an externally-caused integration issue. FUTO's upstream enhancement remains open.
+**Next action:** [FUTO #1334](https://github.com/futo-org/android-keyboard/issues/1334) remains open and is now the upstream compatibility tracking target. [Issue #126](https://github.com/zefutoff/grammalecte-android/issues/126) separately tracks investigating read-only keyboard suppression diagnostics using Android's public `InputMethodManager.isInputMethodSuppressingSpellChecker()` API (API 31+), with older versions reported as unknown, no bypass and no new permissions. No application change or physical acceptance is claimed. Preserve offline operation and require CI and functional verification before merging an implementation.
 
 ---
 
