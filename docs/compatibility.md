@@ -165,8 +165,9 @@ The latest GrapheneOS build number at the November retest was not reported;
 This is an external keyboard compatibility issue, not evidence of a defect
 in the embedded Grammalecte correction engine. No speculative application
 change is warranted from the current evidence. The FUTO upstream issue
-remains open; Grammalecte issue #34 remains open pending a maintainer
-closure decision. `PROCESS_TEXT` and IME behavior with FUTO Keyboard
+remains open; Grammalecte issue #34 was closed on 2026-11-27 after the
+keyboard-dependent cause was identified. Diagnostic improvements are tracked
+in [issue #126](https://github.com/zefutoff/grammalecte-android/issues/126). `PROCESS_TEXT` and IME behavior with FUTO Keyboard
 were not separately tested in this report.
 
 ## Compatibility matrix
