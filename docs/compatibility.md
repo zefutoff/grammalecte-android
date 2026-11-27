@@ -130,33 +130,50 @@ with a physical Pixel 9 running GrapheneOS. The original report remains
 open pending device-specific investigation; `PROCESS_TEXT` and IME were
 not tested as part of this emulator comparison.
 
-### Pixel 9, GrapheneOS Android 17 (reported, 2026-10-26)
+### Pixel 9, GrapheneOS Android 17 (reporter follow-up, 2026-11-27)
 
-A reporter retested the signed `v1.0.0-rc1` release on a
-physical Pixel 9 running GrapheneOS build `2026102101`.
+The reporter initially reproduced missing native suggestions on a physical
+Pixel 9 running GrapheneOS. The signed `v1.0.0-rc1` retest used GrapheneOS
+build `2026102101`, with French selected explicitly; the original direct
+diagnostic could not open a spellchecker session. Subsequent screenshots
+still showed missing suggestions. Those earlier observations are retained
+as historical symptoms, not proof of a GrapheneOS-wide defect.
 
-Reported results:
+**Keyboard-dependent behavior confirmed by the reporter:** on 2026-11-27
+the reporter identified **FUTO Keyboard** as the keyboard in use and
+confirmed that switching to the **AOSP keyboard** made native spelling
+suggestions appear on the same Pixel 9. The reporter shared the finding in
+[Grammalecte issue #34](https://github.com/zefutoff/grammalecte-android/issues/34#issuecomment-7218591383)
+and on the upstream
+[FUTO issue #1334](https://github.com/futo-org/android-keyboard/issues/1334#issuecomment-7218703935).
 
-- The in-app "Tester Grammalecte" diagnostic could not open
-  an Android spell-checker session.
-- No native `SuggestionSpan` corrections appeared.
-- The issue persisted despite selecting French in Android settings.
+FUTO's [upstream issue #1334](https://github.com/futo-org/android-keyboard/issues/1334)
+explicitly documents that since version `0.1.26`, FUTO Keyboard disables
+Android's system spellchecker by default to avoid incorrect underlines
+during multilingual typing, pending its own spellchecker implementation.
+The precise framework interaction on the reporter's device has not been
+independently traced in code, but this upstream behavior is consistent
+with the A/B observation.
 
-These are external physical-device observations, not results
-independently reproduced by the project maintainers.
+**Practical workaround:** use the AOSP keyboard (or another keyboard
+verified to preserve Android native spellchecking) when native Grammalecte
+suggestions are needed. Do not infer universal compatibility for every
+GrapheneOS version, keyboard, text editor or input configuration.
+The latest GrapheneOS build number at the November retest was not reported;
+`2026102101` belongs to the earlier October test.
 
-The selected spell-checker component, subtype and installed
-package state are being investigated in issue #34.
-The reporter has been asked for read-only ADB diagnostics.
-
-No conclusion about all GrapheneOS devices or Android 17
-installations should be drawn from this report.
+This is an external keyboard compatibility issue, not evidence of a defect
+in the embedded Grammalecte correction engine. No speculative application
+change is warranted from the current evidence. The FUTO upstream issue
+remains open; Grammalecte issue #34 remains open pending a maintainer
+closure decision. `PROCESS_TEXT` and IME behavior with FUTO Keyboard
+were not separately tested in this report.
 
 ## Compatibility matrix
 
 | Device / Android | Application | Version (code) | Grammalecte build | SpellCheckerService | PROCESS_TEXT | IME / InputConnection | Notes |
 | --- | --- | --- | --- | :---: | :---: | :---: | --- |
-| Pixel 9 / GrapheneOS 17 | Grammalecte diagnostics `EditText` | Built-in | `v1.0.0-rc1` | ❌ | — | — | Reported on build `2026102101`: native session not opened, no `SuggestionSpan`; read-only ADB diagnosis pending (issue #34). |
+| Pixel 9 / GrapheneOS 17 | Grammalecte diagnostics `EditText` | Built-in | `v1.0.0-rc1` | ⚠️ | — | — | Reporter: native suggestions absent with **FUTO Keyboard**; switching to **AOSP keyboard** restored them (2026-11-27). Earlier GrapheneOS build `2026102101`; latest build unconfirmed. FUTO upstream #1334 documents system spellchecker disabled by default since v0.1.26. |
 | GrapheneOS 17 emulator / API 37 | Grammalecte diagnostics `EditText` | Built-in | `22ce813` | ✅ | — | — | Local GrapheneOS `2026100600`; explicit `fr_FR` subtype; direct session correction, manual typing, `SuggestionSpan` inspection and native `magasin` replacement all worked. Targeted instrumentation: `BUILD SUCCESSFUL`; exact test count not independently confirmed by XML. Issue #34 not reproduced on emulator. |
 | GrapheneOS 17 emulator / API 37 | Grammalecte diagnostics `EditText` | Built-in | `fd2db61` | ✅ | — | — | Same emulator and explicit French subtype; two `SuggestionSpan`s observed after manual typing, native suggestion/replacement worked; spellchecker instrumentation XML: 2 tests, 0 failures, 0 errors. Initially prefilled `EditText` had no spans. |
 | SM-G998B / Android 15 | WhatsApp | 2.26.39.79 (263907900) | `735e893` (reported Git HEAD) | ✅ | ✅ | ✅ | Retest on 2026-10-14: native `magazin` suggestion and replacement, PROCESS_TEXT correction, IME replacement and late selection refresh were all reported working. Grammalecte 0.1.0-dev (1); explicit `fr_FR` spellchecker subtype (`-1266611582`). APK's exact source commit is not independently attested by package metadata. |
