@@ -95,8 +95,9 @@ internal fun CorrectionStatusScreen(
                     title = "Correcteur Android",
                     description = "Correction native dans les applications compatibles.",
                     message = spellMessage,
-                    active = spellChecker == SpellCheckerStatus.SELECTED &&
-                        status?.keyboardSpellChecker != KeyboardSpellCheckerStatus.SUPPRESSES,
+                    active =
+                        spellChecker == SpellCheckerStatus.SELECTED &&
+                            status.keyboardSpellChecker != KeyboardSpellCheckerStatus.SUPPRESSES,
                     tag = "status-spell-checker",
                 ) {
                     KeyboardSpellCheckerNotice(

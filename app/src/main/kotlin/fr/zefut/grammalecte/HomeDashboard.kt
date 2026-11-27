@@ -390,7 +390,7 @@ private fun CorrectionOverview(
             )
             if (suppressed) {
                 KeyboardSpellCheckerNotice(
-                    status = status?.keyboardSpellChecker,
+                    status = status.keyboardSpellChecker,
                     onChooseKeyboard = onSwitchKeyboard,
                     tag = "main-keyboard-spellchecker",
                 )
