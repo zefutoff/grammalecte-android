@@ -111,7 +111,8 @@ Current application-level instrumentation verifies that:
 - a selection made after the IME is already open triggers a fresh Grammalecte analysis;
 - the Grammalecte IME can analyze that selection and commit corrected text back into the real editor;
 - the `ACTION_PROCESS_TEXT` activity is discoverable for `text/plain`;
-- a real Android `TextServicesManager` session reaches the packaged `SpellCheckerService` and returns a Grammalecte correction end to end.
+- a real Android `TextServicesManager` session reaches the packaged `SpellCheckerService` and returns a Grammalecte correction end to end;
+- keyboard suppression diagnostics report an unknown state on older Android versions and refresh when switching between a normal IME and the Debug/DEV-only suppressing IME on API 31+.
 
 The `spellchecker` instrumentation suite verifies Android result mapping, including:
 
@@ -133,7 +134,7 @@ API 26 is the minimum supported Android API.
 
 The standard Android 17 emulator provides automated framework
 coverage, but does not establish compatibility with GrapheneOS.
-GrapheneOS-specific behavior remains under investigation in issue #34.
+The physical-device finding in issue #34 concerns FUTO Keyboard, not a confirmed GrapheneOS-wide defect. See `docs/compatibility.md` and issue #126 for the diagnostic follow-up.
 
 For local instrumentation, use a dedicated emulator with other
 Android devices disconnected, then run:

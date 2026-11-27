@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Build
 import android.provider.Settings
+import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodManager
 import android.view.textservice.SentenceSuggestionsInfo
 import android.view.textservice.SpellCheckerSession
@@ -14,6 +15,7 @@ import java.util.Locale
 data class CorrectionStatus(
     val spellChecker: SpellCheckerStatus,
     val ime: ImeStatus,
+    val keyboardSpellChecker: KeyboardSpellCheckerStatus,
 )
 
 enum class SpellCheckerStatus {
@@ -22,6 +24,14 @@ enum class SpellCheckerStatus {
     NOT_SELECTED,
     DISABLED,
     UNAVAILABLE,
+}
+
+// This describes the selected IME's declaration, not whether an editor currently has
+// an active input session or whether spellchecking is otherwise available.
+enum class KeyboardSpellCheckerStatus {
+    SUPPRESSES,
+    NOT_DECLARED,
+    UNKNOWN,
 }
 
 enum class ImeStatus {
@@ -33,11 +43,38 @@ enum class ImeStatus {
 class CorrectionStatusReader(
     private val context: Context,
 ) {
-    fun read(): CorrectionStatus =
-        CorrectionStatus(
+    fun read(): CorrectionStatus {
+        val manager = context.getSystemService(InputMethodManager::class.java)
+        val enabledInputMethods = manager.enabledInputMethodList
+        val selectedComponent =
+            Settings.Secure
+                .getString(
+                    context.contentResolver,
+                    Settings.Secure.DEFAULT_INPUT_METHOD,
+                )?.let(ComponentName::unflattenFromString)
+        val selectedInputMethod =
+            enabledInputMethods.firstOrNull { it.component == selectedComponent }
+
+        return CorrectionStatus(
             spellChecker = readSpellCheckerStatus(),
-            ime = readImeStatus(),
+            ime = readImeStatus(selectedComponent, enabledInputMethods),
+            keyboardSpellChecker = readKeyboardSpellCheckerStatus(selectedInputMethod),
         )
+    }
+
+    private fun readKeyboardSpellCheckerStatus(inputMethod: InputMethodInfo?): KeyboardSpellCheckerStatus {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || inputMethod == null) {
+            return KeyboardSpellCheckerStatus.UNKNOWN
+        }
+
+        // Unlike the live InputMethodManager suppression flag, this public API
+        // does not require this activity to have an active editor connection.
+        return if (inputMethod.suppressesSpellChecker()) {
+            KeyboardSpellCheckerStatus.SUPPRESSES
+        } else {
+            KeyboardSpellCheckerStatus.NOT_DECLARED
+        }
+    }
 
     private fun readSpellCheckerStatus(): SpellCheckerStatus {
         val manager =
@@ -107,41 +144,21 @@ class CorrectionStatusReader(
         }
     }
 
-    private fun readImeStatus(): ImeStatus {
-        val manager =
-            context.getSystemService(
-                InputMethodManager::class.java,
-            )
-
+    private fun readImeStatus(
+        selectedComponent: ComponentName?,
+        enabledInputMethods: List<InputMethodInfo>,
+    ): ImeStatus {
         val component =
             ComponentName(
                 context,
                 GrammalecteImeService::class.java,
             )
 
-        val enabled =
-            manager.enabledInputMethodList
-                .any { inputMethod ->
-                    ComponentName(
-                        inputMethod.packageName,
-                        inputMethod.serviceName,
-                    ) == component
-                }
-
-        val selectedComponent =
-            Settings.Secure
-                .getString(
-                    context.contentResolver,
-                    Settings.Secure.DEFAULT_INPUT_METHOD,
-                )?.let(
-                    ComponentName::unflattenFromString,
-                )
-
         return when {
             selectedComponent == component ->
                 ImeStatus.SELECTED
 
-            enabled ->
+            enabledInputMethods.any { it.component == component } ->
                 ImeStatus.ENABLED
 
             else ->

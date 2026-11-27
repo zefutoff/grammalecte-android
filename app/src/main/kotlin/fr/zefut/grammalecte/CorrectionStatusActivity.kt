@@ -16,6 +16,7 @@ class CorrectionStatusActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycle.addObserver(KeyboardSelectionObserver(this, ::updateStatus))
 
         setContent {
             CorrectionStatusScreen(

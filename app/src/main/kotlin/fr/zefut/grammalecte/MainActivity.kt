@@ -84,6 +84,8 @@ class MainActivity :
                 setTextColor(getColor(R.color.surface_text))
             }
 
+        lifecycle.addObserver(KeyboardSelectionObserver(this, ::refreshStatus))
+
         setContent {
             GrammalecteDashboard(
                 status = correctionStatus,
@@ -112,6 +114,7 @@ class MainActivity :
                     }
                 },
                 onManageKeyboards = { openInputMethodSettings() },
+                onSwitchKeyboard = { showInputMethodPicker() },
                 onDictionary = {
                     startActivity(Intent(this, PersonalDictionaryActivity::class.java))
                 },
@@ -173,6 +176,7 @@ class MainActivity :
     }
 
     private fun runSpellCheckerTest() {
+        refreshStatus()
         testPending = true
         testError = null
         testIssues = emptyList()
@@ -268,7 +272,7 @@ class MainActivity :
         }
 
         if (issueCount == 0) {
-            output.append("\nAucune erreur détectée.")
+            output.append("\nAucune correction proposée par Android.")
         }
 
         resultView.text = output.toString()
@@ -292,6 +296,7 @@ class MainActivity :
     }
 
     private fun inspectSuggestionSpans() {
+        refreshStatus()
         val text = systemEditText.text
 
         val spans =
@@ -343,6 +348,17 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
+        refreshStatus()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            refreshStatus()
+        }
+    }
+
+    private fun refreshStatus() {
         correctionStatus = CorrectionStatusReader(this).read()
     }
 
