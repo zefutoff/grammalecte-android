@@ -95,9 +95,16 @@ internal fun CorrectionStatusScreen(
                     title = "Correcteur Android",
                     description = "Correction native dans les applications compatibles.",
                     message = spellMessage,
-                    active = spellChecker == SpellCheckerStatus.SELECTED,
+                    active =
+                        spellChecker == SpellCheckerStatus.SELECTED &&
+                            status.keyboardSpellChecker != KeyboardSpellCheckerStatus.SUPPRESSES,
                     tag = "status-spell-checker",
                 ) {
+                    KeyboardSpellCheckerNotice(
+                        status = status?.keyboardSpellChecker,
+                        onChooseKeyboard = onChooseKeyboard,
+                        tag = "status-keyboard-spellchecker",
+                    )
                     Button(
                         onClick = onConfigureSpellChecker,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
@@ -203,5 +210,57 @@ private fun StatusSection(
             )
             actions()
         }
+    }
+}
+
+/** A keyboard restriction is independent of the selected spellchecker service. */
+@Composable
+internal fun KeyboardSpellCheckerNotice(
+    status: KeyboardSpellCheckerStatus?,
+    onChooseKeyboard: () -> Unit,
+    tag: String,
+) {
+    val message =
+        when (status) {
+            KeyboardSpellCheckerStatus.SUPPRESSES ->
+                "Le clavier sélectionné désactive le correcteur Android pendant la saisie. " +
+                    "Choisissez un autre clavier pour utiliser les suggestions natives."
+            KeyboardSpellCheckerStatus.NOT_DECLARED ->
+                "Le clavier sélectionné ne déclare pas de restriction du correcteur Android."
+            KeyboardSpellCheckerStatus.UNKNOWN ->
+                "Impossible de déterminer si le clavier désactive le correcteur Android."
+            null -> "Vérification du clavier…"
+        }
+    val messageModifier =
+        Modifier
+            .fillMaxWidth()
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .testTag(tag)
+
+    if (status == KeyboardSpellCheckerStatus.SUPPRESSES) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        ) {
+            Text(
+                text = message,
+                modifier = messageModifier.padding(12.dp),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        OutlinedButton(
+            onClick = onChooseKeyboard,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+        ) {
+            Text("Choisir un autre clavier")
+        }
+    } else {
+        Text(
+            text = message,
+            modifier = messageModifier,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

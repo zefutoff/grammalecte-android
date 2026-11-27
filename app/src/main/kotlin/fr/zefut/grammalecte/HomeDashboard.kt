@@ -119,6 +119,7 @@ internal fun GrammalecteDashboard(
     onGuide: () -> Unit,
     onChooseKeyboard: () -> Unit,
     onManageKeyboards: () -> Unit,
+    onSwitchKeyboard: () -> Unit,
     onDictionary: () -> Unit,
     onRules: () -> Unit,
     onStatus: () -> Unit,
@@ -168,7 +169,7 @@ internal fun GrammalecteDashboard(
                     }
                 }
 
-                CorrectionOverview(status = status)
+                CorrectionOverview(status = status, onSwitchKeyboard = onSwitchKeyboard)
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -262,10 +263,12 @@ internal fun GrammalecteDashboard(
                 AnimatedVisibility(visible = diagnosticsVisible) {
                     DiagnosticsPanel(
                         engineReady = engineReady,
+                        keyboardSpellChecker = status?.keyboardSpellChecker,
                         editText = systemEditText,
                         resultView = resultView,
                         onTest = onTest,
                         onManageKeyboards = onManageKeyboards,
+                        onSwitchKeyboard = onSwitchKeyboard,
                         onTestInField = onTestInField,
                         onInspect = onInspect,
                         onQuickTile = onQuickTile,
@@ -302,8 +305,12 @@ internal fun GrammalecteDashboard(
 }
 
 @Composable
-private fun CorrectionOverview(status: CorrectionStatus?) {
-    val ready = status?.spellChecker == SpellCheckerStatus.SELECTED
+private fun CorrectionOverview(
+    status: CorrectionStatus?,
+    onSwitchKeyboard: () -> Unit,
+) {
+    val suppressed = status?.keyboardSpellChecker == KeyboardSpellCheckerStatus.SUPPRESSES
+    val ready = status?.spellChecker == SpellCheckerStatus.SELECTED && !suppressed
     val indicator =
         if (ready) {
             if (isSystemInDarkTheme()) Color(0xFFA7F3C1) else Color(0xFF176A37)
@@ -312,7 +319,12 @@ private fun CorrectionOverview(status: CorrectionStatus?) {
         }
     val title =
         when (status?.spellChecker) {
-            SpellCheckerStatus.SELECTED -> "Votre correcteur est prêt"
+            SpellCheckerStatus.SELECTED ->
+                if (suppressed) {
+                    "Correcteur limité par le clavier"
+                } else {
+                    "Votre correcteur est prêt"
+                }
             SpellCheckerStatus.FRENCH_SESSION_UNAVAILABLE -> "Choisir la langue française"
             SpellCheckerStatus.DISABLED -> "Activer la correction Android"
             SpellCheckerStatus.NOT_SELECTED -> "Sélectionner Grammalecte"
@@ -376,6 +388,13 @@ private fun CorrectionOverview(status: CorrectionStatus?) {
                         .semantics { liveRegion = LiveRegionMode.Polite }
                         .testTag("keyboard-status"),
             )
+            if (suppressed) {
+                KeyboardSpellCheckerNotice(
+                    status = status.keyboardSpellChecker,
+                    onChooseKeyboard = onSwitchKeyboard,
+                    tag = "main-keyboard-spellchecker",
+                )
+            }
         }
     }
 }
@@ -508,10 +527,12 @@ private fun TestResultCard(
 @Composable
 private fun DiagnosticsPanel(
     engineReady: Boolean,
+    keyboardSpellChecker: KeyboardSpellCheckerStatus?,
     editText: EditText,
     resultView: TextView,
     onTest: () -> Unit,
     onManageKeyboards: () -> Unit,
+    onSwitchKeyboard: () -> Unit,
     onTestInField: () -> Unit,
     onInspect: () -> Unit,
     onQuickTile: () -> Unit,
@@ -536,6 +557,11 @@ private fun DiagnosticsPanel(
                     "Moteur Grammalecte non embarqué."
                 },
                 style = MaterialTheme.typography.bodyMedium,
+            )
+            KeyboardSpellCheckerNotice(
+                status = keyboardSpellChecker,
+                onChooseKeyboard = onSwitchKeyboard,
+                tag = "diagnostics-keyboard-spellchecker",
             )
             OutlinedButton(onClick = onTest, modifier = Modifier.fillMaxWidth()) {
                 Text("Tester Grammalecte")

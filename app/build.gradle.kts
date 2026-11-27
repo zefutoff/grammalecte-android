@@ -63,6 +63,7 @@ android {
     sourceSets {
         getByName("dev") {
             kotlin.directories += "src/debug/kotlin"
+            res.directories += "src/debug/res"
             manifest.srcFile("src/debug/AndroidManifest.xml")
         }
     }

@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
+        <!-- Instrumentation fixture only; never included in the release manifest. -->
+        <service
+            android:name=".SuppressingTestImeService"
+            android:exported="true"
+            android:label="@string/test_suppressing_ime_label"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/test_suppressing_input_method" />
+        </service>
+
         <activity
             android:name=".ComposeUiTestHostActivity"
             android:exported="false" />
