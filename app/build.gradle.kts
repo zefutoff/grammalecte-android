@@ -90,7 +90,7 @@ kotlin {
 
 dependencies {
     // Compose 1.12 requires compileSdk 37; keep targetSdk 36 and Android 8 minimum.
-    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.11.01")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.activity:activity-compose:1.13.0")
