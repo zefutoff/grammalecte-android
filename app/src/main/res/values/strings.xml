@@ -10,6 +10,7 @@
     <string name="project_info_open_website">Site du projet</string>
     <string name="project_info_open_failed">Aucun navigateur disponible pour ouvrir le site du projet.</string>
     <string name="project_info_website_url">https://zefut.fr/projets/grammalecte-android/</string>
+    <string name="spell_checker_suppressed_by_keyboard">Android signale que le clavier actif bloque le correcteur orthographique système. Essayez un autre clavier, puis relancez le test.</string>
     <string name="engine_status_ready">Moteur Grammalecte embarqué : prêt.</string>
     <string name="engine_status_missing">Moteur Grammalecte non embarqué. Exécutez tools/vendor-grammalecte.sh avant de construire l’APK.</string>
     <string name="qs_tile_label">Grammalecte</string>

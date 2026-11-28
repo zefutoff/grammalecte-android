@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Explain when the active keyboard suppresses Android's system spellchecker
+  on Android 12 and newer, instead of reporting only an empty result (#34).
+
 ### Changed
 
 - Modernized the main dashboard with Jetpack Compose and Material 3,

@@ -482,7 +482,12 @@ private fun TestResultCard(
                         Text("Analyse en cours…")
                     }
                 }
-                error != null -> Text(error, color = MaterialTheme.colorScheme.error)
+                error != null ->
+                    Text(
+                        error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("spell-check-test-error"),
+                    )
                 issues.isEmpty() -> Text("Aucune correction proposée par Android.")
                 else -> {
                     issues.forEach { issue ->
